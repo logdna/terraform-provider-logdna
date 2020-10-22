@@ -2,14 +2,8 @@ provider "logdna" {
   servicekey = "Your service key goes here"
 }
 
-resource "logdna_view" "my_view" {
-  apps       = ["app1", "app2"]
-  categories = ["Demo1", "Demo2"]
-  hosts      = ["host1", "host2"]
-  levels     = ["fatal", "critical"]
-  name       = "Email PagerDuty and Webhook Alerts"
-  query      = "test"
-  tags       = ["host1", "host2"]
+resource "logdna_alert" "my_alert" {
+  name = "Email PagerDuty and Webhook Preset Alert"
   email_channel {
     emails          = ["test@logdna.com"]
     immediate       = "false"
@@ -21,8 +15,8 @@ resource "logdna_view" "my_view" {
   }
 
   pagerduty_channel {
-    immediate       = "false"
-    key             = "Your PagerDuty API key goes here"
+    immediate       = "true"
+    key             = "Your PagerDuty service key goes here"
     terminal        = "true"
     triggerinterval = "15m"
     triggerlimit    = 15
@@ -30,12 +24,20 @@ resource "logdna_view" "my_view" {
 
   webhook_channel {
     bodytemplate = jsonencode({
-      hello = "test1"
-      test  = "test2"
+      fields = {
+        description = "{{ matches }} matches found for {{ name }}"
+        issuetype = {
+          name = "Bug"
+        }
+        project = {
+          key = "test"
+        },
+        summary = "Alert From {{ name }}"
+      }
     })
     headers = {
-      hello = "test3"
-      test  = "test2"
+      "Authentication" = "auth_header_value"
+      "HeaderTwo"      = "ValueTwo"
     }
     immediate       = "false"
     method          = "post"

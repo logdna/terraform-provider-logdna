@@ -4,13 +4,12 @@
 
 [LogDNA](https://logdna.com) is a centralized log management platform. The LogDNA Provider allows organizations to manage Views and Alerts programmatically via Terraform.
 
-## Example Usage
-
+## Example Usage 
 ```hcl 
 # Configure the LogDNA Provider
 provider "logdna" {
   servicekey = "xxxxxxxxxxxxxxxxxxxxxxxx"
-  url = "https://api.logdna.com" # (Optional) specify a LogDNA Region
+  url = "https://api.logdna.com" # (Optional) specify a LogDNA region
 }
 
 resource "logdna_view" "http500" {
