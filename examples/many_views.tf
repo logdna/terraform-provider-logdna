@@ -1,5 +1,5 @@
 provider "logdna" {
-  servicekey = "your service key goes here"
+  servicekey = "Your service key goes here"
 }
 
 resource "logdna_view" "my_view" {
