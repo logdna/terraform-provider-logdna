@@ -62,37 +62,7 @@ type Client struct {
 	httpClient *http.Client
 }
 
-// MakeRequestAlert does
-func MakeRequestAlert(c *Client, url string, urlsuffix string, method string, payload viewPayload) (string, error) {
-	pbytes, err := json.Marshal(payload)
-	if err != nil {
-		return "", err
-	}
-	req, err := http.NewRequest(method, url+urlsuffix, bytes.NewBuffer(pbytes))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("servicekey", c.servicekey)
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf(`Error with alert: %s`, err)
-	}
-	defer resp.Body.Close()
-	var result alertResponsePayload
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode != 200 {
-		return "", errors.New(result.Error)
-	}
-
-	return result.Presetid, nil
-}
-
-// MakeRequestView does
+// MakeRequestView makes a request to the config-api and parses and returns the response
 func MakeRequestView(c *Client, url string, urlsuffix string, method string, payload viewPayload) (string, error) {
 	pbytes, err := json.Marshal(payload)
 	if err != nil {
@@ -120,24 +90,6 @@ func MakeRequestView(c *Client, url string, urlsuffix string, method string, pay
 	}
 
 	return result.Viewid, nil
-}
-
-// CreateAlert creates an alert preset
-func (c *Client) CreateAlert(url string, payload viewPayload) (string, error) {
-	result, err := MakeRequestAlert(c, url, "/v1/config/alert", "POST", payload)
-	return result, err
-}
-
-// UpdateAlert updates an alert preset
-func (c *Client) UpdateAlert(url string, presetid string, payload viewPayload) error {
-	_, err := MakeRequestAlert(c, url, "/v1/config/alert/"+presetid, "PUT", payload)
-	return err
-}
-
-// DeleteAlert deletes an alert with the provided preset id
-func (c *Client) DeleteAlert(url, presetid string) error {
-	_, err := MakeRequestAlert(c, url, "/v1/config/alert/"+presetid, "DELETE", viewPayload{})
-	return err
 }
 
 // CreateView creates a view

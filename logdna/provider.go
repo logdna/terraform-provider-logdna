@@ -13,6 +13,7 @@ type config struct {
 	httpClient *http.Client
 }
 
+// Provider sets the schema to a servicekey and url and adds logdna_view as a resource
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{

@@ -1,5 +1,7 @@
 # terraform-provider-logdna 
 
+🚧 Work in progress 🚧
+
 ## Example Terraform Configuration
 ```
 provider "logdna" {
@@ -41,7 +43,7 @@ resource "logdna_view" "my_view" {
     }
     immediate       = "false"
     method          = "post"
-    url             = ""https://yourwebhook/endpoint""
+    url             = "https://yourwebhook/endpoint"
     terminal        = "true"
     triggerinterval = "15m"
     triggerlimit    = 15

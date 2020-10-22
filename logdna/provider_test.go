@@ -1,12 +1,13 @@
 package logdna
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var servicekey = "your service key goes here"
+var servicekey = os.Getenv("servicekey")
 var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 

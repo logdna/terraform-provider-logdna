@@ -1,0 +1,48 @@
+version: 2.1
+tagged_build_filters: &tagged_build_filters
+  branches:
+    ignore: /.*/
+  tags:
+    only: /v[0-9]+\.[0-9]+\.[0-9]+/
+test_build_filters: &test_build_filters
+  branches:
+    only: /.*/
+  tags:
+    ignore: /v[0-9]+\.[0-9]+\.[0-9]+/
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.14
+    steps:
+      - checkout
+      - run:
+          name: "Install test dependencies"
+          command: |
+            go get -u golang.org/x/lint/golint
+            go get github.com/mattn/goveralls
+      - run:
+          name: "Lint"
+          command: |
+            golint -set_exit_status **/*.go
+      - run:
+          name: "Run tests"
+          command: |
+            mkdir -p /tmp/artifacts
+            TF_ACC=1 go test -v -coverprofile=/tmp/artifacts/profile.out -covermode=count ./logdna
+            go tool cover -html=/tmp/artifacts/profile.out -o /tmp/artifacts/coverage.html
+            goveralls -coverprofile=/tmp/artifacts/profile.out -service=circleci -repotoken $COVERALLS_REPO_TOKEN
+      - store_artifacts:
+          path: /tmp/artifacts  
+workflows:
+  update:
+    jobs:
+      - test:
+          filters: *tagged_build_filters
+          context:
+            - Terraform Provider Context
+  test:
+    jobs:
+      - test:
+          filters: *test_build_filters
+          context:
+            - Terraform Provider Context

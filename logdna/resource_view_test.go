@@ -91,13 +91,37 @@ func TestView_expectTagsError(t *testing.T) {
 	})
 }
 
-func TestView_expectTriggerLimitError(t *testing.T) {
+func TestView_expectEmailTriggerLimitError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testViewConfigTriggerLimitError(),
+				Config:      testViewConfigEmailTriggerLimitError(),
 				ExpectError: regexp.MustCompile("Error: \"email_channel.0.triggerlimit\" must be between 1 and 100,000 inclusive, got: 0"),
+			},
+		},
+	})
+}
+
+func TestView_expectPagerDutyTriggerLimitError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigPagerDutyTriggerLimitError(),
+				ExpectError: regexp.MustCompile("Error: \"pagerduty_channel.0.triggerlimit\" must be between 1 and 100,000 inclusive, got: 0"),
+			},
+		},
+	})
+}
+
+func TestView_expectWebhookTriggerLimitError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigWebhookTriggerLimitError(),
+				ExpectError: regexp.MustCompile("Error: \"webhook_channel.0.triggerlimit\" must be between 1 and 100,000 inclusive, got: 0"),
 			},
 		},
 	})
@@ -377,7 +401,7 @@ func testViewConfigTagsError() string {
 	}`, servicekey)
 }
 
-func testViewConfigTriggerLimitError() string {
+func testViewConfigEmailTriggerLimitError() string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
 	}
@@ -393,6 +417,51 @@ func testViewConfigTriggerLimitError() string {
 			triggerinterval = "15m"
 			triggerlimit    = 0
 			timezone        = "Pacific/Samoa"
+		}
+	}`, servicekey)
+}
+
+func testViewConfigPagerDutyTriggerLimitError() string {
+	return fmt.Sprintf(`provider "logdna" {
+		servicekey = "%s"
+	}
+
+	resource "logdna_view" "new" {
+		name     = "test"
+		query    = "test"
+		pagerduty_channel {
+			immediate       = "false"
+			key             = "your pagerduty key goes here"
+			terminal        = "true"
+			triggerinterval = "15m"
+			triggerlimit    = 0
+		}
+	}`, servicekey)
+}
+
+func testViewConfigWebhookTriggerLimitError() string {
+	return fmt.Sprintf(`provider "logdna" {
+		servicekey = "%s"
+	}
+
+	resource "logdna_view" "new" {
+		name     = "test"
+		query    = "test"
+		webhook_channel {
+			headers = {
+			  hello = "test3"
+			  test  = "test2"
+			}
+			bodytemplate = {
+			  hello = "test1"
+			  test  = "test2"
+			}
+			immediate       = "false"
+			method          = "post"
+			url             = "https://yourwebhook/endpoint"
+			terminal        = "true"
+			triggerinterval = "15m"
+			triggerlimit    = 0
 		}
 	}`, servicekey)
 }
