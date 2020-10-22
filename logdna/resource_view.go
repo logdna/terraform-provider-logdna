@@ -175,10 +175,59 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 	d.SetId(resp)
-	return nil
+	return resourceViewRead(ctx, d, m)
 }
 
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	config := m.(*config)
+	viewid := d.Id()
+	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	resp, err := client.GetView(config.URL, viewid)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("name", resp.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("query", resp.Query); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("apps", resp.Apps); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("categories", resp.Category); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("hosts", resp.Hosts); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("levels", resp.Levels); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("tags", resp.Tags); err != nil {
+		return diag.FromErr(err)
+	}
+
+	emailChannels := flattenChannelsData(&resp.Channels, "email")
+	if emailChannels != nil {
+		if err = d.Set("email_channel", emailChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	webhookChannels := flattenChannelsData(&resp.Channels, "webhook")
+	if webhookChannels != nil {
+		if err = d.Set("webhook_channel", webhookChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	pagerDutyChannels := flattenChannelsData(&resp.Channels, "pagerduty")
+	if pagerDutyChannels != nil {
+		if err = d.Set("pagerduty_channel", pagerDutyChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	return nil
 }
 
@@ -249,6 +298,9 @@ func resourceView() *schema.Resource {
 		ReadContext:   resourceViewRead,
 		UpdateContext: resourceViewUpdate,
 		DeleteContext: resourceViewDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"apps": {

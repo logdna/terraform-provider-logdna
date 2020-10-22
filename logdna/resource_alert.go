@@ -4,10 +4,63 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func flattenChannelsData(channels *[]getChannelResponse, channelType string) []interface{} {
+	if channels != nil {
+		cs := make([]interface{}, len(*channels), len(*channels))
+		actualLength := 0
+
+		for _, channel := range *channels {
+			c := make(map[string]interface{})
+
+			if channelType == "pagerduty" && channel.Integration == "pagerduty" {
+				c["immediate"] = strconv.FormatBool(channel.Immediate)
+				c["key"] = channel.Key
+				c["operator"] = channel.Operator
+				c["terminal"] = strconv.FormatBool(channel.Terminal)
+				c["triggerinterval"] = channel.TriggerInterval
+				c["triggerlimit"] = channel.TriggerLimit
+				cs[actualLength] = c
+				actualLength++
+			}
+
+			if channelType == "webhook" && channel.Integration == "webhook" {
+				c["bodytemplate"] = channel.BodyTemplate
+				c["headers"] = channel.Headers
+				c["immediate"] = strconv.FormatBool(channel.Immediate)
+				c["method"] = channel.Method
+				c["operator"] = channel.Operator
+				c["terminal"] = strconv.FormatBool(channel.Terminal)
+				c["triggerinterval"] = channel.TriggerInterval
+				c["triggerlimit"] = channel.TriggerLimit
+				c["url"] = channel.URL
+				cs[actualLength] = c
+				actualLength++
+			}
+
+			if channelType == "email" && channel.Integration == "email" {
+				c["immediate"] = strconv.FormatBool(channel.Immediate)
+				c["emails"] = channel.Emails
+				c["operator"] = channel.Operator
+				c["terminal"] = strconv.FormatBool(channel.Terminal)
+				c["triggerinterval"] = channel.TriggerInterval
+				c["triggerlimit"] = channel.TriggerLimit
+				c["timezone"] = channel.Timezone
+				cs[actualLength] = c
+				actualLength++
+			}
+		}
+
+		return cs[:actualLength]
+	}
+
+	return nil
+}
 
 func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
@@ -27,10 +80,42 @@ func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 	d.SetId(resp)
-	return nil
+	return resourceAlertRead(ctx, d, m)
 }
 
 func resourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	presetID := d.Id()
+	config := m.(*config)
+	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	resp, err := client.GetAlert(config.URL, presetID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("name", resp.Name); err != nil {
+		return diag.FromErr(err)
+	}
+
+	emailChannels := flattenChannelsData(&resp.Channels, "email")
+	if emailChannels != nil {
+		if err = d.Set("email_channel", emailChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	webhookChannels := flattenChannelsData(&resp.Channels, "webhook")
+	if webhookChannels != nil {
+		if err = d.Set("webhook_channel", webhookChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	pagerDutyChannels := flattenChannelsData(&resp.Channels, "pagerduty")
+	if pagerDutyChannels != nil {
+		if err = d.Set("pagerduty_channel", pagerDutyChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return nil
 }
 
@@ -73,6 +158,9 @@ func resourceAlert() *schema.Resource {
 		ReadContext:   resourceAlertRead,
 		UpdateContext: resourceAlertUpdate,
 		DeleteContext: resourceAlertDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -101,7 +189,7 @@ func resourceAlert() *schema.Resource {
 						},
 						"terminal": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"timezone": {
 							Type:     schema.TypeString,
