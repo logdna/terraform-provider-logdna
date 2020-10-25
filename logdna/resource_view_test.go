@@ -181,6 +181,35 @@ func TestViewBasic(t *testing.T) {
 	})
 }
 
+func TestViewBasicUpdate(t *testing.T) {
+	name := "test"
+	query := "test"
+	name2 := "test2"
+	query2 := "test2"
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testViewConfigBasic(name, query),
+				Check: resource.ComposeTestCheckFunc(
+					testViewExists("logdna_view.new"),
+					resource.TestCheckResourceAttr("logdna_view.new", "name", name),
+					resource.TestCheckResourceAttr("logdna_view.new", "query", query),
+				),
+			},
+			{
+				Config: testViewConfigBasic(name2, query2),
+				Check: resource.ComposeTestCheckFunc(
+					testViewExists("logdna_view.new"),
+					resource.TestCheckResourceAttr("logdna_view.new", "name", name2),
+					resource.TestCheckResourceAttr("logdna_view.new", "query", query2),
+				),
+			},
+		},
+	})
+}
+
 func TestViewBulkEmails(t *testing.T) {
 	name := "test"
 	query := "test"
