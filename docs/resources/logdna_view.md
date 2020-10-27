@@ -1,6 +1,6 @@
 # logdna_view Resource
 
-Manages [LogDNA Views](https://docs.logdna.com/docs/views) as well as [View-Specific Alerts](https://docs.logdna.com/docs/alerts#how-to-attach-an-alert-to-an-existing-view). To get started, all you need to do is to specify a `name` and one of: `query`, `apps`, `levels`, `hosts`, or `tags`. We currently support configuring alerts to be sent via email, webhook, or pagerduty.
+Manages [LogDNA Views](https://docs.logdna.com/docs/views) as well as [View-specific Alerts](https://docs.logdna.com/docs/alerts#how-to-attach-an-alert-to-an-existing-view). To get started, specify a `name` and one of: `apps`, `hosts`, `levels`, `query` or `tags`. We currently support configuring Alerts to be sent via email, webhook, or PagerDuty.
 
 ## Example - Basic View Setup
 
@@ -25,46 +25,45 @@ provider "logdna" {
 }
 
 resource "logdna_view" "my_view" {
-  name     = "Terraform Alert Specific View Example"
-  query    = "my query"
   apps     = ["app1", "app2"]
-  levels   = ["warn", "error"]
+  categories = ["Demo1", "Demo2"]
   hosts    = ["host1"]
-  category = ["Demo"]
+  levels   = ["warn", "error"]
+  name     = "Terraform View-specific Alert Example"
+  query    = "my query"
   tags     = ["tag1", "tag2"]
 
   email_channel {
     emails          = ["test@logdna.com"]
-    triggerlimit    = 15
     immediate       = "false"
     operator        = "absence"
     terminal        = "true"
-    triggerinterval = "15m"
     timezone        = "Pacific/Samoa"
+    triggerinterval = "15m"
+    triggerlimit    = 15
   }
   
   pagerduty_channel {
-    key             = "your pagerduty service key goes here"
-    triggerlimit    = 15
-    immediate       = "false"
+    key             = "Your PagerDuty service key goes here"
     terminal        = "true"
     triggerinterval = "15m"
+    triggerlimit    = 15
   }
 
   webhook_channel {
-    url             = "https://yourwebhook/endpoint"
-    triggerlimit    = 15
+    bodytemplate = {
+      message = "Alerts from {{name}}"
+    }
     headers = {
       "Authentication" = "auth_header_value"
       "HeaderTwo"      = "ValueTwo"
-    }
-    bodytemplate = {
-      message = "Alerts from {{name}}"
     }
     immediate       = "false"
     method          = "post"
     terminal        = "true"
     triggerinterval = "15m"
+    triggerlimit    = 15
+    url             = "https://yourwebhook/endpoint"
   }
 }
 ```
@@ -73,50 +72,49 @@ resource "logdna_view" "my_view" {
 
 The following arguments are supported:
 
-_Note:_ At least one of the following properties: `query`, `host`, `app`, `tag`, `level` must be specified to create a view.
-
-- `name`: (Required) The name this view will be given
-- `query`: (Optional) The search query scope for the view
-- `category`: (Optional) An array of existing category names this view should be nested under. Not case sensitive. Note: if the category does not exist- the view will by default be created in uncategorized
-- `hosts`: (Optional) Array of names of hosts to filter the view by
-- `apps`: (Optional) Array of names of apps to filter the view by
-- `levels`: (Optional) Array of names of levels to filter the view by
-- `tags`: (Optional) Array of names of tags to filter the view by
+_Note:_ At least one of the following properties: `apps`, `hosts`, `levels`, `query`, `tags` must be specified to create a View. Unless otherwise noted, all field values are case in-sensitive.
+- `apps`: _(Optional)_ Array of names of apps (each app is of type _string_) to filter the View by
+- `categories`: _(Optional)_ Array of existing category names (each category is of type _string_) this View should be nested under. _Note: If the category does not exist, the View will by default be created in uncategorized_
+- `hosts`: _(Optional)_ Array of names of hosts (each host is of type _string_) to filter the View by
+- `levels`: _(Optional)_ Array of names of levels (each level is of type _string_) to filter the View by
+- `name`: _(Required)_ Name this View will be given, type _string_
+- `query`: _(Optional)_  Search query scope for the View, type _string_
+- `tags`: _(Optional)_ Array of names of tags (each tag is of type _string_) to filter the View by
 
 ### email_channel
 
 `email_channel` supports the following arguments:
 
-- `emails`: (Required) An array of emails to notify in the alert
-- `triggerlimit`: (Required) Number of lines before the alert is triggered. (ex. Setting a value of `10` for an `absence` alert would alert you if `10` lines were not seen in the `triggerinterval`)
-- `timezone`: (Optional) Which time zone the log timestamps will be formatted in.
-- `immediate`: (Optional) _Default: false_ Whether the alert will trigger immediately after the trigger limit is reached.
-- `operator`: (Optional) _Default: Presence_ Whether the alert will trigger on the presence or absence of logs.
-- `terminal`: (Optional) If the alert will trigger after the `triggerinterval` if the alert condition is met (ex. Send an alert after 30s).
-- `triggerinterval`: (Optional) Interval which the alert will be looking for presence or absence of log lines. For `presence` alerts, valid values are: `30s`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h` (default `30s`). For `absence` alerts, valid values are:  `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. (default `15m`)
+- `emails`: _(Required)_ An array of email addresses (each email is of type _string_) to notify in the Alert
+- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached, type _string_ (**Default: "false"**)
+- `operator`: _(Optional)_ Whether the Alert will trigger on the presence or absence of logs, type _string_ (**Default: "presence"**)
+- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s), type _string_
+- `timezone`: _(Optional)_ Which time zone the log timestamps will be formatted in. Timezones are represented as [database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), type _string_
+- `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid values are: 30, 1m, 5m, 15m, 30m, 1h, 6h, 12h, and 24h. For absence Alerts, valid values are: 15m, 30m, 1h, 6h, 12h, and 24h. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
+- `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
 
 ### pagerduty_channel
 
 `pagerduty_channel` supports the following arguments:
 
-- `key`: (Required) Pagerduty service key
-- `triggerlimit`: (Required) Number of lines before the alert is triggered. (ex. Setting a value of `10` for an `absence` alert would alert you if `10` lines were not seen in the `triggerinterval`)
-- `immediate`: (Optional) _Default: false_ Whether the alert will trigger immediately after the trigger limit is reached
-- `operator`: (Optional) _Default: Presence_ Whether the alert will trigger on the presence or absence of logs
-- `terminal`: (Optional) If the alert will trigger after the `triggerinterval` if the alert condition is met (ex. Send an alert after 30s).
-- `triggerinterval`: (Optional) Interval which the alert will be looking for presence or absence of log lines. For `presence` alerts, valid values are: `30s`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h` (default `30s`). For `absence` alerts, valid values are:  `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. (default `15m`)
+- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached, type _string_ (**Default: "false"**)
+- `key`: _(Required)_ PagerDuty service key, type _string_
+- `operator`: _(Optional)_ Whether the Alert will trigger on the presence or absence of logs, type _string_ (**Default: "presence"**)
+- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s), type _string_
+- `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid values are: 30, 1m, 5m, 15m, 30m, 1h, 6h, 12h, and 24h. For absence Alerts, valid values are: 15m, 30m, 1h, 6h, 12h, and 24h. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
+- `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
 
 ### webhook_channel
 
 `webhook_channel` supports the following arguments:
 
-- `url`: (Required): URL of the webhook
-- `bodytemplate`: (Required) JSON Object for the body of the webhook
-- `triggerlimit`: (Required) Number of lines before the alert is triggered. (ex. Setting a value of `10` for an `absence` alert would alert you if `10` lines were not seen in the `triggerinterval`)
-- `headers`: (Optional) Key value pair for webhook request headers and header values
-- `method`: (Optional) _Default: POST_ HTTP Method used for the webhook request
-- `immediate`: (Optional) _Default: false_ Whether the alert will trigger immediately after the trigger limit is reached
-- `operator`: (Optional) _Default: Presence_ Whether the alert will trigger on the presence or absence of logs
-- `terminal`: (Optional) If the alert will trigger after the `triggerinterval` if the alert condition is met (ex. Send an alert after 30s)
-- `triggerinterval`: (Optional) Interval which the alert will be looking for presence or absence of log lines. For `presence` alerts, valid values are: `30s`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h` (default `30s`). For `absence` alerts, valid values are:  `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. (default `15m`)
+- `bodytemplate`: _(Optional)_ JSON Object for the body of the webhook, type Map of _strings_
+- `headers`: _(Optional)_ Key-value pair for webhook request headers and header values, type Map of _strings_
+- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached, type _string_ (**Default: "false"**)
+- `method`: _(Optional)_ Method used for the webhook request, type _string_ (**Default: "POST"**)
+- `operator`: _(Optional)_ Whether the Alert will trigger on the presence or absence of logs, type _string_. Two possible values: "absence" and "presence" (**Default: "presence"**)
+- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s), type _string_
+- `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid values are: 30, 1m, 5m, 15m, 30m, 1h, 6h, 12h, and 24h. For absence Alerts, valid values are: 15m, 30m, 1h, 6h, 12h, and 24h. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
+- `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
+- `url`: _(Required)_ URL of the webhook, type _string_
 

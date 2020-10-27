@@ -43,13 +43,13 @@ func TestView_expectAppsError(t *testing.T) {
 		},
 	})
 }
-func TestView_expectCategoryError(t *testing.T) {
+func TestView_expectCategoriesError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testViewConfigCategoryError(),
-				ExpectError: regexp.MustCompile("Inappropriate value for attribute \"category\": list of string required."),
+				Config:      testViewConfigCategoriesError(),
+				ExpectError: regexp.MustCompile("Inappropriate value for attribute \"categories\": list of string required."),
 			},
 		},
 	})
@@ -190,7 +190,8 @@ func TestViewBulkEmails(t *testing.T) {
 	levels2 := "critical"
 	host1 := "host1"
 	host2 := "host2"
-	category := "DEMO"
+	category1 := "DEMO"
+	category2 := "DEMO2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -198,16 +199,17 @@ func TestViewBulkEmails(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category, tags1, tags2),
+				Config: testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2),
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", query),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", "app1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", "app2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "category.#", "1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "category.0", "DEMO"),
+					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app1),
+					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app2),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category1),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.0", "test@logdna.com"),
@@ -227,16 +229,16 @@ func TestViewBulkEmails(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.1.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.1.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("logdna_view.new", "hosts.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "hosts.0", "host1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "hosts.1", "host2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "hosts.0", "host1"),
+					resource.TestCheckResourceAttr("logdna_view.new", "hosts.0", host1),
+					resource.TestCheckResourceAttr("logdna_view.new", "hosts.1", host2),
+					resource.TestCheckResourceAttr("logdna_view.new", "hosts.0", host1),
 					resource.TestCheckResourceAttr("logdna_view.new", "levels.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "levels.0", "fatal"),
-					resource.TestCheckResourceAttr("logdna_view.new", "levels.1", "critical"),
+					resource.TestCheckResourceAttr("logdna_view.new", "levels.0", levels1),
+					resource.TestCheckResourceAttr("logdna_view.new", "levels.1", levels2),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.#", "0"),
 					resource.TestCheckResourceAttr("logdna_view.new", "tags.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "tags.0", "host1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", "host2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "tags.0", tags1),
+					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", tags2),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channels.#", "0"),
 				),
 			},
@@ -253,7 +255,8 @@ func TestViewMultipleChannels(t *testing.T) {
 	levels2 := "critical"
 	host1 := "host1"
 	host2 := "host2"
-	category := "DEMO"
+	category1 := "DEMO"
+	category2 := "DEMO2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -261,17 +264,18 @@ func TestViewMultipleChannels(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category, tags1, tags2),
+				Config: testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2),
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", query),
 					resource.TestCheckResourceAttr("logdna_view.new", "%", "11"),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", "app1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", "app2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "category.#", "1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "category.0", "DEMO"),
+					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app1),
+					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app2),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category1),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.%", "7"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
@@ -283,23 +287,23 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("logdna_view.new", "hosts.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "hosts.0", "host1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "hosts.1", "host2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "hosts.0", host1),
+					resource.TestCheckResourceAttr("logdna_view.new", "hosts.1", host2),
 					resource.TestCheckResourceAttr("logdna_view.new", "levels.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "levels.0", "fatal"),
-					resource.TestCheckResourceAttr("logdna_view.new", "levels.1", "critical"),
+					resource.TestCheckResourceAttr("logdna_view.new", "levels.0", levels1),
+					resource.TestCheckResourceAttr("logdna_view.new", "levels.1", levels2),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.%", "6"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.immediate", "false"),
-					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.key", "your pagerduty key goes here"),
+					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.key", "your PagerDuty key goes here"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.operator", ""),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.terminal", "true"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.triggerlimit", "15"),
-					resource.TestCheckResourceAttr("logdna_view.new", "levels.1", "critical"),
+					resource.TestCheckResourceAttr("logdna_view.new", "levels.1", levels2),
 					resource.TestCheckResourceAttr("logdna_view.new", "tags.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "tags.0", "host1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", "host2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "tags.0", tags1),
+					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", tags2),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.%", "9"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate.%", "2"),
@@ -353,7 +357,7 @@ func testViewConfigAppsError() string {
 	}`, servicekey)
 }
 
-func testViewConfigCategoryError() string {
+func testViewConfigCategoriesError() string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
 	}
@@ -361,7 +365,7 @@ func testViewConfigCategoryError() string {
 	resource "logdna_view" "new" {
 		name = "test"
 		query = "test"
-		category = "test"
+		categories = "test"
 	}`, servicekey)
 }
 
@@ -541,7 +545,7 @@ func testViewConfigBasic(name, query string) string {
 	}`, servicekey, name, query)
 }
 
-func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category, tags1, tags2 string) string {
+func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2 string) string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
 	}
@@ -552,7 +556,7 @@ func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, 
 	apps     = ["%s", "%s"]
 	levels   = ["%s", "%s"]
 	hosts    = ["%s", "%s"]
-	category = ["%s"]
+	categories = ["%s", "%s"]
 	tags     = ["%s", "%s"]
 	email_channel {
 	  emails          = ["test@logdna.com"]
@@ -572,10 +576,10 @@ func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, 
 	  triggerlimit    = 15
 	  triggerinterval = "15m"
 	}
-  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category, tags1, tags2)
+  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
 }
 
-func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category, tags1, tags2 string) string {
+func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2 string) string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
 	  }
@@ -586,7 +590,7 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 		apps     = ["%s", "%s"]
 		levels   = ["%s", "%s"]
 		hosts    = ["%s", "%s"]
-		category = ["%s"]
+		categories = ["%s", "%s"]
 		tags     = ["%s", "%s"]
 		email_channel {
 		  emails          = ["test@logdna.com"]
@@ -599,7 +603,7 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 		}
 		pagerduty_channel {
 		  immediate       = "false"
-		  key             = "your pagerduty key goes here"
+		  key             = "your PagerDuty key goes here"
 		  terminal        = "true"
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
@@ -620,7 +624,7 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category, tags1, tags2)
+	  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
 }
 
 func testViewExists(n string) resource.TestCheckFunc {
