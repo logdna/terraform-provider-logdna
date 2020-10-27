@@ -2,6 +2,8 @@ package logdna
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,25 +16,25 @@ type clientViewPayload struct {
 }
 
 type channel struct {
-	BodyTemplate    map[string]string `json:"bodyTemplate,omitempty"`
-	Emails          []string          `json:"emails,omitempty"`
-	Headers         map[string]string `json:"headers,omitempty"`
-	Immediate       string            `json:"immediate,omitempty"`
-	Integration     string            `json:"integration,omitempty"`
-	Key             string            `json:"key,omitempty"`
-	Method          string            `json:"method,omitempty"`
-	Operator        string            `json:"operator,omitempty"`
-	Terminal        string            `json:"terminal,omitempty"`
-	Triggerinterval string            `json:"triggerinterval,omitempty"`
-	Triggerlimit    int               `json:"triggerlimit,omitempty"`
-	Timezone        string            `json:"timezone,omitempty"`
-	URL             string            `json:"url,omitempty"`
+	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
+	Emails          []string               `json:"emails,omitempty"`
+	Headers         map[string]string      `json:"headers,omitempty"`
+	Immediate       string                 `json:"immediate,omitempty"`
+	Integration     string                 `json:"integration,omitempty"`
+	Key             string                 `json:"key,omitempty"`
+	Method          string                 `json:"method,omitempty"`
+	Operator        string                 `json:"operator,omitempty"`
+	Terminal        string                 `json:"terminal,omitempty"`
+	TriggerInterval string                 `json:"triggerinterval,omitempty"`
+	TriggerLimit    int                    `json:"triggerlimit,omitempty"`
+	Timezone        string                 `json:"timezone,omitempty"`
+	URL             string                 `json:"url,omitempty"`
 }
 
-func buildChannels(emailchannels []interface{}, pagerdutychannels []interface{}, webhookchannels []interface{}) []channel {
-	var myChannels []channel
-	for _, currChannel := range emailchannels {
-		i := currChannel.(map[string]interface{})
+func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]channel, error) {
+	var channels []channel
+	for _, emailChannel := range emailChannels {
+		i := emailChannel.(map[string]interface{})
 
 		emails := i["emails"].([]interface{})
 		immediate := i["immediate"].(string)
@@ -48,22 +50,22 @@ func buildChannels(emailchannels []interface{}, pagerdutychannels []interface{},
 			emailStrings = append(emailStrings, email.(string))
 		}
 
-		channel := channel{
+		email := channel{
 			Emails:          emailStrings,
 			Immediate:       immediate,
 			Integration:     "email",
 			Operator:        operator,
 			Terminal:        terminal,
-			Triggerinterval: triggerInterval,
-			Triggerlimit:    triggerLimit,
+			TriggerInterval: triggerInterval,
+			TriggerLimit:    triggerLimit,
 			Timezone:        timezone,
 		}
 
-		myChannels = append(myChannels, channel)
+		channels = append(channels, email)
 	}
 
-	for _, currChannel := range pagerdutychannels {
-		i := currChannel.(map[string]interface{})
+	for _, pagerDutyChannel := range pagerDutyChannels {
+		i := pagerDutyChannel.(map[string]interface{})
 
 		immediate := i["immediate"].(string)
 		key := i["key"].(string)
@@ -72,23 +74,23 @@ func buildChannels(emailchannels []interface{}, pagerdutychannels []interface{},
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 
-		channel := channel{
+		pagerDuty := channel{
 			Immediate:       immediate,
 			Integration:     "pagerduty",
 			Key:             key,
 			Operator:        operator,
 			Terminal:        terminal,
-			Triggerinterval: triggerInterval,
-			Triggerlimit:    triggerLimit,
+			TriggerInterval: triggerInterval,
+			TriggerLimit:    triggerLimit,
 		}
 
-		myChannels = append(myChannels, channel)
+		channels = append(channels, pagerDuty)
 	}
 
-	for _, currChannel := range webhookchannels {
-		i := currChannel.(map[string]interface{})
+	for _, webhookChannel := range webhookChannels {
+		i := webhookChannel.(map[string]interface{})
 
-		bodytemplate := i["bodytemplate"].(map[string]interface{})
+		bodytemplate := i["bodytemplate"].(string)
 		headers := i["headers"].(map[string]interface{})
 		immediate := i["immediate"].(string)
 		method := i["method"].(string)
@@ -99,37 +101,40 @@ func buildChannels(emailchannels []interface{}, pagerdutychannels []interface{},
 		url := i["url"].(string)
 
 		headersMap := make(map[string]string)
-		templateMap := make(map[string]string)
 
 		for k, v := range headers {
 			headersMap[k] = v.(string)
 		}
 
-		for k, v := range bodytemplate {
-			templateMap[k] = v.(string)
-		}
-
-		channel := channel{
-			BodyTemplate:    templateMap,
+		webhook := channel{
 			Headers:         headersMap,
 			Immediate:       immediate,
 			Integration:     "webhook",
 			Operator:        operator,
 			Method:          method,
-			Triggerinterval: triggerInterval,
-			Triggerlimit:    triggerLimit,
+			TriggerInterval: triggerInterval,
+			TriggerLimit:    triggerLimit,
 			URL:             url,
 			Terminal:        terminal,
 		}
 
-		myChannels = append(myChannels, channel)
+		if bodytemplate != "" {
+			var bt map[string]interface{}
+			err := json.Unmarshal([]byte(bodytemplate), &bt)
+
+			if err != nil {
+				return channels, err
+			}
+			webhook.BodyTemplate = bt
+		}
+		channels = append(channels, webhook)
 	}
-	return myChannels
+	return channels, nil
 }
 
 func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
-	client := Client{servicekey: config.servicekey, httpClient: config.httpClient}
+	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
 	categories := d.Get("categories").([]interface{})
@@ -137,11 +142,14 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	tags := d.Get("tags").([]interface{})
 	apps := d.Get("apps").([]interface{})
 	levels := d.Get("levels").([]interface{})
-	emailchannels := d.Get("email_channel").([]interface{})
-	pagerdutychannels := d.Get("pagerduty_channel").([]interface{})
-	webhookchannels := d.Get("webhook_channel").([]interface{})
+	emailChannels := d.Get("email_channel").([]interface{})
+	pagerDutyChannels := d.Get("pagerduty_channel").([]interface{})
+	webhookChannels := d.Get("webhook_channel").([]interface{})
 
-	channels := buildChannels(emailchannels, pagerdutychannels, webhookchannels)
+	channels, err := buildChannels(emailChannels, pagerDutyChannels, webhookChannels)
+	if err != nil {
+		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
+	}
 	var categoryStrings []string
 	var hostStrings []string
 	var tagStrings []string
@@ -165,7 +173,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	payload := viewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	resp, err := client.CreateView(config.url, payload)
+	resp, err := client.CreateView(config.URL, payload)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -180,7 +188,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
-	client := Client{servicekey: config.servicekey, httpClient: config.httpClient}
+	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	viewid := d.Id()
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
@@ -189,12 +197,14 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	tags := d.Get("tags").([]interface{})
 	apps := d.Get("apps").([]interface{})
 	levels := d.Get("levels").([]interface{})
-	emailchannels := d.Get("email_channel").([]interface{})
-	pagerdutychannels := d.Get("pagerduty_channel").([]interface{})
-	webhookchannels := d.Get("webhook_channel").([]interface{})
+	emailChannels := d.Get("email_channel").([]interface{})
+	pagerDutyChannels := d.Get("pagerduty_channel").([]interface{})
+	webhookChannels := d.Get("webhook_channel").([]interface{})
 
-	channels := buildChannels(emailchannels, pagerdutychannels, webhookchannels)
-
+	channels, err := buildChannels(emailChannels, pagerDutyChannels, webhookChannels)
+	if err != nil {
+		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
+	}
 	var categoryStrings []string
 	var hostStrings []string
 	var tagStrings []string
@@ -218,7 +228,7 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	payload := viewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	err := client.UpdateView(config.url, viewid, payload)
+	err = client.UpdateView(config.URL, viewid, payload)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -227,9 +237,9 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
-	client := Client{servicekey: config.servicekey, httpClient: config.httpClient}
+	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	viewid := d.Id()
-	err := client.DeleteView(config.url, viewid)
+	err := client.DeleteView(config.URL, viewid)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -369,10 +379,7 @@ func resourceView() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bodytemplate": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
+							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"headers": {
