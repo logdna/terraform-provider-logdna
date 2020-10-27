@@ -132,7 +132,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	client := Client{servicekey: config.servicekey, httpClient: config.httpClient}
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
-	categories := d.Get("category").([]interface{})
+	categories := d.Get("categories").([]interface{})
 	hosts := d.Get("hosts").([]interface{})
 	tags := d.Get("tags").([]interface{})
 	apps := d.Get("apps").([]interface{})
@@ -184,7 +184,7 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	viewid := d.Id()
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
-	categories := d.Get("category").([]interface{})
+	categories := d.Get("categories").([]interface{})
 	hosts := d.Get("hosts").([]interface{})
 	tags := d.Get("tags").([]interface{})
 	apps := d.Get("apps").([]interface{})
@@ -245,20 +245,12 @@ func resourceView() *schema.Resource {
 		DeleteContext: resourceViewDelete,
 
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"query": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"apps": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"category": {
+			"categories": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -272,6 +264,14 @@ func resourceView() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"query": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"tags": {
 				Type:     schema.TypeList,

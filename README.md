@@ -1,20 +1,27 @@
-# terraform-provider-logdna 
+# Terraform Provider for LogDNA
 
-🚧 Work in progress 🚧
+[![CircleCI](https://circleci.com/gh/logdna/terraform-provider-logdna/tree/master.svg?style=svg)](https://app.circleci.com/pipelines/github/logdna/terraform-provider-logdna)
+[![Coverage Status](https://coveralls.io/repos/github/logdna/terraform-provider-logdna/badge.svg?branch=main)](https://coveralls.io/github/logdna/terraform-provider-logdna?branch=main)
+
+🚧 In public beta 🚧
+
+[LogDNA](https://logdna.com) is a centralized log management platform. The LogDNA Provider allows organizations to manage Views and Alerts programmatically via Terraform.
+
+The [official docs for the LogDNA terraform provider](https://registry.terraform.io/providers/logdna/logdna/latest/docs) can be found in the Terraform registry.
 
 ## Example Terraform Configuration
 ```
 provider "logdna" {
-  servicekey = "your service key goes here"
+  servicekey = "Your service key goes here"
 }
 
 resource "logdna_view" "my_view" {
-  name     = "email pagerduty and webhook"
+  name     = "Email PagerDuty and Webhook View-specific Alerts"
   query    = "test"
   apps     = ["app1", "app2"]
   levels   = ["fatal", "critical"]
   hosts    = ["host1", "host2"]
-  category = ["Demo"]
+  categories = ["Demo1", "Demo2"]
   tags     = ["tag1", "tag2"]
   email_channel {
     emails          = ["test@logdna.com"]
@@ -27,7 +34,7 @@ resource "logdna_view" "my_view" {
   }
   pagerduty_channel {
     immediate       = "false"
-    key             = "your pagerduty key goes here"
+    key             = "Your PagerDuty key goes here"
     terminal        = "true"
     triggerinterval = "15m"
     triggerlimit    = 15
@@ -51,13 +58,13 @@ resource "logdna_view" "my_view" {
 }
 ```
 
-Using the logdna_view resource- a user can create a view with a provided name query, hosts, category, tags, email, pagerduty and webhook channels, delete a view with a given viewid or update a view's properties.
+Using the `logdna_view` resource, a user can create a View with provided `name`, `query`, `hosts`, `categories`, `tags`, `email_channel`, `pagerduty_channel`, and `webhook_channel`, delete a View with a given `viewid` or update a View using the `viewid` and `name`.
 
-Run go build, terraform init, terraform plan and terraform apply and then navigate to the UI to see your updates!
+Run `terraform init`, `terraform plan`, and `terraform apply`, refresh your browser and then navigate to the UI to see your updates.
 
-## Test
+## Testing
 
-In order to run the provider's test suite add your LogDNA servicekey to logdna/provider_test.go and then run the following. Your servicekey can be generated or retrieved from Settings > Organization > API Keys.
+To run the provider's test suite, add your LogDNA service key to [logdna/provider_test.go](https://github.com/logdna/terraform-provider-logdna/blob/main/logdna/provider_test.go), and then run the following commands. Your service key can be generated or retrieved from **Settings > Organization > API Keys**.
 
 ```
 make test
