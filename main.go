@@ -1,9 +1,9 @@
 package main
 
 import (
-	"example.com/terraform-provider-logdna/logdna"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/logdna/terraform-provider-logdna/logdna"
 )
 
 func main() {

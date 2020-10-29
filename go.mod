@@ -1,4 +1,4 @@
-module example.com/terraform-provider-logdna
+module github.com/logdna/terraform-provider-logdna
 
 go 1.14
 

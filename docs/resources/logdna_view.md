@@ -108,7 +108,7 @@ _Note:_ At least one of the following properties: `apps`, `hosts`, `levels`, `qu
 
 `webhook_channel` supports the following arguments:
 
-- `bodytemplate`: _(Optional)_ JSON Object for the body of the webhook, type Map of _strings_
+- `bodytemplate`: _(Optional)_ JSON formatted string for the body of the webhook. We recommend using [`jsonencode()`](https://www.terraform.io/docs/configuration/functions/jsonencode.html) to easily convert a Terraform map into a JSON string. Type _string_
 - `headers`: _(Optional)_ Key-value pair for webhook request headers and header values, type Map of _strings_
 - `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached, type _string_ (**Default: "false"**)
 - `method`: _(Optional)_ Method used for the webhook request, type _string_ (**Default: "POST"**)

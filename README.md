@@ -1,7 +1,7 @@
 # Terraform Provider for LogDNA
 
 [![CircleCI](https://circleci.com/gh/logdna/terraform-provider-logdna/tree/master.svg?style=svg)](https://app.circleci.com/pipelines/github/logdna/terraform-provider-logdna)
-[![Coverage Status](https://coveralls.io/repos/github/logdna/terraform-provider-logdna/badge.svg?branch=main)](https://coveralls.io/github/logdna/terraform-provider-logdna?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/logdna/terraform-provider-logdna/badge.svg)](https://coveralls.io/github/logdna/terraform-provider-logdna)
 
 🚧 In public beta 🚧
 

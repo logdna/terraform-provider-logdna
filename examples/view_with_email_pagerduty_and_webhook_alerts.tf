@@ -7,7 +7,7 @@ resource "logdna_view" "my_view" {
   categories = ["Demo1", "Demo2"]
   hosts      = ["host1", "host2"]
   levels     = ["fatal", "critical"]
-  name       = "Email Pagerduty and Webhook Alerts"
+  name       = "Email PagerDuty and Webhook Alerts"
   query      = "test"
   tags       = ["host1", "host2"]
   email_channel {
@@ -27,14 +27,14 @@ resource "logdna_view" "my_view" {
     triggerlimit    = 15
   }
   webhook_channel {
-    bodytemplate = {
-      hello = "test1"
-      test  = "test2"
-    }
     headers = {
       hello = "test3"
       test  = "test2"
     }
+    bodytemplate = jsonencode({
+      hello = "test1"
+      test  = "test2"
+    })
     immediate       = "false"
     method          = "post"
     terminal        = "true"

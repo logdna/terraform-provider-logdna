@@ -8,6 +8,12 @@ import (
 	"net/http"
 )
 
+// Client used to make HTTP requests to the configuration api
+type Client struct {
+	ServiceKey string
+	HTTPClient *http.Client
+}
+
 type viewPayload struct {
 	Apps     []string  `json:"apps,omitempty"`
 	Category []string  `json:"category,omitempty"`
@@ -50,16 +56,10 @@ type channelResponse struct {
 	Method          string            `json:"method,omitempty"`
 	Operator        string            `json:"operator,omitempty"`
 	Terminal        bool              `json:"terminal,omitempty"`
-	Triggerinterval int               `json:"triggerinterval,omitempty"`
-	Triggerlimit    int               `json:"triggerlimit,omitempty"`
+	TriggerInterval int               `json:"triggerinterval,omitempty"`
+	TriggerLimit    int               `json:"triggerlimit,omitempty"`
 	Timezone        string            `json:"timezone,omitempty"`
 	URL             string            `json:"url,omitempty"`
-}
-
-// Client used to make http requests to the configuration api
-type Client struct {
-	servicekey string
-	httpClient *http.Client
 }
 
 // MakeRequestView makes a request to the config-api and parses and returns the response
@@ -73,8 +73,8 @@ func MakeRequestView(c *Client, url string, urlsuffix string, method string, pay
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("servicekey", c.servicekey)
-	resp, err := c.httpClient.Do(req)
+	req.Header.Set("servicekey", c.ServiceKey)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf(`Error with view: %s`, err)
 	}

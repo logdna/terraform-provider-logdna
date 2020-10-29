@@ -9,6 +9,66 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+func TestView_expectInvalidJSONError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigMultipleChannelsInvalidJSON(),
+				ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
+			},
+		},
+	})
+}
+
+func TestView_expectTriggerIntervalError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigTriggerLimitError(),
+				ExpectError: regexp.MustCompile(`\"channels\[0]\.triggerinterval\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h]`),
+			},
+		},
+	})
+}
+
+func TestView_expectImmediateError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigImmediateError(),
+				ExpectError: regexp.MustCompile(`\"channels\[0\].immediate\" must be \[false\]. \"channels\[0]\.immediate\" must be a boolean`),
+			},
+		},
+	})
+}
+
+func TestView_expectURLError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigURLError(),
+				ExpectError: regexp.MustCompile(`\"channels\[0\].url\" must be a valid uri`),
+			},
+		},
+	})
+}
+
+func TestView_expectMethodError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewConfigMethodError(),
+				ExpectError: regexp.MustCompile(`\"channels\[0\].method\" must be one of \[post, put, patch, get, delete\]`),
+			},
+		},
+	})
+}
+
 func TestView_expectServiceKeyError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -20,6 +80,7 @@ func TestView_expectServiceKeyError(t *testing.T) {
 		},
 	})
 }
+
 func TestView_expectNameError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -205,6 +266,37 @@ func TestViewBasicUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name2),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", query2),
 				),
+			},
+		},
+	})
+}
+
+func TestViewJSONUpdateError(t *testing.T) {
+	name := "test"
+	query := "test"
+	app1 := "app1"
+	app2 := "app2"
+	levels1 := "fatal"
+	levels2 := "critical"
+	host1 := "host1"
+	host2 := "host2"
+	category1 := "DEMO"
+	category2 := "DEMO2"
+	tags1 := "host1"
+	tags2 := "host2"
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2),
+				Check: resource.ComposeTestCheckFunc(
+					testViewExists("logdna_view.new"),
+				),
+			},
+			{
+				Config:      testViewConfigMultipleChannelsInvalidJSON(),
+				ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
 			},
 		},
 	})
@@ -457,9 +549,8 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", tags2),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.%", "9"),
-					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate.%", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate.hello", "test1"),
-					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate.test", "test2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.%", "9"),
+					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate", "{\"fields\":{\"description\":\"{{ matches }} matches found for {{ name }}\",\"issuetype\":{\"name\":\"Bug\"},\"project\":{\"key\":\"test\"},\"summary\":\"Alert From {{ name }}\"}}"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.%", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.hello", "test3"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.test", "test2"),
@@ -474,6 +565,132 @@ func TestViewMultipleChannels(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testViewConfigMultipleChannelsInvalidJSON() string {
+	return fmt.Sprintf(`provider "logdna" {
+		servicekey = "%s"
+	  }
+
+	  resource "logdna_view" "new" {
+		name = "test"
+		query = "test"
+		email_channel {
+		  emails          = ["test@logdna.com"]
+		  immediate       = "false"
+		  operator        = "absence"
+		  terminal        = "true"
+		  timezone        = "Pacific/Samoa"
+		  triggerinterval = "15m"
+		  triggerlimit    = 15
+		}
+		pagerduty_channel {
+		  immediate       = "false"
+		  key             = "your PagerDuty key goes here"
+		  terminal        = "true"
+		  triggerinterval = "15m"
+		  triggerlimit    = 15
+		}
+		webhook_channel {
+		  headers = {
+			hello = "test3"
+			test  = "test2"
+		  }
+		  bodytemplate = "{\"test\": }"
+		  immediate       = "false"
+		  method          = "post"
+		  url             = "https://yourwebhook/endpoint"
+		  terminal        = "true"
+		  triggerinterval = "15m"
+		  triggerlimit    = 15
+		}
+	  }`, servicekey)
+}
+
+func testViewConfigTriggerLimitError() string {
+	return fmt.Sprintf(`provider "logdna" {
+        servicekey = "%s"
+      }
+
+      resource "logdna_view" "new" {
+        name = "test"
+        query = "test"
+        email_channel {
+          emails          = ["test@logdna.com"]
+          immediate       = "false"
+          operator        = "absence"
+          terminal        = "true"
+          timezone        = "Pacific/Samoa"
+          triggerinterval = "17m"
+          triggerlimit    = 15
+        }
+      }`, servicekey)
+}
+
+func testViewConfigImmediateError() string {
+	return fmt.Sprintf(`provider "logdna" {
+        servicekey = "%s"
+      }
+
+      resource "logdna_view" "new" {
+        name = "test"
+        query = "test"
+        email_channel {
+          emails          = ["test@logdna.com"]
+          immediate       = "no"
+          operator        = "absence"
+          terminal        = "true"
+          timezone        = "Pacific/Samoa"
+          triggerinterval = "15m"
+          triggerlimit    = 15
+        }
+      }`, servicekey)
+}
+
+func testViewConfigURLError() string {
+	return fmt.Sprintf(`provider "logdna" {
+		servicekey = "%s"
+	  }
+
+	  resource "logdna_view" "new" {
+		name = "test"
+		query = "test"
+		webhook_channel {
+		  headers = {
+			hello = "test3"
+			test  = "test2"
+		  }
+		  immediate       = "false"
+		  method          = "post"
+		  url             = "this is not a valid url"
+		  terminal        = "true"
+		  triggerinterval = "15m"
+		  triggerlimit    = 15
+		}
+	  }`, servicekey)
+}
+
+func testViewConfigMethodError() string {
+	return fmt.Sprintf(`provider "logdna" {
+		servicekey = "%s"
+	  }
+
+	  resource "logdna_view" "new" {
+		name = "test"
+		query = "test"
+		webhook_channel {
+		  headers = {
+			hello = "test3"
+			test  = "test2"
+		  }
+		  immediate       = "false"
+		  method          = "false"
+		  url             = "http://yourwebhook/test"
+		  terminal        = "true"
+		  triggerinterval = "15m"
+		  triggerlimit    = 15
+		}
+	  }`, servicekey)
 }
 
 func testViewConfigServiceKeyError() string {
@@ -605,10 +822,6 @@ func testViewConfigWebhookTriggerLimitError() string {
 		webhook_channel {
 			headers = {
 			  hello = "test3"
-			  test  = "test2"
-			}
-			bodytemplate = {
-			  hello = "test1"
 			  test  = "test2"
 			}
 			immediate       = "false"
@@ -764,10 +977,18 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 			hello = "test3"
 			test  = "test2"
 		  }
-		  bodytemplate = {
-			hello = "test1"
-			test  = "test2"
-		  }
+		  bodytemplate = jsonencode({
+			fields = {
+				description = "{{ matches }} matches found for {{ name }}"
+				issuetype = {
+					name = "Bug"
+				}
+				project = {
+					key = "test"
+				},
+				summary = "Alert From {{ name }}"
+		   }
+		  })
 		  immediate       = "false"
 		  method          = "post"
 		  url             = "https://yourwebhook/endpoint"
