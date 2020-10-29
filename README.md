@@ -2,8 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/logdna/terraform-provider-logdna/tree/master.svg?style=svg)](https://app.circleci.com/pipelines/github/logdna/terraform-provider-logdna)
 [![Coverage Status](https://coveralls.io/repos/github/logdna/terraform-provider-logdna/badge.svg)](https://coveralls.io/github/logdna/terraform-provider-logdna)
-
-🚧 In public beta 🚧
+[![Public Beta](https://img.shields.io/badge/-Public%20Beta-404346?style=flat)](#)
 
 [LogDNA](https://logdna.com) is a centralized log management platform. The LogDNA Provider allows organizations to manage Views and Alerts programmatically via Terraform.
 
@@ -44,10 +43,10 @@ resource "logdna_view" "my_view" {
       hello = "test3"
       test  = "test2"
     }
-    bodytemplate = {
+    bodytemplate = jsonencode({
       hello = "test1"
       test  = "test2"
-    }
+    })
     immediate       = "false"
     method          = "post"
     url             = "https://yourwebhook/endpoint"
