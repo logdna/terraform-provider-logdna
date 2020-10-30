@@ -72,7 +72,8 @@ resource "logdna_view" "my_view" {
 
 The following arguments are supported:
 
-_Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, `levels`, `query`, `tags` must be specified to create a View. Unless otherwise noted, all field values are case in-sensitive.
+_Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, `levels`, `query`, `tags` must be specified to create a View. _Note: Field values for `categories` are case in-sensitive but field values for filters are case-sensitive, i.e: `hosts`, `apps`, `levels` and `tags`_.
+
 - `apps`: _(Optional)_ Array of names of apps (each app is of type _string_) to filter the View by
 - `categories`: _(Optional)_ Array of existing category names (each category is of type _string_) this View should be nested under. _Note: If the category does not exist, the View will by default be created in uncategorized_
 - `hosts`: _(Optional)_ Array of names of hosts (each host is of type _string_) to filter the View by
@@ -86,9 +87,9 @@ _Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, 
 `email_channel` supports the following arguments:
 
 - `emails`: _(Required)_ An array of email addresses (each email is of type _string_) to notify in the Alert
-- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached. Valid options are `true` and `false`, type _string_ (**Default: "false"**)
+- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached. _Note: Immediate can only be set to `true` for presence alerts_. Valid options are `true` and `false`, type _string_. (**Default: "false"**)
 - `operator`: _(Optional)_ Whether the Alert will trigger on the presence or absence of logs. Valid options are `presence` and `absence`, type _string_ (**Default: "presence"**)
-- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `true` and `false`, type _string_
+- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `true` and `false`, type _string_ (**Default: "true"**)
 - `timezone`: _(Optional)_ Which time zone the log timestamps will be formatted in. Timezones are represented as [database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), type _string_
 - `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
 - `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
@@ -97,10 +98,10 @@ _Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, 
 
 `pagerduty_channel` supports the following arguments:
 
-- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached. Valid options are `true` and `false`, type _string_ (**Default: "false"**)
+- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached. _Note: Immediate can only be set to `true` for presence alerts_. Valid options are `true` and `false`, type _string_ (**Default: "false"**)
 - `key`: _(Required)_ PagerDuty service key, type _string_
 - `operator`: _(Optional)_ Whether the Alert will trigger on the presence or absence of logs. Valid options are `presence` and `absence`, type _string_ (**Default: "presence"**)
-- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `true` and `false`, type _string_
+- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `true` and `false`, type _string_ (**Default: "true"**)
 - `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
 - `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
 
@@ -110,10 +111,10 @@ _Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, 
 
 - `bodytemplate`: _(Optional)_ JSON formatted string for the body of the webhook. We recommend using [`jsonencode()`](https://www.terraform.io/docs/configuration/functions/jsonencode.html) to easily convert a Terraform map into a JSON string. Type _string_
 - `headers`: _(Optional)_ Key-value pair for webhook request headers and header values, type Map of _strings_
-- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached. Valid options are `true` and `false`, type _string_ (**Default: "false"**)
+- `immediate`: _(Optional)_ Whether the Alert will trigger immediately after the trigger limit is reached. _Note: Immediate can only be set to `true` for presence alerts_. Valid options are `true` and `false`, type _string_. (**Default: "false"**)
 - `method`: _(Optional)_ Method used for the webhook request. Valid options are: `post`, `put`, `patch`, `get`, `delete`. Type _string_ (**Default: "post"**)
 - `operator`: _(Optional)_ Whether the Alert will trigger on the presence or absence of logs. Valid options are `presence` and `absence`, type _string_ (**Default: "presence"**)
-- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `true` and `false`, type _string_
+- `terminal`: _(Optional)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `true` and `false`, type _string_ (**Default: "true"**)
 - `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
 - `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
 - `url`: _(Required)_ URL of the webhook, type _string_
