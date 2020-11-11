@@ -9,6 +9,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+func TestView_expectInvalidURLError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testViewInvalidURL(),
+				ExpectError: regexp.MustCompile("Error: Error with view: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
+			},
+		},
+	})
+}
+
 func TestView_expectInvalidJSONError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -26,7 +38,7 @@ func TestView_expectTriggerIntervalError(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      testViewConfigTriggerLimitError(),
+				Config:      testViewConfigTriggerIntervalError(),
 				ExpectError: regexp.MustCompile(`\"channels\[0]\.triggerinterval\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h]`),
 			},
 		},
@@ -538,7 +550,7 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.%", "6"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.immediate", "false"),
-					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.key", "your PagerDuty key goes here"),
+					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.operator", ""),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.terminal", "true"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.triggerinterval", "15m"),
@@ -567,6 +579,18 @@ func TestViewMultipleChannels(t *testing.T) {
 	})
 }
 
+func testViewInvalidURL() string {
+	return fmt.Sprintf(`provider "logdna" {
+		url = "http://api.logdna.co"
+		servicekey = "%s"
+	  }
+
+	  resource "logdna_view" "new" {
+		name = "test"
+		query = "test"
+	  }`, servicekey)
+}
+
 func testViewConfigMultipleChannelsInvalidJSON() string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
@@ -586,7 +610,7 @@ func testViewConfigMultipleChannelsInvalidJSON() string {
 		}
 		pagerduty_channel {
 		  immediate       = "false"
-		  key             = "your PagerDuty key goes here"
+		  key             = "Your PagerDuty API key goes here"
 		  terminal        = "true"
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
@@ -607,9 +631,9 @@ func testViewConfigMultipleChannelsInvalidJSON() string {
 	  }`, servicekey)
 }
 
-func testViewConfigTriggerLimitError() string {
+func testViewConfigTriggerIntervalError() string {
 	return fmt.Sprintf(`provider "logdna" {
-        servicekey = "%s"
+		servicekey = "%s"
       }
 
       resource "logdna_view" "new" {
@@ -629,7 +653,7 @@ func testViewConfigTriggerLimitError() string {
 
 func testViewConfigImmediateError() string {
 	return fmt.Sprintf(`provider "logdna" {
-        servicekey = "%s"
+		servicekey = "%s"
       }
 
       resource "logdna_view" "new" {
@@ -803,7 +827,7 @@ func testViewConfigPagerDutyTriggerLimitError() string {
 		query    = "test"
 		pagerduty_channel {
 			immediate       = "false"
-			key             = "your pagerduty key goes here"
+			key             = "Your PagerDuty API key goes here"
 			terminal        = "true"
 			triggerinterval = "15m"
 			triggerlimit    = 0
@@ -967,7 +991,7 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 		}
 		pagerduty_channel {
 		  immediate       = "false"
-		  key             = "your PagerDuty key goes here"
+		  key             = "Your PagerDuty API key goes here"
 		  terminal        = "true"
 		  triggerinterval = "15m"
 		  triggerlimit    = 15

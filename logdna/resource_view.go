@@ -10,12 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type clientViewPayload struct {
-	Payload viewPayload
-	URL     string
-}
-
-type channel struct {
+// Channel contains optional and required fields for creating an alert with LogDNA
+type Channel struct {
 	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
 	Emails          []string               `json:"emails,omitempty"`
 	Headers         map[string]string      `json:"headers,omitempty"`
@@ -31,8 +27,8 @@ type channel struct {
 	URL             string                 `json:"url,omitempty"`
 }
 
-func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]channel, error) {
-	var channels []channel
+func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]Channel, error) {
+	var channels []Channel
 	for _, emailChannel := range emailChannels {
 		i := emailChannel.(map[string]interface{})
 
@@ -50,7 +46,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			emailStrings = append(emailStrings, email.(string))
 		}
 
-		email := channel{
+		email := Channel{
 			Emails:          emailStrings,
 			Immediate:       immediate,
 			Integration:     "email",
@@ -74,7 +70,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 
-		pagerDuty := channel{
+		pagerDuty := Channel{
 			Immediate:       immediate,
 			Integration:     "pagerduty",
 			Key:             key,
@@ -106,7 +102,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			headersMap[k] = v.(string)
 		}
 
-		webhook := channel{
+		webhook := Channel{
 			Headers:         headersMap,
 			Immediate:       immediate,
 			Integration:     "webhook",
@@ -172,7 +168,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		tagStrings = append(tagStrings, tag.(string))
 	}
 
-	payload := viewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
+	payload := ViewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
 	resp, err := client.CreateView(config.URL, payload)
 
 	if err != nil {
@@ -189,7 +185,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
 	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
-	viewid := d.Id()
+	viewID := d.Id()
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
 	categories := d.Get("categories").([]interface{})
@@ -227,8 +223,8 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		tagStrings = append(tagStrings, tag.(string))
 	}
 
-	payload := viewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	err = client.UpdateView(config.URL, viewid, payload)
+	payload := ViewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
+	err = client.UpdateView(config.URL, viewID, payload)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -238,8 +234,8 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
 	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
-	viewid := d.Id()
-	err := client.DeleteView(config.URL, viewid)
+	viewID := d.Id()
+	err := client.DeleteView(config.URL, viewID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

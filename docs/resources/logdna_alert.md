@@ -1,8 +1,10 @@
-# logdna_view Resource
+# logdna_alert Resource
 
-Manages [LogDNA Views](https://docs.logdna.com/docs/views) as well as [View-specific Alerts](https://docs.logdna.com/docs/alerts#how-to-attach-an-alert-to-an-existing-view). To get started, specify a `name` and one of: `apps`, `hosts`, `levels`, `query` or `tags`. We currently support configuring Alerts to be sent via email, webhook, or PagerDuty.
+Manages [LogDNA Preset Alerts](https://docs.logdna.com/docs/alerts). Preset Alerts are alerts that you can define separately from a specific View. Preset Alerts can be created standalone and then attached (or detached) to any View, as opposed to View-specific Alerts, which are created specifically for a certain View.
 
-## Example - Basic View
+To get started, all you need to do is to specify a `name` and configuration for one of our currently supported alerts: email, webhook, or PagerDuty.
+
+## Example - Basic Preset Alert
 
 ```hcl
 provider "logdna" {
@@ -10,29 +12,31 @@ provider "logdna" {
   url = "https://api.logdna.com" # (Optional) specify a LogDNA region
 }
 
-resource "logdna_view" "my_view" {
-  name  = "Basic View"
-  query = "level:debug my query"
+resource "logdna_alert" "my_alert" {
+  name = "My Preset Alert via Terraform"
+  email_channel {
+    emails          = ["test@logdna.com"]
+    immediate       = "false"
+    operator        = "presence"
+    triggerlimit    = 15
+    triggerinterval = "15m"
+    terminal        = "true"
+    timezone        = "Pacific/Samoa"
+  }
 }
-```
 
-## Example - Multi-channel View
+
+```
+## Example - Multi-channel Preset Alert
 
 ```hcl
 provider "logdna" {
   servicekey = "xxxxxxxxxxxxxxxxxxxxxxxx"
-  url = "https://api.logdna.com" # (Optional) specify a LogDNA Region
+  url = "https://api.logdna.com" # (Optional) specify a LogDNA region
 }
 
-resource "logdna_view" "my_view" {
-  apps     = ["app1", "app2"]
-  categories = ["Demo1", "Demo2"]
-  hosts    = ["host1"]
-  levels   = ["warn", "error"]
-  name     = "Terraform Multi-channel View"
-  query    = "my query"
-  tags     = ["tag1", "tag2"]
-
+resource "logdna_alert" "my_alert" {
+  name = "Terraform Multi-channel Preset Alert"
   email_channel {
     emails          = ["test@logdna.com"]
     immediate       = "false"
@@ -42,8 +46,9 @@ resource "logdna_view" "my_view" {
     triggerinterval = "15m"
     triggerlimit    = 15
   }
-  
+
   pagerduty_channel {
+    immediate       = "true"
     key             = "Your PagerDuty API key goes here"
     terminal        = "true"
     triggerinterval = "15m"
@@ -64,7 +69,7 @@ resource "logdna_view" "my_view" {
     triggerinterval = "15m"
     triggerlimit    = 15
     url             = "https://yourwebhook/endpoint"
-  }
+ }
 }
 ```
 
@@ -72,15 +77,7 @@ resource "logdna_view" "my_view" {
 
 The following arguments are supported:
 
-_Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, `levels`, `query`, `tags` must be specified to create a View.
-
-- `apps`: _(Optional)_ Array of names of apps (each app is of type _string_) to filter the View by
-- `categories`: _(Optional)_ Array of existing category names (each category is of type _string_) this View should be nested under. _Note: If the category does not exist, the View will by default be created in uncategorized_
-- `hosts`: _(Optional)_ Array of names of hosts (each host is of type _string_) to filter the View by
-- `levels`: _(Optional)_ Array of names of levels (each level is of type _string_) to filter the View by
-- `name`: _(Required)_ Name this View will be given, type _string_
-- `query`: _(Optional)_  Search query scope for the View, type _string_
-- `tags`: _(Optional)_ Array of names of tags (each tag is of type _string_) to filter the View by
+- `name`: (Required) The name this Preset Alert will be given, type _string_
 
 ### email_channel
 
@@ -118,3 +115,5 @@ _Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, 
 - `triggerinterval`: _(Optional)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. Type _string_ (**Defaults: "30" for presence; "15m" for absence**)
 - `triggerlimit`: _(Required)_ Number of lines before the Alert is triggered. (eg. Setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`), type _integer_
 - `url`: _(Required)_ URL of the webhook, type _string_
+
+
