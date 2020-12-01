@@ -128,19 +128,19 @@ func MakeRequestView(c *Client, url string, urlsuffix string, method string, pay
 
 // CreateAlert creates a Preset Alert with the provided payload
 func (c *Client) CreateAlert(url string, payload ViewPayload) (string, error) {
-	result, err := MakeRequestAlert(c, url, "/v1/config/alert", "POST", payload)
+	result, err := MakeRequestAlert(c, url, "/v1/config/presetalert", "POST", payload)
 	return result, err
 }
 
 // UpdateAlert updates a Preset Alert with the provided presetID and payload
 func (c *Client) UpdateAlert(url string, presetID string, payload ViewPayload) error {
-	_, err := MakeRequestAlert(c, url, "/v1/config/alert/"+presetID, "PUT", payload)
+	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "PUT", payload)
 	return err
 }
 
 // DeleteAlert deletes an alert with the provided presetID
 func (c *Client) DeleteAlert(url, presetID string) error {
-	_, err := MakeRequestAlert(c, url, "/v1/config/alert/"+presetID, "DELETE", ViewPayload{})
+	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "DELETE", ViewPayload{})
 	return err
 }
 

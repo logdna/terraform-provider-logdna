@@ -15,7 +15,7 @@ func TestAlert_expectInvalidURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertInvalidURL(),
-				ExpectError: regexp.MustCompile("Error: Error with alert: Post \"http://api.logdna.co/v1/config/alert\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
+				ExpectError: regexp.MustCompile("Error: Error with alert: Post \"http://api.logdna.co/v1/config/presetalert\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
 			},
 		},
 	})
