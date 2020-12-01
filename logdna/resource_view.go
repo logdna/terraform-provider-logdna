@@ -15,12 +15,12 @@ type Channel struct {
 	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
 	Emails          []string               `json:"emails,omitempty"`
 	Headers         map[string]string      `json:"headers,omitempty"`
-	Immediate       string                 `json:"immediate,omitempty"`
+	Immediate       *bool                  `json:"immediate,omitempty"`
 	Integration     string                 `json:"integration,omitempty"`
 	Key             string                 `json:"key,omitempty"`
 	Method          string                 `json:"method,omitempty"`
 	Operator        string                 `json:"operator,omitempty"`
-	Terminal        string                 `json:"terminal,omitempty"`
+	Terminal        *bool                  `json:"terminal,omitempty"`
 	TriggerInterval string                 `json:"triggerinterval,omitempty"`
 	TriggerLimit    int                    `json:"triggerlimit,omitempty"`
 	Timezone        string                 `json:"timezone,omitempty"`
@@ -33,9 +33,9 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 		i := emailChannel.(map[string]interface{})
 
 		emails := i["emails"].([]interface{})
-		immediate := i["immediate"].(string)
+		immediate := i["immediate"].(bool)
 		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
+		terminal := i["terminal"].(bool)
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 		timezone := i["timezone"].(string)
@@ -48,10 +48,10 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 
 		email := Channel{
 			Emails:          emailStrings,
-			Immediate:       immediate,
+			Immediate:       &immediate,
 			Integration:     "email",
 			Operator:        operator,
-			Terminal:        terminal,
+			Terminal:        &terminal,
 			TriggerInterval: triggerInterval,
 			TriggerLimit:    triggerLimit,
 			Timezone:        timezone,
@@ -63,19 +63,19 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 	for _, pagerDutyChannel := range pagerDutyChannels {
 		i := pagerDutyChannel.(map[string]interface{})
 
-		immediate := i["immediate"].(string)
+		immediate := i["immediate"].(bool)
 		key := i["key"].(string)
 		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
+		terminal := i["terminal"].(bool)
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 
 		pagerDuty := Channel{
-			Immediate:       immediate,
+			Immediate:       &immediate,
 			Integration:     "pagerduty",
 			Key:             key,
 			Operator:        operator,
-			Terminal:        terminal,
+			Terminal:        &terminal,
 			TriggerInterval: triggerInterval,
 			TriggerLimit:    triggerLimit,
 		}
@@ -88,10 +88,10 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 
 		bodytemplate := i["bodytemplate"].(string)
 		headers := i["headers"].(map[string]interface{})
-		immediate := i["immediate"].(string)
+		immediate := i["immediate"].(bool)
 		method := i["method"].(string)
 		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
+		terminal := i["terminal"].(bool)
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 		url := i["url"].(string)
@@ -104,14 +104,14 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 
 		webhook := Channel{
 			Headers:         headersMap,
-			Immediate:       immediate,
+			Immediate:       &immediate,
 			Integration:     "webhook",
 			Operator:        operator,
 			Method:          method,
 			TriggerInterval: triggerInterval,
 			TriggerLimit:    triggerLimit,
 			URL:             url,
-			Terminal:        terminal,
+			Terminal:        &terminal,
 		}
 
 		if bodytemplate != "" {
@@ -297,16 +297,18 @@ func resourceView() *schema.Resource {
 							},
 						},
 						"immediate": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"terminal": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  true,
 						},
 						"timezone": {
 							Type:     schema.TypeString,
@@ -336,8 +338,9 @@ func resourceView() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"immediate": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"key": {
 							Type:     schema.TypeString,
@@ -348,8 +351,9 @@ func resourceView() *schema.Resource {
 							Optional: true,
 						},
 						"terminal": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  true,
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
@@ -386,8 +390,9 @@ func resourceView() *schema.Resource {
 							Optional: true,
 						},
 						"immediate": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"method": {
 							Type:     schema.TypeString,
@@ -398,8 +403,9 @@ func resourceView() *schema.Resource {
 							Optional: true,
 						},
 						"terminal": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  true,
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,

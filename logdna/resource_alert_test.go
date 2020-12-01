@@ -15,11 +15,12 @@ func TestAlert_expectInvalidURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertInvalidURL(),
-				ExpectError: regexp.MustCompile("Error: Error with alert: Post \"http://api.logdna.co/v1/config/alert\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
+				ExpectError: regexp.MustCompile("Error: Error with alert: Post \"http://api.logdna.co/v1/config/presetalert\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
 			},
 		},
 	})
 }
+
 func TestAlert_expectInvalidJSONError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -50,7 +51,7 @@ func TestAlert_expectImmediateError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertConfigImmediateError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].immediate\" must be \[false\]. \"channels\[0]\.immediate\" must be a boolean`),
+				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "immediate": a bool is required`),
 			},
 		},
 	})
@@ -294,7 +295,7 @@ func TestAlertBulkChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.0.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "6"),
-					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.immediate", "true"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.immediate", "false"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.operator", ""),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.terminal", "true"),
@@ -327,18 +328,18 @@ func testAlertConfigMultipleChannelsInvalidJSON() string {
 		name = "test"
 		email_channel {
 		  emails          = ["test@logdna.com"]
-		  immediate       = "false"
+		  immediate       = false
 		  operator        = "absence"
-		  terminal        = "true"
+		  terminal        = true
 		  timezone        = "Pacific/Samoa"
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
 
 		pagerduty_channel {
-		  immediate       = "false"
+		  immediate       = false
 		  key             = "Your PagerDuty API key goes here"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -349,10 +350,10 @@ func testAlertConfigMultipleChannelsInvalidJSON() string {
 			test  = "test2"
 		  }
 		  bodytemplate = "{\"test\": }"
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "post"
 		  url             = "https://yourwebhook/endpoint"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -368,9 +369,9 @@ func testAlertConfigTriggerIntervalError() string {
         name = "test"
         email_channel {
           emails          = ["test@logdna.com"]
-          immediate       = "false"
+          immediate       = false
           operator        = "absence"
-          terminal        = "true"
+          terminal        = true
           timezone        = "Pacific/Samoa"
           triggerinterval = "17m"
           triggerlimit    = 15
@@ -386,9 +387,9 @@ func testAlertConfigInvalidPagerDutyTriggerLimitError() string {
       resource "logdna_alert" "new" {
         name = "test"
 		pagerduty_channel {
-			immediate       = "false"
+			immediate       = false
 			key             = "Your PagerDuty API key goes here"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
@@ -406,7 +407,7 @@ func testAlertConfigImmediateError() string {
           emails          = ["test@logdna.com"]
           immediate       = "no"
           operator        = "absence"
-          terminal        = "true"
+          terminal        = true
           timezone        = "Pacific/Samoa"
           triggerinterval = "15m"
           triggerlimit    = 15
@@ -426,10 +427,10 @@ func testAlertConfigURLError() string {
 			hello = "test3"
 			test  = "test2"
 		  }
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "post"
 		  url             = "this is not a valid url"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -448,10 +449,10 @@ func testAlertConfigMethodError() string {
 			hello = "test3"
 			test  = "test2"
 		  }
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "false"
 		  url             = "http://yourwebhook/test"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -485,11 +486,11 @@ func testAlertConfigEmailTriggerLimitError() string {
 		name = "test"
 		email_channel {
 			emails          = ["test@logdna.com"]
-			immediate       = "false"
+			immediate       = false
 			operator        = "presence"
 			triggerlimit    = 0
 			triggerinterval = "15m"
-			terminal        = "true"
+			terminal        = true
 			timezone        = "Pacific/Samoa"
 		}
 	}`, servicekey)
@@ -503,9 +504,9 @@ func testAlertConfigPagerDutyTriggerLimitError() string {
 	resource "logdna_alert" "new" {
 		name = "test"
 		pagerduty_channel {
-			immediate       = "false"
+			immediate       = false
 			key             = "Your PagerDuty API key goes here"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
@@ -524,10 +525,10 @@ func testAlertConfigWebhookTriggerLimitError() string {
 			  hello = "test3"
 			  test  = "test2"
 			}
-			immediate       = "false"
+			immediate       = false
 			method          = "post"
 			url             = "https://yourwebhook/endpoint"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
@@ -542,9 +543,9 @@ func testAlertConfigMissingEmails() string {
 	resource "logdna_alert" "new" {
 		name     = "test"
 		email_channel {
-			immediate       = "false"
+			immediate       = false
 			operator        = "absence"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 15
 			timezone        = "Pacific/Samoa"
@@ -560,8 +561,8 @@ func testAlertConfigMissingKey() string {
 	resource "logdna_alert" "new" {
 		name     = "test"
 		pagerduty_channel {
-			immediate       = "false"
-			terminal        = "true"
+			immediate       = false
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}
@@ -603,11 +604,11 @@ func testAlertConfigBasic(name string) string {
 		name = "%s"
 		email_channel {
 			emails          = ["test@logdna.com"]
-			immediate       = "false"
+			immediate       = false
 			operator        = "presence"
 			triggerlimit    = 15
 			triggerinterval = "15m"
-			terminal        = "true"
+			terminal        = true
 			timezone        = "Pacific/Samoa"
 		}
 	}`, servicekey, name)
@@ -622,17 +623,13 @@ func testAlertConfigBulkChannels(name string) string {
 		name = "%s"
 		email_channel {
 			emails          = ["test@logdna.com"]
-			immediate       = "false"
 			operator        = "absence"
-			terminal        = "true"
 			timezone        = "Pacific/Samoa"
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}
 		pagerduty_channel {
-			immediate       = "true"
 			key             = "Your PagerDuty API key goes here"
-			terminal        = "true"
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}

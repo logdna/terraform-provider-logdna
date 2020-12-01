@@ -73,7 +73,6 @@ func resourceAlert() *schema.Resource {
 		ReadContext:   resourceAlertRead,
 		UpdateContext: resourceAlertUpdate,
 		DeleteContext: resourceAlertDelete,
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -92,16 +91,18 @@ func resourceAlert() *schema.Resource {
 							},
 						},
 						"immediate": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"terminal": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
 						},
 						"timezone": {
 							Type:     schema.TypeString,
@@ -131,8 +132,9 @@ func resourceAlert() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"immediate": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"key": {
 							Type:     schema.TypeString,
@@ -143,8 +145,9 @@ func resourceAlert() *schema.Resource {
 							Optional: true,
 						},
 						"terminal": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  true,
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
@@ -181,8 +184,9 @@ func resourceAlert() *schema.Resource {
 							Optional: true,
 						},
 						"immediate": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"method": {
 							Type:     schema.TypeString,
@@ -193,8 +197,9 @@ func resourceAlert() *schema.Resource {
 							Optional: true,
 						},
 						"terminal": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  true,
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,

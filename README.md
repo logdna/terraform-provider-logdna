@@ -32,9 +32,9 @@ resource "logdna_alert" "my_alert" {
   }
 
   pagerduty_channel {
-    immediate       = "false"
+    immediate       = false
     key             = "Your PagerDuty API key goes here"
-    terminal        = "true"
+    terminal        = true
     triggerinterval = "15m"
     triggerlimit    = 15
   }
@@ -58,18 +58,18 @@ resource "logdna_view" "my_view" {
 
   email_channel {
     emails          = ["test@logdna.com"]
-    immediate       = "false"
+    immediate       = false
     operator        = "absence"
-    terminal        = "true"
+    terminal        = true
     timezone        = "Pacific/Samoa"
     triggerinterval = "15m"
     triggerlimit    = 15
   }
 
   pagerduty_channel {
-    immediate       = "false"
+    immediate       = false
     key             = "Your PagerDuty API key goes here"
-    terminal        = "true"
+    terminal        = true
     triggerinterval = "15m"
     triggerlimit    = 15
   }
@@ -83,9 +83,9 @@ resource "logdna_view" "my_view" {
       hello = "test3"
       test  = "test2"
     }
-    immediate       = "false"
+    immediate       = false
     method          = "post"
-    terminal        = "true"
+    terminal        = true
     triggerinterval = "15m"
     triggerlimit    = 15
     url             = "https://yourwebhook/endpoint"

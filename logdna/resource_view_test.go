@@ -51,7 +51,7 @@ func TestView_expectImmediateError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewConfigImmediateError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].immediate\" must be \[false\]. \"channels\[0]\.immediate\" must be a boolean`),
+				ExpectError: regexp.MustCompile(`Inappropriate value for attribute "immediate": a bool is required`),
 			},
 		},
 	})
@@ -401,8 +401,6 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 	levels4 := "warning"
 	host3 := "host3"
 	host4 := "host4"
-	category3 := "DEMO3"
-	category4 := "DEMO4"
 	tags3 := "tags3"
 	tags4 := "tags4"
 
@@ -454,7 +452,7 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testViewConfigBulkEmails(name2, query2, app3, app4, levels3, levels4, host3, host4, category3, category4, tags3, tags4),
+				Config: testViewConfigBulkEmails(name2, query2, app3, app4, levels3, levels4, host3, host4, category, category2, tags3, tags4),
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name2),
@@ -463,9 +461,8 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app3),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app4),
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category3),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category4),
-					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2), resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.0", "test@logdna.com"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.immediate", "false"),
@@ -508,10 +505,10 @@ func TestViewMultipleChannels(t *testing.T) {
 	app2 := "app2"
 	levels1 := "fatal"
 	levels2 := "critical"
-	host1 := "host1"
-	host2 := "host2"
 	category1 := "DEMO"
 	category2 := "DEMO2"
+	host1 := "host1"
+	host2 := "host2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -601,17 +598,17 @@ func testViewConfigMultipleChannelsInvalidJSON() string {
 		query = "test"
 		email_channel {
 		  emails          = ["test@logdna.com"]
-		  immediate       = "false"
+		  immediate       = false
 		  operator        = "absence"
-		  terminal        = "true"
+		  terminal        = true
 		  timezone        = "Pacific/Samoa"
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
 		pagerduty_channel {
-		  immediate       = "false"
+		  immediate       = false
 		  key             = "Your PagerDuty API key goes here"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -621,10 +618,10 @@ func testViewConfigMultipleChannelsInvalidJSON() string {
 			test  = "test2"
 		  }
 		  bodytemplate = "{\"test\": }"
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "post"
 		  url             = "https://yourwebhook/endpoint"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -641,9 +638,9 @@ func testViewConfigTriggerIntervalError() string {
         query = "test"
         email_channel {
           emails          = ["test@logdna.com"]
-          immediate       = "false"
+          immediate       = false
           operator        = "absence"
-          terminal        = "true"
+          terminal        = true
           timezone        = "Pacific/Samoa"
           triggerinterval = "17m"
           triggerlimit    = 15
@@ -663,7 +660,7 @@ func testViewConfigImmediateError() string {
           emails          = ["test@logdna.com"]
           immediate       = "no"
           operator        = "absence"
-          terminal        = "true"
+          terminal        = true
           timezone        = "Pacific/Samoa"
           triggerinterval = "15m"
           triggerlimit    = 15
@@ -684,10 +681,10 @@ func testViewConfigURLError() string {
 			hello = "test3"
 			test  = "test2"
 		  }
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "post"
 		  url             = "this is not a valid url"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -707,10 +704,10 @@ func testViewConfigMethodError() string {
 			hello = "test3"
 			test  = "test2"
 		  }
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "false"
 		  url             = "http://yourwebhook/test"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -807,9 +804,9 @@ func testViewConfigEmailTriggerLimitError() string {
 		query    = "test"
 		email_channel {
 			emails          = ["test@logdna.com"]
-			immediate       = "false"
+			immediate       = false
 			operator        = "absence"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 0
 			timezone        = "Pacific/Samoa"
@@ -826,9 +823,9 @@ func testViewConfigPagerDutyTriggerLimitError() string {
 		name     = "test"
 		query    = "test"
 		pagerduty_channel {
-			immediate       = "false"
+			immediate       = false
 			key             = "Your PagerDuty API key goes here"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
@@ -848,10 +845,10 @@ func testViewConfigWebhookTriggerLimitError() string {
 			  hello = "test3"
 			  test  = "test2"
 			}
-			immediate       = "false"
+			immediate       = false
 			method          = "post"
 			url             = "https://yourwebhook/endpoint"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
@@ -867,9 +864,9 @@ func testViewConfigMissingEmails() string {
 		name     = "test"
 		query    = "test"
 		email_channel {
-			immediate       = "false"
+			immediate       = false
 			operator        = "absence"
-			terminal        = "true"
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 15
 			timezone        = "Pacific/Samoa"
@@ -886,8 +883,8 @@ func testViewConfigMissingKey() string {
 		name     = "test"
 		query    = "test"
 		pagerduty_channel {
-			immediate       = "false"
-			terminal        = "true"
+			immediate       = false
+			terminal        = true
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}
@@ -938,33 +935,29 @@ func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, 
 		servicekey = "%s"
 	}
 
-  resource "logdna_view" "new" {
-	name     = "%s"
-	query    = "%s"
-	apps     = ["%s", "%s"]
-	levels   = ["%s", "%s"]
-	hosts    = ["%s", "%s"]
-	categories = ["%s", "%s"]
-	tags     = ["%s", "%s"]
-	email_channel {
-	  emails          = ["test@logdna.com"]
-	  immediate       = "false"
-	  operator        = "absence"
-	  terminal        = "true"
-	  triggerinterval = "15m"
-	  triggerlimit    = 15
-	  timezone        = "Pacific/Samoa"
-	}
-	email_channel {
-	  emails          = ["test@logdna.com"]
-	  immediate       = "false"
-	  operator        = "absence"
-	  terminal        = "true"
-	  timezone        = "Pacific/Samoa"
-	  triggerlimit    = 15
-	  triggerinterval = "15m"
-	}
-  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
+	resource "logdna_view" "new" {
+		name     = "%s"
+		query    = "%s"
+		apps     = ["%s", "%s"]
+		levels   = ["%s", "%s"]
+		hosts    = ["%s", "%s"]
+		categories = ["%s", "%s"]
+		tags     = ["%s", "%s"]
+		email_channel {
+			emails          = ["test@logdna.com"]
+			operator        = "absence"
+			triggerinterval = "15m"
+			triggerlimit    = 15
+			timezone        = "Pacific/Samoa"
+		}
+		email_channel {
+			emails          = ["test@logdna.com"]
+			operator        = "absence"
+			timezone        = "Pacific/Samoa"
+			triggerlimit    = 15
+			triggerinterval = "15m"
+		}
+	}`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
 }
 
 func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2 string) string {
@@ -990,9 +983,9 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 		  triggerlimit    = 15
 		}
 		pagerduty_channel {
-		  immediate       = "false"
+		  immediate       = false
 		  key             = "Your PagerDuty API key goes here"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
@@ -1013,14 +1006,14 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 				summary = "Alert From {{ name }}"
 		   }
 		  })
-		  immediate       = "false"
+		  immediate       = false
 		  method          = "post"
 		  url             = "https://yourwebhook/endpoint"
-		  terminal        = "true"
+		  terminal        = true
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
+	}`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
 }
 
 func testViewExists(n string) resource.TestCheckFunc {
