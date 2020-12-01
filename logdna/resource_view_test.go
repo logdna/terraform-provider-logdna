@@ -401,8 +401,6 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 	levels4 := "warning"
 	host3 := "host3"
 	host4 := "host4"
-	category3 := "DEMO3"
-	category4 := "DEMO4"
 	tags3 := "tags3"
 	tags4 := "tags4"
 
@@ -454,7 +452,7 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testViewConfigBulkEmails(name2, query2, app3, app4, levels3, levels4, host3, host4, category3, category4, tags3, tags4),
+				Config: testViewConfigBulkEmails(name2, query2, app3, app4, levels3, levels4, host3, host4, category, category2, tags3, tags4),
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name2),
@@ -463,8 +461,8 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app3),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app4),
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category3),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category4),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.0", "test@logdna.com"),
