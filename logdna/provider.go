@@ -39,5 +39,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	servicekey := d.Get("servicekey").(string)
 	url := d.Get("url").(string)
 
-	return &config{ServiceKey: servicekey, URL: url, HTTPClient: &http.Client{Timeout: 15 * time.Second}}, nil
+	return &config{
+		ServiceKey: servicekey,
+		URL: url,
+		HTTPClient: &http.Client{Timeout: 15 * time.Second},
+	}, nil
 }
