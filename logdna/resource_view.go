@@ -5,27 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Channel contains optional and required fields for creating an alert with LogDNA
-type Channel struct {
-	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
-	Emails          []string               `json:"emails,omitempty"`
-	Headers         map[string]string      `json:"headers,omitempty"`
-	Immediate       string                 `json:"immediate,omitempty"`
-	Integration     string                 `json:"integration,omitempty"`
-	Key             string                 `json:"key,omitempty"`
-	Method          string                 `json:"method,omitempty"`
-	Operator        string                 `json:"operator,omitempty"`
-	Terminal        string                 `json:"terminal,omitempty"`
-	TriggerInterval string                 `json:"triggerinterval,omitempty"`
-	TriggerLimit    int                    `json:"triggerlimit,omitempty"`
-	Timezone        string                 `json:"timezone,omitempty"`
-	URL             string                 `json:"url,omitempty"`
-}
+const (
+	EMAIL = "email"
+	PAGERDUTY = "pagerduty"
+	WEBHOOK = "webhook"
+)
 
 func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]Channel, error) {
 	var channels []Channel
@@ -49,7 +39,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 		email := Channel{
 			Emails:          emailStrings,
 			Immediate:       immediate,
-			Integration:     "email",
+			Integration:     EMAIL,
 			Operator:        operator,
 			Terminal:        terminal,
 			TriggerInterval: triggerInterval,
@@ -105,7 +95,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 		webhook := Channel{
 			Headers:         headersMap,
 			Immediate:       immediate,
-			Integration:     "webhook",
+			Integration:     WEBHOOK,
 			Operator:        operator,
 			Method:          method,
 			TriggerInterval: triggerInterval,
@@ -130,7 +120,6 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 
 func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
 	categories := d.Get("categories").([]interface{})
@@ -168,23 +157,113 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		tagStrings = append(tagStrings, tag.(string))
 	}
 
-	payload := ViewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	resp, err := client.CreateView(config.URL, payload)
+	client := Client{
+		ServiceKey: config.ServiceKey,
+		HTTPClient: config.HTTPClient,
+		ApiUrl: fmt.Sprintf("%s/v1/config/view", config.URL),
+		Method: "POST",
+		Payload: ViewPayload{
+			Name: name,
+			Query: query,
+			Apps: appStrings,
+			Levels: levelStrings,
+			Hosts: hostStrings,
+			Category: categoryStrings,
+			Tags: tagStrings,
+			Channels: channels,
+		},
+	}
+
+	body, err := client.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", client.Method, client.ApiUrl, body)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(resp)
+
+	createdView := ViewResponsePayload{}
+	err = json.Unmarshal(body, &createdView)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("[DEBUG] After POST view, the created view is %+v", createdView)
+
+	d.SetId(createdView.ViewID)
 	return nil
 }
 
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+	config := m.(*config)
+	viewID := d.Id()
+
+	c := Client{
+		ServiceKey: config.ServiceKey,
+		HTTPClient: config.HTTPClient,
+		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
+		Method: "GET",
+	}
+
+	body, err := c.MakeRequest()
+
+	log.Printf("[DEBUG] %s %s response body %s", c.Method, c.ApiUrl, body)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	view := ViewResponsePayload{}
+	err = json.Unmarshal(body, &view)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("[DEBUG] After %s, the view structure is %+v", c.Method, view)
+
+	// Top level keys can be set directly
+	if err = d.Set("name", view.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("query", view.Query); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("categories", view.Category); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("hosts", view.Hosts); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("tags", view.Tags); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("apps", view.Apps); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = d.Set("levels", view.Levels); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Convert types to maps for setting the schema
+	integrations, diags := view.MapChannelsToSchema()
+	log.Printf("[DEBUG] Parsed integrations are %+v", integrations)
+	if emailChannels := integrations[EMAIL]; emailChannels != nil {
+		if err = d.Set("email_channel", emailChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if pagerdutyChannels := integrations[PAGERDUTY]; pagerdutyChannels != nil {
+		if err = d.Set("pagerduty_channel", pagerdutyChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if webhookChannels := integrations[WEBHOOK]; webhookChannels != nil {
+		if err = d.Set("webhook_channel", webhookChannels); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return diags
 }
 
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	viewID := d.Id()
 	name := d.Get("name").(string)
 	query := d.Get("query").(string)
@@ -223,8 +302,26 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		tagStrings = append(tagStrings, tag.(string))
 	}
 
-	payload := ViewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	err = client.UpdateView(config.URL, viewID, payload)
+	client := Client{
+		ServiceKey: config.ServiceKey,
+		HTTPClient: config.HTTPClient,
+		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
+		Method: "PUT",
+		Payload: ViewPayload{
+			Name: name,
+			Query: query,
+			Apps: appStrings,
+			Levels: levelStrings,
+			Hosts: hostStrings,
+			Category: categoryStrings,
+			Tags: tagStrings,
+			Channels: channels,
+		},
+	}
+
+	body, err := client.MakeRequest()
+	log.Printf("[DEBUG] %s %s result: %s", client.Method, client.ApiUrl, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,9 +330,18 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	viewID := d.Id()
-	err := client.DeleteView(config.URL, viewID)
+
+	client := Client{
+		ServiceKey: config.ServiceKey,
+		HTTPClient: config.HTTPClient,
+		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
+		Method: "DELETE",
+	}
+
+	body, err := client.MakeRequest()
+	log.Printf("[DEBUG] %s %s view %s", client.Method, client.ApiUrl, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
