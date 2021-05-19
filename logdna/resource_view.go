@@ -17,8 +17,8 @@ const (
 	WEBHOOK = "webhook"
 )
 
-func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]Channel, error) {
-	var channels []Channel
+func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]ChannelRequest, error) {
+	var channels []ChannelRequest
 	for _, emailChannel := range emailChannels {
 		i := emailChannel.(map[string]interface{})
 
@@ -36,7 +36,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			emailStrings = append(emailStrings, email.(string))
 		}
 
-		email := Channel{
+		email := ChannelRequest{
 			Emails:          emailStrings,
 			Immediate:       immediate,
 			Integration:     EMAIL,
@@ -60,7 +60,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 
-		pagerDuty := Channel{
+		pagerDuty := ChannelRequest{
 			Immediate:       immediate,
 			Integration:     "pagerduty",
 			Key:             key,
@@ -92,7 +92,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			headersMap[k] = v.(string)
 		}
 
-		webhook := Channel{
+		webhook := ChannelRequest{
 			Headers:         headersMap,
 			Immediate:       immediate,
 			Integration:     WEBHOOK,
@@ -162,7 +162,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		HTTPClient: config.HTTPClient,
 		ApiUrl: fmt.Sprintf("%s/v1/config/view", config.URL),
 		Method: "POST",
-		Payload: ViewPayload{
+		Body: ViewRequest{
 			Name: name,
 			Query: query,
 			Apps: appStrings,
@@ -181,7 +181,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
-	createdView := ViewResponsePayload{}
+	createdView := ViewResponse{}
 	err = json.Unmarshal(body, &createdView)
 	if err != nil {
 		return diag.FromErr(err)
@@ -210,7 +210,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
-	view := ViewResponsePayload{}
+	view := ViewResponse{}
 	err = json.Unmarshal(body, &view)
 	if err != nil {
 		return diag.FromErr(err)
@@ -307,7 +307,7 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		HTTPClient: config.HTTPClient,
 		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
 		Method: "PUT",
-		Payload: ViewPayload{
+		Body: ViewRequest{
 			Name: name,
 			Query: query,
 			Apps: appStrings,
