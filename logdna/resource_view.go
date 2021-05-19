@@ -193,6 +193,8 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	config := m.(*config)
 	viewID := d.Id()
 
@@ -205,60 +207,61 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	body, err := c.MakeRequest()
 
-	log.Printf("[DEBUG] %s %s response body %s", c.Method, c.ApiUrl, body)
+	log.Printf("[DEBUG] GET view raw response body %s\n", body)
 	if err != nil {
-		return diag.FromErr(err)
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary: "Cannot read the remote view resource",
+			Detail: err.Error(),
+		})
+		return diags
 	}
 
 	view := ViewResponse{}
 	err = json.Unmarshal(body, &view)
 	if err != nil {
-		return diag.FromErr(err)
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary: "Cannot unmarshal response from the remote view resource",
+			Detail: err.Error(),
+		})
+		return diags
 	}
-	log.Printf("[DEBUG] After %s, the view structure is %+v", c.Method, view)
+	log.Printf("[DEBUG] The GET view structure is as follows: %+v\n", view)
 
 	// Top level keys can be set directly
-	if err = d.Set("name", view.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("query", view.Query); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("categories", view.Category); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("hosts", view.Hosts); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("tags", view.Tags); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("apps", view.Apps); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("levels", view.Levels); err != nil {
-		return diag.FromErr(err)
-	}
+	appendError(d.Set("name", view.Name), &diags)
+	appendError(d.Set("query", view.Query), &diags)
+	appendError(d.Set("categories", view.Category), &diags)
+	appendError(d.Set("hosts", view.Hosts), &diags)
+	appendError(d.Set("tags", view.Tags), &diags)
+	appendError(d.Set("apps", view.Apps), &diags)
+	appendError(d.Set("levels", view.Levels), &diags)
 
 	// Convert types to maps for setting the schema
 	integrations, diags := view.MapChannelsToSchema()
-	log.Printf("[DEBUG] Parsed integrations are %+v", integrations)
+	log.Printf("[DEBUG] MapChannelsToSchema result: %+v\n", integrations)
 	if emailChannels := integrations[EMAIL]; emailChannels != nil {
-		if err = d.Set("email_channel", emailChannels); err != nil {
-			return diag.FromErr(err)
-		}
+		appendError(d.Set("email_channel", emailChannels), &diags)
 	}
 	if pagerdutyChannels := integrations[PAGERDUTY]; pagerdutyChannels != nil {
-		if err = d.Set("pagerduty_channel", pagerdutyChannels); err != nil {
-			return diag.FromErr(err)
-		}
+		appendError(d.Set("pagerduty_channel", pagerdutyChannels), &diags)
 	}
 	if webhookChannels := integrations[WEBHOOK]; webhookChannels != nil {
-		if err = d.Set("webhook_channel", webhookChannels); err != nil {
-			return diag.FromErr(err)
-		}
+		appendError(d.Set("webhook_channel", webhookChannels), &diags)
 	}
 
+	return diags
+}
+
+func appendError(err error, diags *diag.Diagnostics) *diag.Diagnostics {
+	if err != nil {
+		*diags = append(*diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary: "There was a problem setting the view schema",
+			Detail: err.Error(),
+		})
+	}
 	return diags
 }
 
