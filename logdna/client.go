@@ -15,50 +15,7 @@ type Client struct {
 	HTTPClient *http.Client
 	ApiUrl string
 	Method string
-	Payload interface{}
-}
-
-// ViewPayload contains view data (such as apps and categories) and is forwarded to the config-api
-type ViewPayload struct {
-	Apps     []string  `json:"apps,omitempty"`
-	Category []string  `json:"category,omitempty"`
-	Channels []Channel `json:"channels,omitempty"`
-	Hosts    []string  `json:"hosts,omitempty"`
-	Levels   []string  `json:"levels,omitempty"`
-	Name     string    `json:"name,omitempty"`
-	Query    string    `json:"query,omitempty"`
-	Tags     []string  `json:"tags,omitempty"`
-}
-
-// Channel contains optional and required fields for creating an alert with LogDNA
-type Channel struct {
-	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
-	Emails          []string               `json:"emails,omitempty"`
-	Headers         map[string]string      `json:"headers,omitempty"`
-	Immediate       string                 `json:"immediate,omitempty"`
-	Integration     string                 `json:"integration,omitempty"`
-	Key             string                 `json:"key,omitempty"`
-	Method          string                 `json:"method,omitempty"`
-	Operator        string                 `json:"operator,omitempty"`
-	Terminal        string                 `json:"terminal,omitempty"`
-	TriggerInterval string                 `json:"triggerinterval,omitempty"`
-	TriggerLimit    int                    `json:"triggerlimit,omitempty"`
-	Timezone        string                 `json:"timezone,omitempty"`
-	URL             string                 `json:"url,omitempty"`
-}
-
-// ViewResponsePayload contains view data returned from the config-api
-type ViewResponsePayload struct {
-	Apps     []string          `json:"apps,omitempty"`
-	Category []string          `json:"category,omitempty"`
-	Channels []ChannelResponse `json:"channels,omitempty"`
-	Error    string            `json:"error,omitempty"`
-	Hosts    []string          `json:"hosts,omitempty"`
-	Levels   []string          `json:"levels,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Query    string            `json:"query,omitempty"`
-	Tags     []string          `json:"tags,omitempty"`
-	ViewID   string            `json:"viewID,omitempty"`
+	Body interface{}
 }
 
 // AlertResponsePayload contains alert data returned from the config-api
@@ -69,30 +26,10 @@ type AlertResponsePayload struct {
 	PresetID string            `json:"presetid,omitempty"`
 }
 
-// ChannelResponse contains channel data returned from the config-api
-// NOTE - Properties with `interface` are due to the APIs returning
-// some things as strings (PUT/emails) and other times arrays (GET/emails)
-type ChannelResponse struct {
-	AlertID         string            `json:"alertid,omitempty"`
-	BodyTemplate    string            `json:"bodyTemplate,omitempty"`
-	Emails          interface{}       `json:"emails,omitempty"`
-	Headers         map[string]string `json:"headers,omitempty"`
-	Immediate       bool              `json:"immediate"`
-	Integration     string            `json:"integration,omitempty"`
-	Key             string            `json:"key,omitempty"`
-	Method          string            `json:"method,omitempty"`
-	Operator        string            `json:"operator,omitempty"`
-	Terminal        bool              `json:"terminal,omitempty"`
-	TriggerInterval interface{}       `json:"triggerinterval,omitempty"`
-	TriggerLimit    int               `json:"triggerlimit,omitempty"`
-	Timezone        string            `json:"timezone,omitempty"`
-	URL             string            `json:"url,omitempty"`
-}
-
 func (c *Client) MakeRequest() ([]byte, error) {
 	payloadBuf := bytes.NewBuffer([]byte{})
-	if c.Payload != nil {
-		pbytes, err := json.Marshal(c.Payload)
+	if c.Body != nil {
+		pbytes, err := json.Marshal(c.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +57,7 @@ func (c *Client) MakeRequest() ([]byte, error) {
 }
 
 // MakeRequestAlert makes a HTTP request to the config-api with alert payload data and parses and returns the response
-func MakeRequestAlert(c *Client, url string, urlsuffix string, method string, payload ViewPayload) (string, error) {
+func MakeRequestAlert(c *Client, url string, urlsuffix string, method string, payload ViewRequest) (string, error) {
 	pbytes, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
@@ -150,19 +87,19 @@ func MakeRequestAlert(c *Client, url string, urlsuffix string, method string, pa
 }
 
 // CreateAlert creates a Preset Alert with the provided payload
-func (c *Client) CreateAlert(url string, payload ViewPayload) (string, error) {
+func (c *Client) CreateAlert(url string, payload ViewRequest) (string, error) {
 	result, err := MakeRequestAlert(c, url, "/v1/config/presetalert", "POST", payload)
 	return result, err
 }
 
 // UpdateAlert updates a Preset Alert with the provided presetID and payload
-func (c *Client) UpdateAlert(url string, presetID string, payload ViewPayload) error {
+func (c *Client) UpdateAlert(url string, presetID string, payload ViewRequest) error {
 	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "PUT", payload)
 	return err
 }
 
 // DeleteAlert deletes an alert with the provided presetID
 func (c *Client) DeleteAlert(url, presetID string) error {
-	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "DELETE", ViewPayload{})
+	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "DELETE", ViewRequest{})
 	return err
 }
