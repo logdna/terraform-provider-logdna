@@ -41,7 +41,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	return &config{
 		ServiceKey: servicekey,
-		URL: url,
+		URL:        url,
 		HTTPClient: &http.Client{Timeout: 15 * time.Second},
 	}, nil
 }

@@ -5,17 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 )
 
 // Client used to make HTTP requests to the configuration api
 type Client struct {
 	ServiceKey string
 	HTTPClient *http.Client
-	ApiUrl string
-	Method string
-	Body interface{}
+	ApiUrl     string
+	Method     string
+	Body       interface{}
 }
 
 // AlertResponsePayload contains alert data returned from the config-api
@@ -46,11 +46,14 @@ func (c *Client) MakeRequest() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error during HTTP request: %s, %+v", err, c)
 	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s %s, status NOT OK: %d", c.Method, c.ApiUrl, res.StatusCode)
+	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s %s, status: %d, body: %s", c.Method, c.ApiUrl, res.StatusCode, body)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing HTTP response: %s, %+v", err, c)
 	}
 
 	return body, err

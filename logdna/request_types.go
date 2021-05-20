@@ -7,19 +7,19 @@ package logdna
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type ViewRequest struct {
-	Apps     []string  `json:"apps,omitempty"`
-	Category []string  `json:"category,omitempty"`
+	Apps     []string         `json:"apps,omitempty"`
+	Category []string         `json:"category,omitempty"`
 	Channels []ChannelRequest `json:"channels,omitempty"`
-	Hosts    []string  `json:"hosts,omitempty"`
-	Levels   []string  `json:"levels,omitempty"`
-	Name     string    `json:"name,omitempty"`
-	Query    string    `json:"query,omitempty"`
-	Tags     []string  `json:"tags,omitempty"`
+	Hosts    []string         `json:"hosts,omitempty"`
+	Levels   []string         `json:"levels,omitempty"`
+	Name     string           `json:"name,omitempty"`
+	Query    string           `json:"query,omitempty"`
+	Tags     []string         `json:"tags,omitempty"`
 }
 
 type ChannelRequest struct {
@@ -71,7 +71,7 @@ func (view *ViewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 			d.Get("email_channel").([]interface{}),
 			EMAIL,
 			&diags,
-		)...
+		)...,
 	)
 
 	view.Channels = append(
@@ -80,7 +80,7 @@ func (view *ViewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 			d.Get("pagerduty_channel").([]interface{}),
 			PAGERDUTY,
 			&diags,
-		)...
+		)...,
 	)
 
 	view.Channels = append(
@@ -89,7 +89,7 @@ func (view *ViewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 			d.Get("webhook_channel").([]interface{}),
 			WEBHOOK,
 			&diags,
-		)...
+		)...,
 	)
 	return diags
 }
@@ -107,16 +107,16 @@ func mapChannelsFromSchema(listEntries []interface{}, integration string, diags 
 		switch integration {
 		case EMAIL:
 			prepared = emailChannelRequest(e)
-    case PAGERDUTY:
-      prepared = pagerDutyChannelRequest(e)
-    case WEBHOOK:
-      prepared = webHookChannelRequest(e)
+		case PAGERDUTY:
+			prepared = pagerDutyChannelRequest(e)
+		case WEBHOOK:
+			prepared = webHookChannelRequest(e)
 		default:
-      *diags = append(*diags, diag.Diagnostic{
-        Severity: diag.Error,
-        Summary: "Cannot format integration channel for outbound request",
-        Detail: fmt.Sprintf("Unrecognized integration: %s", integration),
-      })
+			*diags = append(*diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Cannot format integration channel for outbound request",
+				Detail:   fmt.Sprintf("Unrecognized integration: %s", integration),
+			})
 		}
 		if prepared == nil {
 			continue
