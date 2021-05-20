@@ -5,8 +5,8 @@ package logdna
 // returned by the GET. In a perfect world, they would use the same types.
 
 import (
-	"strconv"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
@@ -48,9 +48,9 @@ func (view *ViewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.
 	// This function iterations through the channels types and prepares the values
 	// to be set on the schema in the correct keys
 	var prepared interface{}
-  var diags diag.Diagnostics
+	var diags diag.Diagnostics
 
-  channels := view.Channels
+	channels := view.Channels
 	channelIntegrations := make(map[string][]interface{})
 
 	if channels == nil {
@@ -62,16 +62,16 @@ func (view *ViewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.
 		switch integration {
 		case EMAIL:
 			prepared = mapChannelEmail(&c)
-    case PAGERDUTY:
-      prepared = mapChannelPagerDuty(&c)
-    case WEBHOOK:
-      prepared = mapChannelWebhook(&c)
+		case PAGERDUTY:
+			prepared = mapChannelPagerDuty(&c)
+		case WEBHOOK:
+			prepared = mapChannelWebhook(&c)
 		default:
-      diags = append(diags, diag.Diagnostic{
-        Severity: diag.Warning,
-        Summary: fmt.Sprintf("The remote view resource contains an unsupported integration: %s", integration),
-        Detail: fmt.Sprintf("%s integration ignored since it does not map to the schema", integration),
-      })
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("The remote view resource contains an unsupported integration: %s", integration),
+				Detail:   fmt.Sprintf("%s integration ignored since it does not map to the schema", integration),
+			})
 		}
 		if prepared == nil {
 			continue
@@ -103,7 +103,7 @@ func mapChannelPagerDuty(channel *ChannelResponse) map[string]interface{} {
 	c := make(map[string]interface{})
 
 	c["immediate"] = strconv.FormatBool(channel.Immediate)
-  c["key"] = channel.Key
+	c["key"] = channel.Key
 	c["operator"] = channel.Operator
 	c["terminal"] = strconv.FormatBool(channel.Terminal)
 	c["triggerlimit"] = channel.TriggerLimit
@@ -115,9 +115,9 @@ func mapChannelWebhook(channel *ChannelResponse) map[string]interface{} {
 	c := make(map[string]interface{})
 
 	c["bodytemplate"] = channel.BodyTemplate
-  c["headers"] = channel.Headers
+	c["headers"] = channel.Headers
 	c["immediate"] = strconv.FormatBool(channel.Immediate)
-  c["method"] = channel.Method
+	c["method"] = channel.Method
 	c["operator"] = channel.Operator
 	c["terminal"] = strconv.FormatBool(channel.Terminal)
 	c["triggerlimit"] = channel.TriggerLimit

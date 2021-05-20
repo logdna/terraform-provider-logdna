@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	EMAIL = "email"
+	EMAIL     = "email"
 	PAGERDUTY = "pagerduty"
-	WEBHOOK = "webhook"
+	WEBHOOK   = "webhook"
 )
 
 func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]ChannelRequest, error) {
@@ -130,9 +130,9 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	client := Client{
 		ServiceKey: config.ServiceKey,
 		HTTPClient: config.HTTPClient,
-		ApiUrl: fmt.Sprintf("%s/v1/config/view", config.URL),
-		Method: "POST",
-		Body: view,
+		ApiUrl:     fmt.Sprintf("%s/v1/config/view", config.URL),
+		Method:     "POST",
+		Body:       view,
 	}
 
 	body, err := client.MakeRequest()
@@ -162,8 +162,8 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	c := Client{
 		ServiceKey: config.ServiceKey,
 		HTTPClient: config.HTTPClient,
-		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
-		Method: "GET",
+		ApiUrl:     fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
+		Method:     "GET",
 	}
 
 	body, err := c.MakeRequest()
@@ -172,8 +172,8 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary: "Cannot read the remote view resource",
-			Detail: err.Error(),
+			Summary:  "Cannot read the remote view resource",
+			Detail:   err.Error(),
 		})
 		return diags
 	}
@@ -183,8 +183,8 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary: "Cannot unmarshal response from the remote view resource",
-			Detail: err.Error(),
+			Summary:  "Cannot unmarshal response from the remote view resource",
+			Detail:   err.Error(),
 		})
 		return diags
 	}
@@ -219,17 +219,17 @@ func appendError(err error, diags *diag.Diagnostics) *diag.Diagnostics {
 	if err != nil {
 		*diags = append(*diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary: "There was a problem setting the view schema",
-			Detail: err.Error(),
+			Summary:  "There was a problem setting the view schema",
+			Detail:   err.Error(),
 		})
 	}
 	return diags
 }
 
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-  var diags diag.Diagnostics
+	var diags diag.Diagnostics
 	config := m.(*config)
-  viewId := d.Id()
+	viewId := d.Id()
 	view := ViewRequest{}
 
 	if diags = view.CreateRequestBody(d); diags.HasError() {
@@ -239,9 +239,9 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	client := Client{
 		ServiceKey: config.ServiceKey,
 		HTTPClient: config.HTTPClient,
-		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewId),
-		Method: "PUT",
-		Body: view,
+		ApiUrl:     fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewId),
+		Method:     "PUT",
+		Body:       view,
 	}
 
 	body, err := client.MakeRequest()
@@ -263,8 +263,8 @@ func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface
 	client := Client{
 		ServiceKey: config.ServiceKey,
 		HTTPClient: config.HTTPClient,
-		ApiUrl: fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
-		Method: "DELETE",
+		ApiUrl:     fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
+		Method:     "DELETE",
 	}
 
 	body, err := client.MakeRequest()
@@ -333,7 +333,7 @@ func resourceView() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default: "false",
+							Default:  "false",
 						},
 						"operator": {
 							Type:     schema.TypeString,
@@ -342,7 +342,7 @@ func resourceView() *schema.Resource {
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default: "false",
+							Default:  "false",
 						},
 						"timezone": {
 							Type:     schema.TypeString,
@@ -374,7 +374,7 @@ func resourceView() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default: "false",
+							Default:  "false",
 						},
 						"key": {
 							Type:     schema.TypeString,
@@ -387,7 +387,7 @@ func resourceView() *schema.Resource {
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default: "false",
+							Default:  "false",
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
@@ -426,7 +426,7 @@ func resourceView() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default: "false",
+							Default:  "false",
 						},
 						"method": {
 							Type:     schema.TypeString,
@@ -439,7 +439,7 @@ func resourceView() *schema.Resource {
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Default: "false",
+							Default:  "false",
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
