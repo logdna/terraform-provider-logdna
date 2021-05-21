@@ -19,18 +19,18 @@ const SERVICE_KEY = "abc123"
 
 type badClient struct{}
 func (fc *badClient) Do(*http.Request) (*http.Response, error) {
-	return nil, errors.New("FAKE ERROR calling HTTPClient.Do")
+	return nil, errors.New("FAKE ERROR calling httpClient.Do")
 }
 
-func setHttpRequest(customReq HttpRequest) func(*requestConfig) {
+func setHttpRequest(customReq HTTPRequest) func(*requestConfig) {
 	return func(req *requestConfig) {
-		req.HttpRequest = customReq
+		req.httpRequest = customReq
 	}
 }
 
 func setBodyReader(customReader BodyReader) func(*requestConfig) {
 	return func(req *requestConfig) {
-		req.BodyReader = customReader
+		req.bodyReader = customReader
 	}
 }
 
@@ -42,12 +42,12 @@ func setJSONMarshal(customMarshaller jsonMarshal) func(*requestConfig) {
 
 func TestRequest_MakeRequest(t *testing.T) {
   assert := assert.New(t)
-	pc := providerConfig{ServiceKey: SERVICE_KEY}
+	pc := providerConfig{serviceKey: SERVICE_KEY}
   resourceId := "test123456"
 
 	t.Run("Server receives proper method, URL, and headers", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	    assert.Equal("GET", r.Method,  "Method is correct")
+	    assert.Equal("GET", r.Method,  "method is correct")
 	    assert.Equal(fmt.Sprintf("/someapi/%s", resourceId), r.URL.String(), "URL is correct")
 			key, ok := r.Header["Servicekey"]
 	    assert.Equal(true, ok, "servicekey header exists")
@@ -169,7 +169,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 			"will/not/work",
 			nil,
 			func(req *requestConfig) {
-				req.HTTPClient = &badClient{}
+				req.httpClient = &badClient{}
 			},
 		)
 
@@ -178,7 +178,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Error(err, "Expected error")
 		assert.Equal(
 			true,
-			strings.Contains(err.Error(), "Error during HTTP request: FAKE ERROR calling HTTPClient.Do"),
+			strings.Contains(err.Error(), "Error during HTTP request: FAKE ERROR calling httpClient.Do"),
 			"Expected error message",
 		)
 	})

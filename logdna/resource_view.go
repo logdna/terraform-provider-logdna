@@ -96,7 +96,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			Immediate:       immediate,
 			Integration:     WEBHOOK,
 			Operator:        operator,
-			Method:          method,
+			method:          method,
 			TriggerInterval: triggerInterval,
 			TriggerLimit:    triggerLimit,
 			URL:             url,
@@ -135,7 +135,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	)
 
 	body, err := req.MakeRequest()
-	log.Printf("[DEBUG] %s %s, payload is: %s", req.Method, req.ApiUrl, body)
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -146,7 +146,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("[DEBUG] After %s view, the created view is %+v", req.Method, createdView)
+	log.Printf("[DEBUG] After %s view, the created view is %+v", req.method, createdView)
 
 	d.SetId(createdView.ViewID)
 	return diags
@@ -243,13 +243,13 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	)
 
 	body, err := req.MakeRequest()
-	log.Printf("[DEBUG] %s %s, payload is: %s", req.Method, req.ApiUrl, body)
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.Method, req.ApiUrl)
+	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.method, req.apiURL)
 
 	return diags
 }
@@ -266,7 +266,7 @@ func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface
 	)
 
 	body, err := req.MakeRequest()
-	log.Printf("[DEBUG] %s %s view %s", req.Method, req.ApiUrl, body)
+	log.Printf("[DEBUG] %s %s view %s", req.method, req.apiURL, body)
 
 	if err != nil {
 		return diag.FromErr(err)
