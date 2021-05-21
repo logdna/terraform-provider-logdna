@@ -10,8 +10,8 @@ import (
 )
 
 func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	config := m.(*providerConfig)
+	client := requestConfig{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	name := d.Get("name").(string)
 	emailchannels := d.Get("email_channel").([]interface{})
 	pagerdutychannels := d.Get("pagerduty_channel").([]interface{})
@@ -22,7 +22,7 @@ func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
 	}
 	payload := ViewRequest{Name: name, Channels: channels}
-	resp, err := client.CreateAlert(config.URL, payload)
+	resp, err := client.CreateAlert(config.Host, payload)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -35,8 +35,8 @@ func resourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	config := m.(*providerConfig)
+	client := requestConfig{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	presetID := d.Id()
 	name := d.Get("name").(string)
 	emailchannels := d.Get("email_channel").([]interface{})
@@ -48,7 +48,7 @@ func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
 	}
 	payload := ViewRequest{Name: name, Channels: channels}
-	err = client.UpdateAlert(config.URL, presetID, payload)
+	err = client.UpdateAlert(config.Host, presetID, payload)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -56,10 +56,10 @@ func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceAlertDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	config := m.(*providerConfig)
+	client := requestConfig{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
 	presetID := d.Id()
-	err := client.DeleteAlert(config.URL, presetID)
+	err := client.DeleteAlert(config.Host, presetID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
