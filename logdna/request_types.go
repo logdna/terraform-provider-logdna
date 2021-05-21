@@ -29,7 +29,7 @@ type ChannelRequest struct {
 	Immediate       string                 `json:"immediate,omitempty"`
 	Integration     string                 `json:"integration,omitempty"`
 	Key             string                 `json:"key,omitempty"`
-	Method          string                 `json:"method,omitempty"`
+	method          string                 `json:"method,omitempty"`
 	Operator        string                 `json:"operator,omitempty"`
 	Terminal        string                 `json:"terminal,omitempty"`
 	TriggerInterval string                 `json:"triggerinterval,omitempty"`
@@ -172,7 +172,7 @@ func webHookChannelRequest(s map[string]interface{}) ChannelRequest {
 		Immediate:       s["immediate"].(string),
 		Integration:     WEBHOOK,
 		Operator:        s["operator"].(string),
-		Method:          s["method"].(string),
+		method:          s["method"].(string),
 		TriggerInterval: s["triggerinterval"].(string),
 		TriggerLimit:    s["triggerlimit"].(int),
 		URL:             s["url"].(string),

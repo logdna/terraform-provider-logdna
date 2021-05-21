@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type HttpRequest func(string, string, io.Reader) (*http.Request, error)
+type HTTPRequest func(string, string, io.Reader) (*http.Request, error)
 type BodyReader func(io.Reader) ([]byte, error)
 type jsonMarshal func(interface{}) ([]byte, error)
 type httpClientInterface interface {
@@ -20,13 +20,13 @@ type httpClientInterface interface {
 
 // Client used to make HTTP requests to the configuration api
 type requestConfig struct {
-	ServiceKey string
-	HTTPClient httpClientInterface
-	ApiUrl     string
-	Method     string
-	Body       interface{}
-	HttpRequest HttpRequest
-	BodyReader BodyReader
+	serviceKey string
+	httpClient httpClientInterface
+	apiURL     string
+	method     string
+	body       interface{}
+	httpRequest HTTPRequest
+	bodyReader BodyReader
 	jsonMarshal jsonMarshal
 }
 
@@ -40,13 +40,13 @@ type AlertResponsePayload struct {
 
 func NewRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
 	rc := &requestConfig{
-		ServiceKey: pc.ServiceKey,
-		HTTPClient: &http.Client{Timeout: 15 * time.Second},
-		ApiUrl: fmt.Sprintf("%s/%s", pc.Host, uri),
-		Method: method,
-		Body: body,
-		HttpRequest: http.NewRequest,
-		BodyReader: ioutil.ReadAll,
+		serviceKey: pc.serviceKey,
+		httpClient: &http.Client{Timeout: 15 * time.Second},
+		apiURL: fmt.Sprintf("%s/%s", pc.Host, uri),
+		method: method,
+		body: body,
+		httpRequest: http.NewRequest,
+		bodyReader: ioutil.ReadAll,
 		jsonMarshal: json.Marshal,
 	}
 
@@ -59,30 +59,30 @@ func NewRequestConfig(pc *providerConfig, method string, uri string, body interf
 
 func (c *requestConfig) MakeRequest() ([]byte, error) {
 	payloadBuf := bytes.NewBuffer([]byte{})
-	if c.Body != nil {
-		pbytes, err := c.jsonMarshal(c.Body)
+	if c.body != nil {
+		pbytes, err := c.jsonMarshal(c.body)
 		if err != nil {
 			return nil, err
 		}
 		payloadBuf = bytes.NewBuffer(pbytes)
 	}
 
-	req, err := c.HttpRequest(c.Method, c.ApiUrl, payloadBuf)
+	req, err := c.httpRequest(c.method, c.apiURL, payloadBuf)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("servicekey", c.ServiceKey)
-	res, err := c.HTTPClient.Do(req)
+	req.Header.Set("servicekey", c.serviceKey)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error during HTTP request: %s, %+v", err, c)
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s %s, status NOT OK: %d", c.Method, c.ApiUrl, res.StatusCode)
+		return nil, fmt.Errorf("%s %s, status NOT OK: %d", c.method, c.apiURL, res.StatusCode)
 	}
 	defer res.Body.Close()
 
-	body, err := c.BodyReader(res.Body)
+	body, err := c.bodyReader(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing HTTP response: %s, %+v", err, c)
 	}
@@ -101,8 +101,8 @@ func MakeRequestAlert(c *requestConfig, url string, urlsuffix string, method str
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("servicekey", c.ServiceKey)
-	resp, err := c.HTTPClient.Do(req)
+	req.Header.Set("servicekey", c.serviceKey)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf(`Error with alert: %s`, err)
 	}
