@@ -8,9 +8,9 @@ import (
 )
 
 type providerConfig struct {
-	ServiceKey string
+	serviceKey string
 	Host        string
-	HTTPClient *http.Client
+	httpClient *http.Client
 }
 
 // Provider sets the schema to a servicekey and url and adds logdna_view as a resource
@@ -40,8 +40,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	url := d.Get("url").(string)
 
 	return &providerConfig{
-		ServiceKey: servicekey,
+		serviceKey: servicekey,
 		Host:        url,
-		HTTPClient: &http.Client{Timeout: 15 * time.Second},
+		httpClient: &http.Client{Timeout: 15 * time.Second},
 	}, nil
 }

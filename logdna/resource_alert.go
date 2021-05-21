@@ -11,7 +11,7 @@ import (
 
 func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*providerConfig)
-	client := requestConfig{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	client := requestConfig{serviceKey: config.serviceKey, httpClient: config.httpClient}
 	name := d.Get("name").(string)
 	emailchannels := d.Get("email_channel").([]interface{})
 	pagerdutychannels := d.Get("pagerduty_channel").([]interface{})
@@ -36,7 +36,7 @@ func resourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*providerConfig)
-	client := requestConfig{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	client := requestConfig{serviceKey: config.serviceKey, httpClient: config.httpClient}
 	presetID := d.Id()
 	name := d.Get("name").(string)
 	emailchannels := d.Get("email_channel").([]interface{})
@@ -57,7 +57,7 @@ func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 
 func resourceAlertDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*providerConfig)
-	client := requestConfig{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	client := requestConfig{serviceKey: config.serviceKey, httpClient: config.httpClient}
 	presetID := d.Id()
 	err := client.DeleteAlert(config.Host, presetID)
 	if err != nil {
