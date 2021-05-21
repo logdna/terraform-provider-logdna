@@ -119,7 +119,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 
 func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	config := m.(*config)
+	pc := m.(*providerConfig)
 
 	view := ViewRequest{}
 
@@ -127,16 +127,15 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diags
 	}
 
-	client := Client{
-		ServiceKey: config.ServiceKey,
-		HTTPClient: config.HTTPClient,
-		ApiUrl:     fmt.Sprintf("%s/v1/config/view", config.URL),
-		Method:     "POST",
-		Body:       view,
-	}
+	req := NewRequestConfig(
+		pc,
+		"POST",
+		"/v1/config/view",
+		view,
+	)
 
-	body, err := client.MakeRequest()
-	log.Printf("[DEBUG] %s %s, payload is: %s", client.Method, client.ApiUrl, body)
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.Method, req.ApiUrl, body)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -147,7 +146,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("[DEBUG] After %s view, the created view is %+v", client.Method, createdView)
+	log.Printf("[DEBUG] After %s view, the created view is %+v", req.Method, createdView)
 
 	d.SetId(createdView.ViewID)
 	return diags
@@ -156,17 +155,17 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	config := m.(*config)
+	pc := m.(*providerConfig)
 	viewID := d.Id()
 
-	c := Client{
-		ServiceKey: config.ServiceKey,
-		HTTPClient: config.HTTPClient,
-		ApiUrl:     fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
-		Method:     "GET",
-	}
+	req := NewRequestConfig(
+		pc,
+		"GET",
+		fmt.Sprintf("/v1/config/view/%s", viewID),
+		nil,
+	)
 
-	body, err := c.MakeRequest()
+	body, err := req.MakeRequest()
 
 	log.Printf("[DEBUG] GET view raw response body %s\n", body)
 	if err != nil {
@@ -228,7 +227,7 @@ func appendError(err error, diags *diag.Diagnostics) *diag.Diagnostics {
 
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	config := m.(*config)
+	pc := m.(*providerConfig)
 	viewId := d.Id()
 	view := ViewRequest{}
 
@@ -236,39 +235,38 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		return diags
 	}
 
-	client := Client{
-		ServiceKey: config.ServiceKey,
-		HTTPClient: config.HTTPClient,
-		ApiUrl:     fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewId),
-		Method:     "PUT",
-		Body:       view,
-	}
+	req := NewRequestConfig(
+		pc,
+		"PUT",
+		fmt.Sprintf("/v1/config/view/%s", viewId),
+		view,
+	)
 
-	body, err := client.MakeRequest()
-	log.Printf("[DEBUG] %s %s, payload is: %s", client.Method, client.ApiUrl, body)
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.Method, req.ApiUrl, body)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", client.Method, client.ApiUrl)
+	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.Method, req.ApiUrl)
 
 	return diags
 }
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	viewID := d.Id()
+	pc := m.(*providerConfig)
+	viewId := d.Id()
 
-	client := Client{
-		ServiceKey: config.ServiceKey,
-		HTTPClient: config.HTTPClient,
-		ApiUrl:     fmt.Sprintf("%s/v1/config/view/%s", config.URL, viewID),
-		Method:     "DELETE",
-	}
+	req := NewRequestConfig(
+		pc,
+		"DELETE",
+		fmt.Sprintf("/v1/config/view/%s", viewId),
+		nil,
+	)
 
-	body, err := client.MakeRequest()
-	log.Printf("[DEBUG] %s %s view %s", client.Method, client.ApiUrl, body)
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s view %s", req.Method, req.ApiUrl, body)
 
 	if err != nil {
 		return diag.FromErr(err)
