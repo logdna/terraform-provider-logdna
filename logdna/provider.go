@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type config struct {
+type providerConfig struct {
 	ServiceKey string
-	URL        string
+	Host        string
 	HTTPClient *http.Client
 }
 
@@ -39,9 +39,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	servicekey := d.Get("servicekey").(string)
 	url := d.Get("url").(string)
 
-	return &config{
+	return &providerConfig{
 		ServiceKey: servicekey,
-		URL:        url,
+		Host:        url,
 		HTTPClient: &http.Client{Timeout: 15 * time.Second},
 	}, nil
 }
