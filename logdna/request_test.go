@@ -3,14 +3,14 @@ package logdna
 import (
 	"encoding/json"
 	// "errors"
-	"net/http"
-	"net/http/httptest"
-	"testing"
+	"errors"
 	"fmt"
-	"strings"
 	"io"
 	"io/ioutil"
-	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,6 +18,7 @@ import (
 const serviceKey = "abc123"
 
 type badClient struct{}
+
 func (fc *badClient) Do(*http.Request) (*http.Response, error) {
 	return nil, errors.New("FAKE ERROR calling httpClient.Do")
 }
@@ -41,21 +42,21 @@ func setJSONMarshal(customMarshaller jsonMarshal) func(*requestConfig) {
 }
 
 func TestRequest_MakeRequest(t *testing.T) {
-  assert := assert.New(t)
+	assert := assert.New(t)
 	pc := providerConfig{serviceKey: serviceKey}
-  resourceID := "test123456"
+	resourceID := "test123456"
 
 	t.Run("Server receives proper method, URL, and headers", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	    assert.Equal("GET", r.Method,  "method is correct")
-	    assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
+			assert.Equal("GET", r.Method, "method is correct")
+			assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
 			key, ok := r.Header["Servicekey"]
-	    assert.Equal(true, ok, "servicekey header exists")
-	    assert.Equal(1, len(key), "servicekey header is correct")
+			assert.Equal(true, ok, "servicekey header exists")
+			assert.Equal(1, len(key), "servicekey header is correct")
 			key = r.Header["Content-Type"]
-	    assert.Equal("application/json", key[0], "content-type header is correct")
-	  }))
-	  defer ts.Close()
+			assert.Equal("application/json", key[0], "content-type header is correct")
+		}))
+		defer ts.Close()
 
 		pc.Host = ts.URL
 
@@ -66,7 +67,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 			nil,
 		)
 
-	  _, err := req.MakeRequest()
+		_, err := req.MakeRequest()
 		assert.Nil(err, "No errors")
 	})
 
@@ -102,8 +103,8 @@ func TestRequest_MakeRequest(t *testing.T) {
 				strings.TrimSpace(string(postedBody)),
 				"Body got marshalled and sent correctly",
 			)
-	  }))
-	  defer ts.Close()
+		}))
+		defer ts.Close()
 
 		pc.Host = ts.URL
 
@@ -116,7 +117,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 			},
 		)
 
-	  _, err := req.MakeRequest()
+		_, err := req.MakeRequest()
 		assert.Nil(err, "No errors")
 	})
 
@@ -229,7 +230,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Error(err, "Expected error")
 		assert.Equal(
 			true,
-			strings.Contains(err.Error(), "Error parsing HTTP response: " + ERROR),
+			strings.Contains(err.Error(), "Error parsing HTTP response: "+ERROR),
 			"Expected error message",
 		)
 	})
