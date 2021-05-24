@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+  "reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -97,7 +98,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			Immediate:       immediate,
 			Integration:     WEBHOOK,
 			Operator:        operator,
-			method:          method,
+			Method:          method,
 			TriggerInterval: triggerInterval,
 			TriggerLimit:    triggerLimit,
 			URL:             url,
@@ -382,6 +383,7 @@ func resourceView() *schema.Resource {
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
+              Default: "presence",
 						},
 						"terminal": {
 							Type:     schema.TypeString,
@@ -414,6 +416,23 @@ func resourceView() *schema.Resource {
 						"bodytemplate": {
 							Type:     schema.TypeString,
 							Optional: true,
+              // This function compares JSON, ignoring whitespace that can occur in a .tf config.
+              // Without this, `terraform apply` will think values are different from remote to state.
+              DiffSuppressFunc:func(k, old, new string, d *schema.ResourceData) bool {
+                var jsonOld, jsonNew interface{}
+                var err error
+                err = json.Unmarshal([]byte(old), &jsonOld)
+                if err != nil {
+                  return false
+                }
+                err = json.Unmarshal([]byte(new), &jsonNew)
+                if err != nil {
+                  return false
+                }
+                isDiff := reflect.DeepEqual(jsonNew, jsonOld)
+                log.Println("[DEBUG] BodyTemplate value in state appears the same as remote?", isDiff)
+                return isDiff
+              },
 						},
 						"headers": {
 							Type: schema.TypeMap,
@@ -434,6 +453,7 @@ func resourceView() *schema.Resource {
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
+              Default: "presence",
 						},
 						"terminal": {
 							Type:     schema.TypeString,

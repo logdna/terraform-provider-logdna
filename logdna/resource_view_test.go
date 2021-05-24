@@ -15,7 +15,7 @@ func TestView_expectInvalidURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewInvalidURL(),
-				ExpectError: regexp.MustCompile("Error: Error with view: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
+				ExpectError: regexp.MustCompile("Error: Error during HTTP request: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co: no such host"),
 			},
 		},
 	})
@@ -27,7 +27,7 @@ func TestView_expectInvalidJSONError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewConfigMultipleChannelsInvalidJSON(),
-				ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
+				ExpectError: regexp.MustCompile("Error: bodytemplate is not a valid JSON string"),
 			},
 		},
 	})
@@ -39,7 +39,7 @@ func TestView_expectTriggerIntervalError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewConfigTriggerIntervalError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0]\.triggerinterval\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h]`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\]\.triggerinterval\\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h\]"`),
 			},
 		},
 	})
@@ -51,7 +51,7 @@ func TestView_expectImmediateError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewConfigImmediateError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].immediate\" must be \[false\]. \"channels\[0]\.immediate\" must be a boolean`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\]\.immediate\\" must be a boolean"`),
 			},
 		},
 	})
@@ -63,7 +63,7 @@ func TestView_expectURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewConfigURLError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].url\" must be a valid uri`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\]\.url\\" must be a valid uri"`),
 			},
 		},
 	})
@@ -75,7 +75,7 @@ func TestView_expectMethodError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewConfigMethodError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].method\" must be one of \[post, put, patch, get, delete\]`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\].method\\" must be one of \[post, put, patch, get, delete\]"`),
 			},
 		},
 	})
@@ -306,10 +306,10 @@ func TestViewJSONUpdateError(t *testing.T) {
 					testViewExists("logdna_view.new"),
 				),
 			},
-			{
-				Config:      testViewConfigMultipleChannelsInvalidJSON(),
-				ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
-			},
+			// {
+			// 	Config:      testViewConfigMultipleChannelsInvalidJSON(),
+			// 	ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
+			// },
 		},
 	})
 }
@@ -549,7 +549,7 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.%", "6"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.immediate", "false"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
-					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.operator", ""),
+					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.operator", "presence"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.terminal", "true"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.0.triggerlimit", "15"),
@@ -566,7 +566,7 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.test", "test2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.immediate", "false"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.method", "post"),
-					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.operator", ""),
+					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.operator", "presence"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.terminal", "true"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.triggerlimit", "15"),
