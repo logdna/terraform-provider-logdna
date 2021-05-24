@@ -10,14 +10,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Constants for identifying channel names easily
 const (
 	EMAIL     = "email"
 	PAGERDUTY = "pagerduty"
 	WEBHOOK   = "webhook"
 )
 
-func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]ChannelRequest, error) {
-	var channels []ChannelRequest
+func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]channelRequest, error) {
+	var channels []channelRequest
 	for _, emailChannel := range emailChannels {
 		i := emailChannel.(map[string]interface{})
 
@@ -35,7 +36,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			emailStrings = append(emailStrings, email.(string))
 		}
 
-		email := ChannelRequest{
+		email := channelRequest{
 			Emails:          emailStrings,
 			Immediate:       immediate,
 			Integration:     EMAIL,
@@ -59,7 +60,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 		triggerInterval := i["triggerinterval"].(string)
 		triggerLimit := i["triggerlimit"].(int)
 
-		pagerDuty := ChannelRequest{
+		pagerDuty := channelRequest{
 			Immediate:       immediate,
 			Integration:     "pagerduty",
 			Key:             key,
@@ -91,7 +92,7 @@ func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{},
 			headersMap[k] = v.(string)
 		}
 
-		webhook := ChannelRequest{
+		webhook := channelRequest{
 			Headers:         headersMap,
 			Immediate:       immediate,
 			Integration:     WEBHOOK,
@@ -121,13 +122,13 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
-	view := ViewRequest{}
+	view := viewRequest{}
 
 	if diags = view.CreateRequestBody(d); diags.HasError() {
 		return diags
 	}
 
-	req := NewRequestConfig(
+	req := newRequestConfig(
 		pc,
 		"POST",
 		"/v1/config/view",
@@ -141,7 +142,7 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
-	createdView := ViewResponse{}
+	createdView := viewResponse{}
 	err = json.Unmarshal(body, &createdView)
 	if err != nil {
 		return diag.FromErr(err)
@@ -158,7 +159,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	pc := m.(*providerConfig)
 	viewID := d.Id()
 
-	req := NewRequestConfig(
+	req := newRequestConfig(
 		pc,
 		"GET",
 		fmt.Sprintf("/v1/config/view/%s", viewID),
@@ -177,7 +178,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diags
 	}
 
-	view := ViewResponse{}
+	view := viewResponse{}
 	err = json.Unmarshal(body, &view)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -228,17 +229,17 @@ func appendError(err error, diags *diag.Diagnostics) *diag.Diagnostics {
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
-	viewId := d.Id()
-	view := ViewRequest{}
+	viewID := d.Id()
+	view := viewRequest{}
 
 	if diags = view.CreateRequestBody(d); diags.HasError() {
 		return diags
 	}
 
-	req := NewRequestConfig(
+	req := newRequestConfig(
 		pc,
 		"PUT",
-		fmt.Sprintf("/v1/config/view/%s", viewId),
+		fmt.Sprintf("/v1/config/view/%s", viewID),
 		view,
 	)
 
@@ -256,12 +257,12 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	pc := m.(*providerConfig)
-	viewId := d.Id()
+	viewID := d.Id()
 
-	req := NewRequestConfig(
+	req := newRequestConfig(
 		pc,
 		"DELETE",
-		fmt.Sprintf("/v1/config/view/%s", viewId),
+		fmt.Sprintf("/v1/config/view/%s", viewID),
 		nil,
 	)
 
