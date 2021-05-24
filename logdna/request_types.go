@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type ViewRequest struct {
+type viewRequest struct {
 	Apps     []string         `json:"apps,omitempty"`
 	Category []string         `json:"category,omitempty"`
-	Channels []ChannelRequest `json:"channels,omitempty"`
+	Channels []channelRequest `json:"channels,omitempty"`
 	Hosts    []string         `json:"hosts,omitempty"`
 	Levels   []string         `json:"levels,omitempty"`
 	Name     string           `json:"name,omitempty"`
@@ -22,7 +22,7 @@ type ViewRequest struct {
 	Tags     []string         `json:"tags,omitempty"`
 }
 
-type ChannelRequest struct {
+type channelRequest struct {
 	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
 	Emails          []string               `json:"emails,omitempty"`
 	Headers         map[string]string      `json:"headers,omitempty"`
@@ -38,7 +38,7 @@ type ChannelRequest struct {
 	URL             string                 `json:"url,omitempty"`
 }
 
-func (view *ViewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
 	// This function pulls from the schema in preparation to JSON marshal
 	var diags diag.Diagnostics
 
@@ -94,9 +94,9 @@ func (view *ViewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 	return diags
 }
 
-func mapChannelsFromSchema(listEntries []interface{}, integration string, diags *diag.Diagnostics) *[]ChannelRequest {
+func mapChannelsFromSchema(listEntries []interface{}, integration string, diags *diag.Diagnostics) *[]channelRequest {
 	var prepared interface{}
-	channelRequests := []ChannelRequest{}
+	channelRequests := []channelRequest{}
 
 	if listEntries == nil {
 		return nil
@@ -121,18 +121,18 @@ func mapChannelsFromSchema(listEntries []interface{}, integration string, diags 
 		if prepared == nil {
 			continue
 		}
-		channelRequests = append(channelRequests, prepared.(ChannelRequest))
+		channelRequests = append(channelRequests, prepared.(channelRequest))
 	}
 	return &channelRequests
 }
 
-func emailChannelRequest(s map[string]interface{}) ChannelRequest {
+func emailChannelRequest(s map[string]interface{}) channelRequest {
 	var emails []string
 	for _, email := range s["emails"].([]interface{}) {
 		emails = append(emails, email.(string))
 	}
 
-	c := ChannelRequest{
+	c := channelRequest{
 		Emails:          emails,
 		Immediate:       s["immediate"].(string),
 		Integration:     EMAIL,
@@ -146,8 +146,8 @@ func emailChannelRequest(s map[string]interface{}) ChannelRequest {
 	return c
 }
 
-func pagerDutyChannelRequest(s map[string]interface{}) ChannelRequest {
-	c := ChannelRequest{
+func pagerDutyChannelRequest(s map[string]interface{}) channelRequest {
+	c := channelRequest{
 		Immediate:       s["immediate"].(string),
 		Integration:     PAGERDUTY,
 		Key:             s["key"].(string),
@@ -160,14 +160,14 @@ func pagerDutyChannelRequest(s map[string]interface{}) ChannelRequest {
 	return c
 }
 
-func webHookChannelRequest(s map[string]interface{}) ChannelRequest {
+func webHookChannelRequest(s map[string]interface{}) channelRequest {
 	headersMap := make(map[string]string)
 
 	for k, v := range s["headers"].(map[string]interface{}) {
 		headersMap[k] = v.(string)
 	}
 
-	c := ChannelRequest{
+	c := channelRequest{
 		Headers:         headersMap,
 		Immediate:       s["immediate"].(string),
 		Integration:     WEBHOOK,

@@ -21,7 +21,7 @@ func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
 	}
-	payload := ViewRequest{Name: name, Channels: channels}
+	payload := viewRequest{Name: name, Channels: channels}
 	resp, err := client.CreateAlert(config.Host, payload)
 	if err != nil {
 		return diag.FromErr(err)
@@ -47,7 +47,7 @@ func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
 	}
-	payload := ViewRequest{Name: name, Channels: channels}
+	payload := viewRequest{Name: name, Channels: channels}
 	err = client.UpdateAlert(config.Host, presetID, payload)
 	if err != nil {
 		return diag.FromErr(err)
