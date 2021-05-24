@@ -9,7 +9,7 @@ import (
 
 type providerConfig struct {
 	serviceKey string
-	Host        string
+	Host       string
 	httpClient *http.Client
 }
 
@@ -41,7 +41,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	return &providerConfig{
 		serviceKey: servicekey,
-		Host:        url,
+		Host:       url,
 		httpClient: &http.Client{Timeout: 15 * time.Second},
 	}, nil
 }
