@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-type HTTPRequest func(string, string, io.Reader) (*http.Request, error)
-type BodyReader func(io.Reader) ([]byte, error)
+type httpRequest func(string, string, io.Reader) (*http.Request, error)
+type bodyReader func(io.Reader) ([]byte, error)
 type jsonMarshal func(interface{}) ([]byte, error)
 type httpClientInterface interface {
 	Do(*http.Request) (*http.Response, error)
@@ -25,20 +25,21 @@ type requestConfig struct {
 	apiURL     string
 	method     string
 	body       interface{}
-	httpRequest HTTPRequest
-	bodyReader BodyReader
+	httpRequest httpRequest
+	bodyReader bodyReader
 	jsonMarshal jsonMarshal
 }
 
 // AlertResponsePayload contains alert data returned from the config-api
 type AlertResponsePayload struct {
-	Channels []ChannelResponse `json:"channels,omitempty"`
+	Channels []channelResponse `json:"channels,omitempty"`
 	Error    string            `json:"error,omitempty"`
 	Name     string            `json:"name,omitempty"`
 	PresetID string            `json:"presetid,omitempty"`
 }
 
-func NewRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
+// newRequestConfig abstracts the struct creation to allow for mocking
+func newRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
 	rc := &requestConfig{
 		serviceKey: pc.serviceKey,
 		httpClient: &http.Client{Timeout: 15 * time.Second},
@@ -91,7 +92,7 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 }
 
 // MakeRequestAlert makes a HTTP request to the config-api with alert payload data and parses and returns the response
-func MakeRequestAlert(c *requestConfig, url string, urlsuffix string, method string, payload ViewRequest) (string, error) {
+func MakeRequestAlert(c *requestConfig, url string, urlsuffix string, method string, payload viewRequest) (string, error) {
 	pbytes, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
@@ -121,19 +122,19 @@ func MakeRequestAlert(c *requestConfig, url string, urlsuffix string, method str
 }
 
 // CreateAlert creates a Preset Alert with the provided payload
-func (c *requestConfig) CreateAlert(url string, payload ViewRequest) (string, error) {
+func (c *requestConfig) CreateAlert(url string, payload viewRequest) (string, error) {
 	result, err := MakeRequestAlert(c, url, "/v1/config/presetalert", "POST", payload)
 	return result, err
 }
 
 // UpdateAlert updates a Preset Alert with the provided presetID and payload
-func (c *requestConfig) UpdateAlert(url string, presetID string, payload ViewRequest) error {
+func (c *requestConfig) UpdateAlert(url string, presetID string, payload viewRequest) error {
 	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "PUT", payload)
 	return err
 }
 
 // DeleteAlert deletes an alert with the provided presetID
 func (c *requestConfig) DeleteAlert(url, presetID string) error {
-	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "DELETE", ViewRequest{})
+	_, err := MakeRequestAlert(c, url, "/v1/config/presetalert/"+presetID, "DELETE", viewRequest{})
 	return err
 }
