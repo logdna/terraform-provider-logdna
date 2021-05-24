@@ -15,20 +15,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const SERVICE_KEY = "abc123"
+const serviceKey = "abc123"
 
 type badClient struct{}
 func (fc *badClient) Do(*http.Request) (*http.Response, error) {
 	return nil, errors.New("FAKE ERROR calling httpClient.Do")
 }
 
-func setHttpRequest(customReq HTTPRequest) func(*requestConfig) {
+func setHTTPRequest(customReq httpRequest) func(*requestConfig) {
 	return func(req *requestConfig) {
 		req.httpRequest = customReq
 	}
 }
 
-func setBodyReader(customReader BodyReader) func(*requestConfig) {
+func setBodyReader(customReader bodyReader) func(*requestConfig) {
 	return func(req *requestConfig) {
 		req.bodyReader = customReader
 	}
@@ -42,13 +42,13 @@ func setJSONMarshal(customMarshaller jsonMarshal) func(*requestConfig) {
 
 func TestRequest_MakeRequest(t *testing.T) {
   assert := assert.New(t)
-	pc := providerConfig{serviceKey: SERVICE_KEY}
-  resourceId := "test123456"
+	pc := providerConfig{serviceKey: serviceKey}
+  resourceID := "test123456"
 
 	t.Run("Server receives proper method, URL, and headers", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	    assert.Equal("GET", r.Method,  "method is correct")
-	    assert.Equal(fmt.Sprintf("/someapi/%s", resourceId), r.URL.String(), "URL is correct")
+	    assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
 			key, ok := r.Header["Servicekey"]
 	    assert.Equal(true, ok, "servicekey header exists")
 	    assert.Equal(1, len(key), "servicekey header is correct")
@@ -59,10 +59,10 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 		pc.Host = ts.URL
 
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"GET",
-			fmt.Sprintf("someapi/%s", resourceId),
+			fmt.Sprintf("someapi/%s", resourceID),
 			nil,
 		)
 
@@ -72,16 +72,16 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 	t.Run("Reads and decodes response from the server", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			json.NewEncoder(w).Encode(ViewResponse{ViewID: "test123456"})
+			json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
 		}))
 		defer ts.Close()
 
 		pc.Host = ts.URL
 
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"GET",
-			fmt.Sprintf("someapi/%s", resourceId),
+			fmt.Sprintf("someapi/%s", resourceID),
 			nil,
 		)
 
@@ -107,11 +107,11 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 		pc.Host = ts.URL
 
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"POST",
 			"someapi",
-			ViewRequest{
+			viewRequest{
 				Name: "Test View",
 			},
 		)
@@ -122,11 +122,11 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 	t.Run("Handles errors when marshalling JSON", func(t *testing.T) {
 		const ERROR = "FAKE ERROR during json.Marshal"
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"POST",
 			"will/not/work",
-			ViewRequest{Name: "NOPE"},
+			viewRequest{Name: "NOPE"},
 			setJSONMarshal(func(interface{}) ([]byte, error) {
 				return nil, errors.New(ERROR)
 			}),
@@ -143,12 +143,12 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 	t.Run("Handles errors when creating a new HTTP request", func(t *testing.T) {
 		const ERROR = "FAKE ERROR for http.NewRequest"
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"GET",
 			"will/not/work",
 			nil,
-			setHttpRequest(func(string, string, io.Reader) (*http.Request, error) {
+			setHTTPRequest(func(string, string, io.Reader) (*http.Request, error) {
 				return nil, errors.New(ERROR)
 			}),
 		)
@@ -163,7 +163,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 	})
 
 	t.Run("Handles errors during the HTTP request", func(t *testing.T) {
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"GET",
 			"will/not/work",
@@ -191,10 +191,10 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 		pc.Host = ts.URL
 
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"POST",
-			fmt.Sprintf("someapi/%s", resourceId),
+			fmt.Sprintf("someapi/%s", resourceID),
 			nil,
 		)
 
@@ -210,15 +210,15 @@ func TestRequest_MakeRequest(t *testing.T) {
 	t.Run("Handles errors when creating a new HTTP request", func(t *testing.T) {
 		const ERROR = "FAKE ERROR for body reader"
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			json.NewEncoder(w).Encode(ViewResponse{ViewID: "test123456"})
+			json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
 		}))
 		defer ts.Close()
 
 		pc.Host = ts.URL
-		req := NewRequestConfig(
+		req := newRequestConfig(
 			&pc,
 			"GET",
-			fmt.Sprintf("someapi/%s", resourceId),
+			fmt.Sprintf("someapi/%s", resourceID),
 			nil,
 			setBodyReader(func(io.Reader) ([]byte, error) {
 				return nil, errors.New(ERROR)

@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
-type ViewResponse struct {
+type viewResponse struct {
 	Apps     []string          `json:"apps,omitempty"`
 	Category []string          `json:"category,omitempty"`
-	Channels []ChannelResponse `json:"channels,omitempty"`
+	Channels []channelResponse `json:"channels,omitempty"`
 	Error    string            `json:"error,omitempty"`
 	Hosts    []string          `json:"hosts,omitempty"`
 	Levels   []string          `json:"levels,omitempty"`
@@ -24,10 +24,10 @@ type ViewResponse struct {
 	ViewID   string            `json:"viewID,omitempty"`
 }
 
-// ChannelResponse contains channel data returned from the logdna APIs
+// channelResponse contains channel data returned from the logdna APIs
 // NOTE - Properties with `interface` are due to the APIs returning
 // some things as strings (PUT/emails) and other times arrays (GET/emails)
-type ChannelResponse struct {
+type channelResponse struct {
 	AlertID         string            `json:"alertid,omitempty"`
 	BodyTemplate    string            `json:"bodyTemplate,omitempty"`
 	Emails          interface{}       `json:"emails,omitempty"`
@@ -44,7 +44,7 @@ type ChannelResponse struct {
 	URL             string            `json:"url,omitempty"`
 }
 
-func (view *ViewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
+func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
 	// This function iterations through the channels types and prepares the values
 	// to be set on the schema in the correct keys
 	var prepared interface{}
@@ -85,7 +85,7 @@ func (view *ViewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.
 	return channelIntegrations, diags
 }
 
-func mapChannelEmail(channel *ChannelResponse) map[string]interface{} {
+func mapChannelEmail(channel *channelResponse) map[string]interface{} {
 	c := make(map[string]interface{})
 
 	c["emails"] = channel.Emails
@@ -99,7 +99,7 @@ func mapChannelEmail(channel *ChannelResponse) map[string]interface{} {
 	return c
 }
 
-func mapChannelPagerDuty(channel *ChannelResponse) map[string]interface{} {
+func mapChannelPagerDuty(channel *channelResponse) map[string]interface{} {
 	c := make(map[string]interface{})
 
 	c["immediate"] = strconv.FormatBool(channel.Immediate)
@@ -111,7 +111,7 @@ func mapChannelPagerDuty(channel *ChannelResponse) map[string]interface{} {
 
 	return c
 }
-func mapChannelWebhook(channel *ChannelResponse) map[string]interface{} {
+func mapChannelWebhook(channel *channelResponse) map[string]interface{} {
 	c := make(map[string]interface{})
 
 	c["bodytemplate"] = channel.BodyTemplate
