@@ -43,7 +43,7 @@ func newRequestConfig(pc *providerConfig, method string, uri string, body interf
 	rc := &requestConfig{
 		serviceKey:  pc.serviceKey,
 		httpClient:  &http.Client{Timeout: 15 * time.Second},
-		apiURL:      fmt.Sprintf("%s/%s", pc.Host, uri),
+		apiURL:      fmt.Sprintf("%s%s", pc.Host, uri), // uri should have a preceding slash (/)
 		method:      method,
 		body:        body,
 		httpRequest: http.NewRequest,
@@ -78,16 +78,15 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error during HTTP request: %s, %+v", err, c)
 	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s %s, status NOT OK: %d", c.method, c.apiURL, res.StatusCode)
-	}
 	defer res.Body.Close()
 
 	body, err := c.bodyReader(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing HTTP response: %s, %+v", err, c)
 	}
-
+  if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s %s, status %d NOT OK! %s", c.method, c.apiURL, res.StatusCode, string(body))
+	}
 	return body, err
 }
 

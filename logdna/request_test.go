@@ -63,7 +63,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"GET",
-			fmt.Sprintf("someapi/%s", resourceID),
+			fmt.Sprintf("/someapi/%s", resourceID),
 			nil,
 		)
 
@@ -82,7 +82,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"GET",
-			fmt.Sprintf("someapi/%s", resourceID),
+			fmt.Sprintf("/someapi/%s", resourceID),
 			nil,
 		)
 
@@ -111,7 +111,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"POST",
-			"someapi",
+			"/someapi",
 			viewRequest{
 				Name: "Test View",
 			},
@@ -126,7 +126,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"POST",
-			"will/not/work",
+			"/will/not/work",
 			viewRequest{Name: "NOPE"},
 			setJSONMarshal(func(interface{}) ([]byte, error) {
 				return nil, errors.New(ERROR)
@@ -147,7 +147,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"GET",
-			"will/not/work",
+			"/will/not/work",
 			nil,
 			setHTTPRequest(func(string, string, io.Reader) (*http.Request, error) {
 				return nil, errors.New(ERROR)
@@ -167,7 +167,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"GET",
-			"will/not/work",
+			"/will/not/work",
 			nil,
 			func(req *requestConfig) {
 				req.httpClient = &badClient{}
@@ -195,7 +195,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"POST",
-			fmt.Sprintf("someapi/%s", resourceID),
+			fmt.Sprintf("/someapi/%s", resourceID),
 			nil,
 		)
 
@@ -203,7 +203,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Error(err, "Expected error")
 		assert.Equal(
 			true,
-			strings.Contains(err.Error(), "status NOT OK: 400"),
+			strings.Contains(err.Error(), "status 400 NOT OK!"),
 			"Expected error message",
 		)
 	})
@@ -219,7 +219,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		req := newRequestConfig(
 			&pc,
 			"GET",
-			fmt.Sprintf("someapi/%s", resourceID),
+			fmt.Sprintf("/someapi/%s", resourceID),
 			nil,
 			setBodyReader(func(io.Reader) ([]byte, error) {
 				return nil, errors.New(ERROR)
