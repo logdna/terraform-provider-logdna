@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -20,13 +20,13 @@ type httpClientInterface interface {
 
 // Client used to make HTTP requests to the configuration api
 type requestConfig struct {
-	serviceKey string
-	httpClient httpClientInterface
-	apiURL     string
-	method     string
-	body       interface{}
+	serviceKey  string
+	httpClient  httpClientInterface
+	apiURL      string
+	method      string
+	body        interface{}
 	httpRequest httpRequest
-	bodyReader bodyReader
+	bodyReader  bodyReader
 	jsonMarshal jsonMarshal
 }
 
@@ -41,13 +41,13 @@ type AlertResponsePayload struct {
 // newRequestConfig abstracts the struct creation to allow for mocking
 func newRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
 	rc := &requestConfig{
-		serviceKey: pc.serviceKey,
-		httpClient: &http.Client{Timeout: 15 * time.Second},
-		apiURL: fmt.Sprintf("%s/%s", pc.Host, uri),
-		method: method,
-		body: body,
+		serviceKey:  pc.serviceKey,
+		httpClient:  &http.Client{Timeout: 15 * time.Second},
+		apiURL:      fmt.Sprintf("%s/%s", pc.Host, uri),
+		method:      method,
+		body:        body,
 		httpRequest: http.NewRequest,
-		bodyReader: ioutil.ReadAll,
+		bodyReader:  ioutil.ReadAll,
 		jsonMarshal: json.Marshal,
 	}
 
