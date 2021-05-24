@@ -6,6 +6,7 @@ package logdna
 
 import (
 	"fmt"
+  "encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,7 +30,7 @@ type channelRequest struct {
 	Immediate       string                 `json:"immediate,omitempty"`
 	Integration     string                 `json:"integration,omitempty"`
 	Key             string                 `json:"key,omitempty"`
-	method          string                 `json:"method,omitempty"`
+	Method          string                 `json:"method,omitempty"`
 	Operator        string                 `json:"operator,omitempty"`
 	Terminal        string                 `json:"terminal,omitempty"`
 	TriggerInterval string                 `json:"triggerinterval,omitempty"`
@@ -110,7 +111,7 @@ func mapChannelsFromSchema(listEntries []interface{}, integration string, diags 
 		case PAGERDUTY:
 			prepared = pagerDutyChannelRequest(e)
 		case WEBHOOK:
-			prepared = webHookChannelRequest(e)
+			prepared = webHookChannelRequest(e, diags)
 		default:
 			*diags = append(*diags, diag.Diagnostic{
 				Severity: diag.Error,
@@ -160,7 +161,7 @@ func pagerDutyChannelRequest(s map[string]interface{}) channelRequest {
 	return c
 }
 
-func webHookChannelRequest(s map[string]interface{}) channelRequest {
+func webHookChannelRequest(s map[string]interface{}, diags *diag.Diagnostics) channelRequest {
 	headersMap := make(map[string]string)
 
 	for k, v := range s["headers"].(map[string]interface{}) {
@@ -172,12 +173,28 @@ func webHookChannelRequest(s map[string]interface{}) channelRequest {
 		Immediate:       s["immediate"].(string),
 		Integration:     WEBHOOK,
 		Operator:        s["operator"].(string),
-		method:          s["method"].(string),
+		Method:          s["method"].(string),
 		TriggerInterval: s["triggerinterval"].(string),
 		TriggerLimit:    s["triggerlimit"].(int),
 		URL:             s["url"].(string),
 		Terminal:        s["terminal"].(string),
 	}
+
+  if bodyTemplate := s["bodytemplate"].(string) ;bodyTemplate != "" {
+    var bt map[string]interface{}
+    // See if the JSON is valid, but don't use the value or it will double encode
+    err := json.Unmarshal([]byte(bodyTemplate), &bt)
+
+    if err == nil {
+      c.BodyTemplate = bt
+    } else {
+      *diags = append(*diags, diag.Diagnostic{
+        Severity: diag.Error,
+        Summary:  "bodytemplate is not a valid JSON string",
+        Detail:   err.Error(),
+      })
+    }
+  }
 
 	return c
 }

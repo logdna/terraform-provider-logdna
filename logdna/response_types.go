@@ -35,7 +35,7 @@ type channelResponse struct {
 	Immediate       bool              `json:"immediate,omitempty"`
 	Integration     string            `json:"integration,omitempty"`
 	Key             string            `json:"key,omitempty"`
-	method          string            `json:"method,omitempty"`
+	Method          string            `json:"method,omitempty"`
 	Operator        string            `json:"operator,omitempty"`
 	Terminal        bool              `json:"terminal,omitempty"`
 	TriggerInterval interface{}       `json:"triggerinterval,omitempty"`
@@ -117,11 +117,12 @@ func mapChannelWebhook(channel *channelResponse) map[string]interface{} {
 	c["bodytemplate"] = channel.BodyTemplate
 	c["headers"] = channel.Headers
 	c["immediate"] = strconv.FormatBool(channel.Immediate)
-	c["method"] = channel.method
+	c["method"] = channel.Method
 	c["operator"] = channel.Operator
 	c["terminal"] = strconv.FormatBool(channel.Terminal)
 	c["triggerlimit"] = channel.TriggerLimit
 	c["triggerinterval"] = channel.TriggerInterval
+  c["url"] = channel.URL
 
 	return c
 }
