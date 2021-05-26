@@ -45,7 +45,7 @@ type channelResponse struct {
 }
 
 func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
-	// This function iterations through the channels types and prepares the values
+	// This function iterates through the channel types and prepares the values
 	// to be set on the schema in the correct keys
 	var prepared interface{}
 	var diags diag.Diagnostics
@@ -122,7 +122,7 @@ func mapChannelWebhook(channel *channelResponse) map[string]interface{} {
 	c["terminal"] = strconv.FormatBool(channel.Terminal)
 	c["triggerlimit"] = channel.TriggerLimit
 	c["triggerinterval"] = channel.TriggerInterval
-  c["url"] = channel.URL
+	c["url"] = channel.URL
 
 	return c
 }

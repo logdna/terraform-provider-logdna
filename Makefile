@@ -1,4 +1,5 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
+COVERAGEFILE?=coverage.out
 HOSTNAME=logdna.com
 NAMESPACE=logdna
 NAME=logdna
@@ -29,9 +30,12 @@ install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
+# Test just the provider directory. Since there aren't multiple dirs, results will show without buffering
 test:
-	go test $(TEST) || exit 1
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
+	TF_ACC=1 go test -v $(TESTARGS) ./logdna
 
-testacc:
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+testcov:
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -coverprofile $(COVERAGEFILE)
+	go tool cover -html $(COVERAGEFILE)
+
+.PHONY: build release install test testacc testcov
