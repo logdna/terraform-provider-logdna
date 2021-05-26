@@ -57,7 +57,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		pc.Host = ts.URL
+		pc.baseURL = ts.URL
 
 		req := newRequestConfig(
 			&pc,
@@ -76,7 +76,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		pc.Host = ts.URL
+		pc.baseURL = ts.URL
 
 		req := newRequestConfig(
 			&pc,
@@ -105,7 +105,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		pc.Host = ts.URL
+		pc.baseURL = ts.URL
 
 		req := newRequestConfig(
 			&pc,
@@ -189,7 +189,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		pc.Host = ts.URL
+		pc.baseURL = ts.URL
 
 		req := newRequestConfig(
 			&pc,
@@ -214,7 +214,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		pc.Host = ts.URL
+		pc.baseURL = ts.URL
 		req := newRequestConfig(
 			&pc,
 			"GET",

@@ -18,7 +18,7 @@ type httpClientInterface interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
-// Client used to make HTTP requests to the configuration api
+// Configuration for the HTTP client used to make requests to remote resources
 type requestConfig struct {
 	serviceKey  string
 	httpClient  httpClientInterface
@@ -30,7 +30,7 @@ type requestConfig struct {
 	jsonMarshal jsonMarshal
 }
 
-// AlertResponsePayload contains alert data returned from the config-api
+// AlertResponsePayload contains the keys/vals used in alert API responses
 type AlertResponsePayload struct {
 	Channels []channelResponse `json:"channels,omitempty"`
 	Error    string            `json:"error,omitempty"`
@@ -43,7 +43,7 @@ func newRequestConfig(pc *providerConfig, method string, uri string, body interf
 	rc := &requestConfig{
 		serviceKey:  pc.serviceKey,
 		httpClient:  &http.Client{Timeout: 15 * time.Second},
-		apiURL:      fmt.Sprintf("%s%s", pc.Host, uri), // uri should have a preceding slash (/)
+		apiURL:      fmt.Sprintf("%s%s", pc.baseURL, uri), // uri should have a preceding slash (/)
 		method:      method,
 		body:        body,
 		httpRequest: http.NewRequest,
@@ -51,7 +51,7 @@ func newRequestConfig(pc *providerConfig, method string, uri string, body interf
 		jsonMarshal: json.Marshal,
 	}
 
-	// Testing only; Allow mutations passed in by tests
+	// Used during esting only; Allow mutations passed in by tests
 	for _, mutator := range mutators {
 		mutator(rc)
 	}
@@ -84,7 +84,7 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing HTTP response: %s, %+v", err, c)
 	}
-  if res.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%s %s, status %d NOT OK! %s", c.method, c.apiURL, res.StatusCode, string(body))
 	}
 	return body, err

@@ -5,8 +5,8 @@ package logdna
 // returned by the GET. In a perfect world, they would use the same types.
 
 import (
+	"encoding/json"
 	"fmt"
-  "encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -180,21 +180,21 @@ func webHookChannelRequest(s map[string]interface{}, diags *diag.Diagnostics) ch
 		Terminal:        s["terminal"].(string),
 	}
 
-  if bodyTemplate := s["bodytemplate"].(string) ;bodyTemplate != "" {
-    var bt map[string]interface{}
-    // See if the JSON is valid, but don't use the value or it will double encode
-    err := json.Unmarshal([]byte(bodyTemplate), &bt)
+	if bodyTemplate := s["bodytemplate"].(string); bodyTemplate != "" {
+		var bt map[string]interface{}
+		// See if the JSON is valid, but don't use the value or it will double encode
+		err := json.Unmarshal([]byte(bodyTemplate), &bt)
 
-    if err == nil {
-      c.BodyTemplate = bt
-    } else {
-      *diags = append(*diags, diag.Diagnostic{
-        Severity: diag.Error,
-        Summary:  "bodytemplate is not a valid JSON string",
-        Detail:   err.Error(),
-      })
-    }
-  }
+		if err == nil {
+			c.BodyTemplate = bt
+		} else {
+			*diags = append(*diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "bodytemplate is not a valid JSON string",
+				Detail:   err.Error(),
+			})
+		}
+	}
 
 	return c
 }
