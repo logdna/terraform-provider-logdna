@@ -21,7 +21,13 @@ type viewResponse struct {
 	Name     string            `json:"name,omitempty"`
 	Query    string            `json:"query,omitempty"`
 	Tags     []string          `json:"tags,omitempty"`
-	ViewID   string            `json:"viewID,omitempty"`
+	ViewID   string            `json:"viewID"`
+}
+
+type alertResponse struct {
+	Name     string            `json:"name,omitempty"`
+	Channels []channelResponse `json:"channels,omitempty"`
+	PresetID string            `json:"presetid"`
 }
 
 // channelResponse contains channel data returned from the logdna APIs
@@ -45,18 +51,32 @@ type channelResponse struct {
 }
 
 func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
+	channels := view.Channels
+	channelIntegrations, diags := mapAllChannelsToSchema("view", &channels)
+	return channelIntegrations, *diags
+}
+
+func (alert *alertResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
+	channels := alert.Channels
+	channelIntegrations, diags := mapAllChannelsToSchema("alert", &channels)
+	return channelIntegrations, *diags
+}
+
+func mapAllChannelsToSchema(
+	resourceName string,
+	channels *[]channelResponse,
+) (map[string][]interface{}, *diag.Diagnostics) {
 	// This function iterates through the channel types and prepares the values
 	// to be set on the schema in the correct keys
 	var prepared interface{}
 	var diags diag.Diagnostics
 
-	channels := view.Channels
 	channelIntegrations := make(map[string][]interface{})
 
 	if channels == nil {
-		return channelIntegrations, diags
+		return channelIntegrations, &diags
 	}
-	for _, c := range channels {
+	for _, c := range *channels {
 		prepared = nil
 		integration := c.Integration
 		switch integration {
@@ -69,7 +89,7 @@ func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.
 		default:
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("The remote view resource contains an unsupported integration: %s", integration),
+				Summary:  fmt.Sprintf("The remote %s resource contains an unsupported integration: %s", resourceName, integration),
 				Detail:   fmt.Sprintf("%s integration ignored since it does not map to the schema", integration),
 			})
 		}
@@ -82,7 +102,7 @@ func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.
 		}
 		channelIntegrations[integration] = append(list, prepared)
 	}
-	return channelIntegrations, diags
+	return channelIntegrations, &diags
 }
 
 func mapChannelEmail(channel *channelResponse) map[string]interface{} {
