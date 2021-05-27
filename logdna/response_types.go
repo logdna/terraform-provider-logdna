@@ -71,14 +71,19 @@ func mapAllChannelsToSchema(
 	var prepared interface{}
 	var diags diag.Diagnostics
 
-	channelIntegrations := make(map[string][]interface{})
+	channelIntegrations := map[string][]interface{}{
+		EMAIL:     make([]interface{}, 0),
+		PAGERDUTY: make([]interface{}, 0),
+		WEBHOOK:   make([]interface{}, 0),
+	}
 
-	if channels == nil {
+	if len(*channels) == 0 {
 		return channelIntegrations, &diags
 	}
 	for _, c := range *channels {
 		prepared = nil
 		integration := c.Integration
+
 		switch integration {
 		case EMAIL:
 			prepared = mapChannelEmail(&c)
@@ -96,11 +101,10 @@ func mapAllChannelsToSchema(
 		if prepared == nil {
 			continue
 		}
-		list := channelIntegrations[integration]
-		if list == nil {
-			channelIntegrations[integration] = make([]interface{}, 0)
-		}
-		channelIntegrations[integration] = append(list, prepared)
+		channelIntegrations[integration] = append(
+			channelIntegrations[integration],
+			prepared,
+		)
 	}
 	return channelIntegrations, &diags
 }
@@ -145,4 +149,15 @@ func mapChannelWebhook(channel *channelResponse) map[string]interface{} {
 	c["url"] = channel.URL
 
 	return c
+}
+
+func appendError(err error, diags *diag.Diagnostics) *diag.Diagnostics {
+	if err != nil {
+		*diags = append(*diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "There was a problem setting the schema",
+			Detail:   err.Error(),
+		})
+	}
+	return diags
 }

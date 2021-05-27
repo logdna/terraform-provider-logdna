@@ -9,24 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAlert_expectInvalidURLError(t *testing.T) {
+func TestAlert_checkEnvServiceKey(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAlertInvalidURL(),
-				ExpectError: regexp.MustCompile("Error: Error with alert: Post \"http://api.logdna.co/v1/config/presetalert\": dial tcp: lookup api.logdna.co on 127.0.0.11:53: no such host"),
-			},
-		},
+		PreCheck: func() { testAccPreCheck(t) },
 	})
 }
+
 func TestAlert_expectInvalidJSONError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertConfigMultipleChannelsInvalidJSON(),
-				ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
+				ExpectError: regexp.MustCompile("Error: bodytemplate is not a valid JSON string"),
 			},
 		},
 	})
@@ -38,7 +34,7 @@ func TestAlert_expectTriggerIntervalError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertConfigTriggerIntervalError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0]\.triggerinterval\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h]`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\]\.triggerinterval\\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h\]"`),
 			},
 		},
 	})
@@ -50,7 +46,7 @@ func TestAlert_expectImmediateError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertConfigImmediateError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].immediate\" must be \[false\]. \"channels\[0]\.immediate\" must be a boolean`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\]\.immediate\\" must be a boolean"`),
 			},
 		},
 	})
@@ -62,7 +58,7 @@ func TestAlert_expectURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertConfigURLError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].url\" must be a valid uri`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\]\.url\\" must be a valid uri"`),
 			},
 		},
 	})
@@ -74,7 +70,7 @@ func TestAlert_expectMethodError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAlertConfigMethodError(),
-				ExpectError: regexp.MustCompile(`\"channels\[0\].method\" must be one of \[post, put, patch, get, delete\]`),
+				ExpectError: regexp.MustCompile(`"message":"\\"channels\[0\].method\\" must be one of \[post, put, patch, get, delete\]"`),
 			},
 		},
 	})
@@ -267,20 +263,20 @@ func TestAlertJSONUpdateError(t *testing.T) {
 			},
 			{
 				Config:      testAlertConfigMultipleChannelsInvalidJSON(),
-				ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
+				ExpectError: regexp.MustCompile("Error: bodytemplate is not a valid JSON string"),
 			},
 		},
 	})
 }
 
-func TestAlertBulkChannels(t *testing.T) {
+func TestAlertMultipleChannels(t *testing.T) {
 	name := "test"
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAlertConfigBulkChannels(name),
+				Config: testAlertConfigMultipleChannels(name),
 				Check: resource.ComposeTestCheckFunc(
 					testAlertExists("logdna_alert.new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
@@ -296,12 +292,16 @@ func TestAlertBulkChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "6"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.immediate", "true"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
-					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.operator", ""),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.operator", "presence"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.terminal", "true"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.triggerlimit", "15"),
-					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.#", "0"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.0.bodytemplate", "{\n  \"fields\": {\n    \"description\": \"{{ matches }} matches found for {{ name }}\",\n    \"issuetype\": {\n      \"name\": \"Bug\"\n    },\n    \"project\": {\n      \"key\": \"test\"\n    },\n    \"summary\": \"Alert From {{ name }}\"\n  }\n}"),
 				),
+			},
+			{
+				Config:      testAlertConfigMultipleChannelsInvalidJSON(),
+				ExpectError: regexp.MustCompile("Error: bodytemplate is not a valid JSON string"),
 			},
 		},
 	})
@@ -613,7 +613,7 @@ func testAlertConfigBasic(name string) string {
 	}`, servicekey, name)
 }
 
-func testAlertConfigBulkChannels(name string) string {
+func testAlertConfigMultipleChannels(name string) string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
 	  }
@@ -632,6 +632,30 @@ func testAlertConfigBulkChannels(name string) string {
 		pagerduty_channel {
 			immediate       = "true"
 			key             = "Your PagerDuty API key goes here"
+			terminal        = "true"
+			triggerinterval = "15m"
+			triggerlimit    = 15
+		}
+		webhook_channel {
+			headers = {
+				hello = "test3"
+				test  = "test2"
+			}
+			bodytemplate = jsonencode({
+			fields = {
+				description = "{{ matches }} matches found for {{ name }}"
+				issuetype = {
+					name = "Bug"
+				}
+				project = {
+					key = "test"
+				},
+				summary = "Alert From {{ name }}"
+			 }
+			})
+			immediate       = "false"
+			method          = "post"
+			url             = "https://yourwebhook/endpoint"
 			terminal        = "true"
 			triggerinterval = "15m"
 			triggerlimit    = 15

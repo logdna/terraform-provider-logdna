@@ -15,7 +15,7 @@ func TestView_expectInvalidURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewInvalidURL(),
-				ExpectError: regexp.MustCompile("Error: Error during HTTP request: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co: no such host"),
+				ExpectError: regexp.MustCompile("Error: Error during HTTP request: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co"),
 			},
 		},
 	})
@@ -292,8 +292,8 @@ func TestViewJSONUpdateError(t *testing.T) {
 	levels2 := "critical"
 	host1 := "host1"
 	host2 := "host2"
-	category1 := "DEMO"
-	category2 := "DEMO2"
+	category1 := "DEMOCATEGORY1"
+	category2 := "DemoCategory2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -306,10 +306,10 @@ func TestViewJSONUpdateError(t *testing.T) {
 					testViewExists("logdna_view.new"),
 				),
 			},
-			// {
-			// 	Config:      testViewConfigMultipleChannelsInvalidJSON(),
-			// 	ExpectError: regexp.MustCompile("bodytemplate json configuration is invalid"),
-			// },
+			{
+				Config:      testViewConfigMultipleChannelsInvalidJSON(),
+				ExpectError: regexp.MustCompile("Error: bodytemplate is not a valid JSON string"),
+			},
 		},
 	})
 }
@@ -323,8 +323,8 @@ func TestViewBulkEmails(t *testing.T) {
 	levels2 := "critical"
 	host1 := "host1"
 	host2 := "host2"
-	category1 := "DEMO"
-	category2 := "DEMO2"
+	category1 := "DEMOCATEGORY1"
+	category2 := "DemoCategory2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -341,7 +341,7 @@ func TestViewBulkEmails(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app1),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app2),
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category1),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", "DemoCategory1"), // This value on the server is mixed case
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
@@ -388,8 +388,8 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 	levels2 := "critical"
 	host1 := "host1"
 	host2 := "host2"
-	category := "DEMO"
-	category2 := "DEMO2"
+	category1 := "DEMOCATEGORY1"
+	category2 := "DemoCategory2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -408,7 +408,7 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category, category2, tags1, tags2),
+				Config: testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2),
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name),
@@ -417,7 +417,7 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app1),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app2),
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", "DemoCategory1"), // This value on the server is mixed case
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
@@ -452,7 +452,7 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testViewConfigBulkEmails(name2, query2, app3, app4, levels3, levels4, host3, host4, category, category2, tags3, tags4),
+				Config: testViewConfigBulkEmails(name2, query2, app3, app4, levels3, levels4, host3, host4, category1, category2, tags3, tags4),
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", name2),
@@ -461,7 +461,7 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", app3),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.1", app4),
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.#", "2"),
-					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", category),
+					resource.TestCheckResourceAttr("logdna_view.new", "categories.0", "DemoCategory1"), // This value on the server is mixed case
 					resource.TestCheckResourceAttr("logdna_view.new", "categories.1", category2),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.0.emails.#", "1"),
@@ -508,8 +508,8 @@ func TestViewMultipleChannels(t *testing.T) {
 	levels2 := "critical"
 	host1 := "host1"
 	host2 := "host2"
-	category1 := "DEMO"
-	category2 := "DEMO2"
+	category1 := "DemoCategory1"
+	category2 := "DemoCategory2"
 	tags1 := "host1"
 	tags2 := "host2"
 
@@ -559,8 +559,8 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", tags2),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.%", "9"),
-					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.%", "9"),
-					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate", "{\"fields\":{\"description\":\"{{ matches }} matches found for {{ name }}\",\"issuetype\":{\"name\":\"Bug\"},\"project\":{\"key\":\"test\"},\"summary\":\"Alert From {{ name }}\"}}"),
+					// The JSON will have newlines per our API which uses JSON.stringify(obj, null, 2) as the value
+					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.bodytemplate", "{\n  \"fields\": {\n    \"description\": \"{{ matches }} matches found for {{ name }}\",\n    \"issuetype\": {\n      \"name\": \"Bug\"\n    },\n    \"project\": {\n      \"key\": \"test\"\n    },\n    \"summary\": \"Alert From {{ name }}\"\n  }\n}"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.%", "2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.hello", "test3"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.headers.test", "test2"),

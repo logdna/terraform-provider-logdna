@@ -2,64 +2,148 @@ package logdna
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*providerConfig)
-	client := requestConfig{serviceKey: config.serviceKey, httpClient: config.httpClient}
-	name := d.Get("name").(string)
-	emailchannels := d.Get("email_channel").([]interface{})
-	pagerdutychannels := d.Get("pagerduty_channel").([]interface{})
-	webhookchannels := d.Get("webhook_channel").([]interface{})
+	var diags diag.Diagnostics
+	pc := m.(*providerConfig)
 
-	channels, err := buildChannels(emailchannels, pagerdutychannels, webhookchannels)
-	if err != nil {
-		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
+	alert := alertRequest{}
+
+	if diags = alert.CreateRequestBody(d); diags.HasError() {
+		return diags
 	}
-	payload := viewRequest{Name: name, Channels: channels}
-	resp, err := client.CreateAlert(config.baseURL, payload)
+
+	req := newRequestConfig(
+		pc,
+		"POST",
+		"/v1/config/presetalert",
+		alert,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(resp)
-	return nil
+
+	createdAlert := alertResponse{}
+	err = json.Unmarshal(body, &createdAlert)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("[DEBUG] After %s presetalert, the created alert is %+v", req.method, createdAlert)
+
+	d.SetId(createdAlert.PresetID)
+
+	return resourceAlertRead(ctx, d, m)
 }
 
 func resourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+	var diags diag.Diagnostics
+
+	pc := m.(*providerConfig)
+	presetID := d.Id()
+
+	req := newRequestConfig(
+		pc,
+		"GET",
+		fmt.Sprintf("/v1/config/presetalert/%s", presetID),
+		nil,
+	)
+
+	body, err := req.MakeRequest()
+
+	log.Printf("[DEBUG] GET presetalert raw response body %s\n", body)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Cannot read the remote presetalert resource",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
+	alert := alertResponse{}
+	err = json.Unmarshal(body, &alert)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Cannot unmarshal response from the remote presetalert resource",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+	log.Printf("[DEBUG] The GET presetalert structure is as follows: %+v\n", alert)
+
+	// Top level keys can be set directly
+	appendError(d.Set("name", alert.Name), &diags)
+
+	// Convert types to maps for setting the schema
+	integrations, diags := alert.MapChannelsToSchema()
+	log.Printf("[DEBUG] presetalert MapChannelsToSchema result: %+v\n", integrations)
+
+	// Store the responses in the schema - note that this should also NUKE missing
+	// integrations since we have done a PUT operation. Thus, remove non-existing things.
+	for name, value := range integrations {
+		schemaKey := fmt.Sprintf("%s_channel", name)
+		appendError(d.Set(schemaKey, value), &diags)
+	}
+
+	return diags
 }
 
 func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*providerConfig)
-	client := requestConfig{serviceKey: config.serviceKey, httpClient: config.httpClient}
+	var diags diag.Diagnostics
+	pc := m.(*providerConfig)
 	presetID := d.Id()
-	name := d.Get("name").(string)
-	emailchannels := d.Get("email_channel").([]interface{})
-	pagerdutychannels := d.Get("pagerduty_channel").([]interface{})
-	webhookchannels := d.Get("webhook_channel").([]interface{})
+	alert := alertRequest{}
 
-	channels, err := buildChannels(emailchannels, pagerdutychannels, webhookchannels)
-	if err != nil {
-		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
+	if diags = alert.CreateRequestBody(d); diags.HasError() {
+		return diags
 	}
-	payload := viewRequest{Name: name, Channels: channels}
-	err = client.UpdateAlert(config.baseURL, presetID, payload)
+
+	req := newRequestConfig(
+		pc,
+		"PUT",
+		fmt.Sprintf("/v1/config/presetalert/%s", presetID),
+		alert,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return nil
+
+	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.method, req.apiURL)
+
+	return resourceAlertRead(ctx, d, m)
 }
 
 func resourceAlertDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*providerConfig)
-	client := requestConfig{serviceKey: config.serviceKey, httpClient: config.httpClient}
+	pc := m.(*providerConfig)
 	presetID := d.Id()
-	err := client.DeleteAlert(config.baseURL, presetID)
+
+	req := newRequestConfig(
+		pc,
+		"DELETE",
+		fmt.Sprintf("/v1/config/presetalert/%s", presetID),
+		nil,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s presetalert %s", req.method, req.apiURL, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -94,6 +178,7 @@ func resourceAlert() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"operator": {
 							Type:     schema.TypeString,
@@ -133,6 +218,7 @@ func resourceAlert() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"key": {
 							Type:     schema.TypeString,
@@ -141,10 +227,12 @@ func resourceAlert() *schema.Resource {
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "presence",
 						},
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
@@ -172,6 +260,23 @@ func resourceAlert() *schema.Resource {
 						"bodytemplate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							// This function compares JSON, ignoring whitespace that can occur in a .tf config.
+							// Without this, `terraform apply` will think values are different from remote to state.
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								var jsonOld, jsonNew interface{}
+								var err error
+								err = json.Unmarshal([]byte(old), &jsonOld)
+								if err != nil {
+									return false
+								}
+								err = json.Unmarshal([]byte(new), &jsonNew)
+								if err != nil {
+									return false
+								}
+								shouldSuppress := reflect.DeepEqual(jsonNew, jsonOld)
+								log.Println("[DEBUG] Does presetalert 'bodytemplate' value in state appear the same as remote?", shouldSuppress)
+								return shouldSuppress
+							},
 						},
 						"headers": {
 							Type: schema.TypeMap,
@@ -183,6 +288,7 @@ func resourceAlert() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"method": {
 							Type:     schema.TypeString,
@@ -191,10 +297,12 @@ func resourceAlert() *schema.Resource {
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "presence",
 						},
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
