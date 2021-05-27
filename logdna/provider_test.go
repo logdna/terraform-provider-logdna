@@ -27,3 +27,11 @@ func TestProvider(t *testing.T) {
 func TestProvider_impl(t *testing.T) {
 	var _ *schema.Provider = Provider()
 }
+
+// testAccPreCheck validates the necessary test API keys exist
+// in the testing environment
+func testAccPreCheck(t *testing.T) {
+	if servicekey == "" {
+		t.Fatal("'servicekey' environment variable must be set for acceptance tests")
+	}
+}
