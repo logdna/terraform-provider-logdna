@@ -131,9 +131,10 @@ func iterateIntegrationType(
 	var prepared interface{}
 	channelRequests := []channelRequest{}
 
-	if listEntries == nil {
-		return nil
+	if len(listEntries) == 0 {
+		return &channelRequests
 	}
+
 	for _, entry := range listEntries {
 		e := entry.(map[string]interface{})
 		prepared = nil

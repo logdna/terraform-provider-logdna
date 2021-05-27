@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,107 +18,6 @@ const (
 	PAGERDUTY = "pagerduty"
 	WEBHOOK   = "webhook"
 )
-
-func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]channelRequest, error) {
-	var channels []channelRequest
-	for _, emailChannel := range emailChannels {
-		i := emailChannel.(map[string]interface{})
-
-		emails := i["emails"].([]interface{})
-		immediate := i["immediate"].(string)
-		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
-		triggerInterval := i["triggerinterval"].(string)
-		triggerLimit := i["triggerlimit"].(int)
-		timezone := i["timezone"].(string)
-
-		var emailStrings []string
-
-		for _, email := range emails {
-			emailStrings = append(emailStrings, email.(string))
-		}
-
-		email := channelRequest{
-			Emails:          emailStrings,
-			Immediate:       immediate,
-			Integration:     EMAIL,
-			Operator:        operator,
-			Terminal:        terminal,
-			TriggerInterval: triggerInterval,
-			TriggerLimit:    triggerLimit,
-			Timezone:        timezone,
-		}
-
-		channels = append(channels, email)
-	}
-
-	for _, pagerDutyChannel := range pagerDutyChannels {
-		i := pagerDutyChannel.(map[string]interface{})
-
-		immediate := i["immediate"].(string)
-		key := i["key"].(string)
-		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
-		triggerInterval := i["triggerinterval"].(string)
-		triggerLimit := i["triggerlimit"].(int)
-
-		pagerDuty := channelRequest{
-			Immediate:       immediate,
-			Integration:     "pagerduty",
-			Key:             key,
-			Operator:        operator,
-			Terminal:        terminal,
-			TriggerInterval: triggerInterval,
-			TriggerLimit:    triggerLimit,
-		}
-
-		channels = append(channels, pagerDuty)
-	}
-
-	for _, webhookChannel := range webhookChannels {
-		i := webhookChannel.(map[string]interface{})
-
-		bodytemplate := i["bodytemplate"].(string)
-		headers := i["headers"].(map[string]interface{})
-		immediate := i["immediate"].(string)
-		method := i["method"].(string)
-		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
-		triggerInterval := i["triggerinterval"].(string)
-		triggerLimit := i["triggerlimit"].(int)
-		url := i["url"].(string)
-
-		headersMap := make(map[string]string)
-
-		for k, v := range headers {
-			headersMap[k] = v.(string)
-		}
-
-		webhook := channelRequest{
-			Headers:         headersMap,
-			Immediate:       immediate,
-			Integration:     WEBHOOK,
-			Operator:        operator,
-			Method:          method,
-			TriggerInterval: triggerInterval,
-			TriggerLimit:    triggerLimit,
-			URL:             url,
-			Terminal:        terminal,
-		}
-
-		if bodytemplate != "" {
-			var bt map[string]interface{}
-			err := json.Unmarshal([]byte(bodytemplate), &bt)
-
-			if err != nil {
-				return channels, err
-			}
-			webhook.BodyTemplate = bt
-		}
-		channels = append(channels, webhook)
-	}
-	return channels, nil
-}
 
 func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -151,7 +51,8 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	log.Printf("[DEBUG] After %s view, the created view is %+v", req.method, createdView)
 
 	d.SetId(createdView.ViewID)
-	return diags
+
+	return resourceViewRead(ctx, d, m)
 }
 
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -202,28 +103,15 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	// Convert types to maps for setting the schema
 	integrations, diags := view.MapChannelsToSchema()
-	log.Printf("[DEBUG] MapChannelsToSchema result: %+v\n", integrations)
-	if emailChannels := integrations[EMAIL]; emailChannels != nil {
-		appendError(d.Set("email_channel", emailChannels), &diags)
-	}
-	if pagerdutyChannels := integrations[PAGERDUTY]; pagerdutyChannels != nil {
-		appendError(d.Set("pagerduty_channel", pagerdutyChannels), &diags)
-	}
-	if webhookChannels := integrations[WEBHOOK]; webhookChannels != nil {
-		appendError(d.Set("webhook_channel", webhookChannels), &diags)
+	log.Printf("[DEBUG] view MapChannelsToSchema result: %+v\n", integrations)
+
+	// Store the channel responses in the schema - note that this should also NUKE missing
+	// integrations since we have done a PUT operation. Thus, remove non-existing things.
+	for name, value := range integrations {
+		schemaKey := fmt.Sprintf("%s_channel", name)
+		appendError(d.Set(schemaKey, value), &diags)
 	}
 
-	return diags
-}
-
-func appendError(err error, diags *diag.Diagnostics) *diag.Diagnostics {
-	if err != nil {
-		*diags = append(*diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "There was a problem setting the view schema",
-			Detail:   err.Error(),
-		})
-	}
 	return diags
 }
 
@@ -253,7 +141,7 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 
 	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.method, req.apiURL)
 
-	return diags
+	return resourceViewRead(ctx, d, m)
 }
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -294,6 +182,16 @@ func resourceView() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					shouldSuppress := false
+					lowerCaseOld := strings.ToLower(old)
+					lowerCaseNew := strings.ToLower(new)
+					if lowerCaseOld == lowerCaseNew {
+						shouldSuppress = true
+					}
+					log.Println("[DEBUG] Do view category names appear the same (case-insensitive) between state and remote?", shouldSuppress)
+					return shouldSuppress
+				},
 			},
 			"hosts": {
 				Type:     schema.TypeList,
@@ -429,9 +327,9 @@ func resourceView() *schema.Resource {
 								if err != nil {
 									return false
 								}
-								isDiff := reflect.DeepEqual(jsonNew, jsonOld)
-								log.Println("[DEBUG] BodyTemplate value in state appears the same as remote?", isDiff)
-								return isDiff
+								shouldSuppress := reflect.DeepEqual(jsonNew, jsonOld)
+								log.Println("[DEBUG] Does view 'bodytemplate' value in state appear the same as remote?", shouldSuppress)
+								return shouldSuppress
 							},
 						},
 						"headers": {
