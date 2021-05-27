@@ -23,6 +23,11 @@ type viewRequest struct {
 	Tags     []string         `json:"tags,omitempty"`
 }
 
+type alertRequest struct {
+	Name     string           `json:"name,omitempty"`
+	Channels []channelRequest `json:"channels,omitempty"`
+}
+
 type channelRequest struct {
 	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
 	Emails          []string               `json:"emails,omitempty"`
@@ -65,37 +70,64 @@ func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 	}
 
 	// Complex array interfaces
+	view.Channels = *aggregateAllChannelsFromSchema(d, &diags)
 
-	view.Channels = append(
-		view.Channels,
-		*mapChannelsFromSchema(
-			d.Get("email_channel").([]interface{}),
-			EMAIL,
-			&diags,
-		)...,
-	)
-
-	view.Channels = append(
-		view.Channels,
-		*mapChannelsFromSchema(
-			d.Get("pagerduty_channel").([]interface{}),
-			PAGERDUTY,
-			&diags,
-		)...,
-	)
-
-	view.Channels = append(
-		view.Channels,
-		*mapChannelsFromSchema(
-			d.Get("webhook_channel").([]interface{}),
-			WEBHOOK,
-			&diags,
-		)...,
-	)
 	return diags
 }
 
-func mapChannelsFromSchema(listEntries []interface{}, integration string, diags *diag.Diagnostics) *[]channelRequest {
+func (alert *alertRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	alert.Name = d.Get("name").(string)
+
+	// Complex array interfaces
+	alert.Channels = *aggregateAllChannelsFromSchema(d, &diags)
+
+	return diags
+}
+
+func aggregateAllChannelsFromSchema(
+	d *schema.ResourceData,
+	diags *diag.Diagnostics,
+) *[]channelRequest {
+	allChannelEntries := make([]channelRequest, 0)
+
+	allChannelEntries = append(
+		allChannelEntries,
+		*iterateIntegrationType(
+			d.Get("email_channel").([]interface{}),
+			EMAIL,
+			diags,
+		)...,
+	)
+
+	allChannelEntries = append(
+		allChannelEntries,
+		*iterateIntegrationType(
+			d.Get("pagerduty_channel").([]interface{}),
+			PAGERDUTY,
+			diags,
+		)...,
+	)
+
+	allChannelEntries = append(
+		allChannelEntries,
+		*iterateIntegrationType(
+			d.Get("webhook_channel").([]interface{}),
+			WEBHOOK,
+			diags,
+		)...,
+	)
+
+	return &allChannelEntries
+}
+
+func iterateIntegrationType(
+	listEntries []interface{},
+	integration string,
+	diags *diag.Diagnostics,
+) *[]channelRequest {
 	var prepared interface{}
 	channelRequests := []channelRequest{}
 
