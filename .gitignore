@@ -1,4 +1,4 @@
 # In case of `make build`
 terraform-provider-logdna
 
-coverage.out
+coverage

@@ -1,5 +1,5 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-COVERAGEFILE?=coverage.out
+COVERAGEFILE?=coverage/coverage.out
 HOSTNAME=logdna.com
 NAMESPACE=logdna
 NAME=logdna
@@ -35,7 +35,8 @@ test:
 	TF_ACC=1 go test -v $(TESTARGS) ./logdna
 
 testcov:
+	mkdir -p coverage
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -coverprofile $(COVERAGEFILE)
-	go tool cover -html $(COVERAGEFILE)
+	go tool cover -html $(COVERAGEFILE) -o $(COVERAGEFILE).html
 
 .PHONY: build release install test testacc testcov

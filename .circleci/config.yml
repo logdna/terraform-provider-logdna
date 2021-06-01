@@ -27,12 +27,10 @@ jobs:
       - run:
           name: "Run tests"
           command: |
-            mkdir -p /tmp/artifacts
-            TF_ACC=1 go test -v -coverprofile=/tmp/artifacts/profile.out -covermode=count ./logdna
-            go tool cover -html=/tmp/artifacts/profile.out -o /tmp/artifacts/coverage.html
-            goveralls -coverprofile=/tmp/artifacts/profile.out -service=circleci -repotoken $COVERALLS_REPO_TOKEN
+            make testcov
+            goveralls -coverprofile=coverage/coverage.out -service=circleci -repotoken $COVERALLS_REPO_TOKEN
       - store_artifacts:
-          path: /tmp/artifacts  
+          path: coverage
 workflows:
   update:
     jobs:
