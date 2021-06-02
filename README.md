@@ -1,10 +1,9 @@
 # Terraform Provider for LogDNA
 
-[![CircleCI](https://circleci.com/gh/logdna/terraform-provider-logdna/tree/master.svg?style=svg)](https://app.circleci.com/pipelines/github/logdna/terraform-provider-logdna)
-[![Coverage Status](https://coveralls.io/repos/github/logdna/terraform-provider-logdna/badge.svg)](https://coveralls.io/github/logdna/terraform-provider-logdna)
+[![Coverage Status](https://coveralls.io/repos/github/logdna/terraform-provider-logdna/badge.svg?branch=main)](https://coveralls.io/github/logdna/terraform-provider-logdna?branch=main)
 [![Public Beta](https://img.shields.io/badge/-Public%20Beta-404346?style=flat)](#)
 
-[LogDNA](https://logdna.com) is a centralized log management platform. The LogDNA Provider allows organizations to manage Views and Alerts programmatically via Terraform.
+[LogDNA](https://logdna.com) is a centralized log management platform. The LogDNA Terraform Provider allows organizations to manage certain LogDNA resources (alerts, views, etc) programmatically via Terraform.
 
 The [official docs for the LogDNA terraform provider](https://registry.terraform.io/providers/logdna/logdna/latest/docs) can be found in the Terraform registry.
 
@@ -41,7 +40,7 @@ resource "logdna_alert" "my_alert" {
 }
 ```
 
-## Example Terraform Configuration for View-specific Alerts
+## Example Terraform Configuration for Views
 ```
 provider "logdna" {
   servicekey = "Your service key goes here"
