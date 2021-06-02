@@ -315,7 +315,7 @@ func testAlertInvalidURL() string {
 
 	  resource "logdna_alert" "new" {
 		name = "test"
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testAlertConfigMultipleChannelsInvalidJSON() string {
@@ -356,7 +356,7 @@ func testAlertConfigMultipleChannelsInvalidJSON() string {
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testAlertConfigTriggerIntervalError() string {
@@ -375,7 +375,7 @@ func testAlertConfigTriggerIntervalError() string {
           triggerinterval = "17m"
           triggerlimit    = 15
         }
-      }`, servicekey)
+      }`, serviceKey)
 }
 
 func testAlertConfigInvalidPagerDutyTriggerLimitError() string {
@@ -392,7 +392,7 @@ func testAlertConfigInvalidPagerDutyTriggerLimitError() string {
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
-      }`, servicekey)
+      }`, serviceKey)
 }
 
 func testAlertConfigImmediateError() string {
@@ -411,7 +411,7 @@ func testAlertConfigImmediateError() string {
           triggerinterval = "15m"
           triggerlimit    = 15
         }
-      }`, servicekey)
+      }`, serviceKey)
 }
 
 func testAlertConfigURLError() string {
@@ -433,7 +433,7 @@ func testAlertConfigURLError() string {
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testAlertConfigMethodError() string {
@@ -455,7 +455,7 @@ func testAlertConfigMethodError() string {
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testAlertConfigServiceKeyError() string {
@@ -473,7 +473,7 @@ func testAlertNameError() string {
 	}
 
 	resource "logdna_alert" "new" {
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigEmailTriggerLimitError() string {
@@ -492,7 +492,7 @@ func testAlertConfigEmailTriggerLimitError() string {
 			terminal        = "true"
 			timezone        = "Pacific/Samoa"
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigPagerDutyTriggerLimitError() string {
@@ -509,7 +509,7 @@ func testAlertConfigPagerDutyTriggerLimitError() string {
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigWebhookTriggerLimitError() string {
@@ -531,7 +531,7 @@ func testAlertConfigWebhookTriggerLimitError() string {
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigMissingEmails() string {
@@ -549,7 +549,7 @@ func testAlertConfigMissingEmails() string {
 			triggerlimit    = 15
 			timezone        = "Pacific/Samoa"
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigMissingKey() string {
@@ -565,7 +565,7 @@ func testAlertConfigMissingKey() string {
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigMissingURL() string {
@@ -578,7 +578,7 @@ func testAlertConfigMissingURL() string {
 		webhook_channel {
 			triggerlimit    = 15
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigMissingTriggerLimit() string {
@@ -591,7 +591,7 @@ func testAlertConfigMissingTriggerLimit() string {
 		webhook_channel {
 			url = "https://yourwebhook/endpoint"
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testAlertConfigBasic(name string) string {
@@ -610,7 +610,7 @@ func testAlertConfigBasic(name string) string {
 			terminal        = "true"
 			timezone        = "Pacific/Samoa"
 		}
-	}`, servicekey, name)
+	}`, serviceKey, name)
 }
 
 func testAlertConfigMultipleChannels(name string) string {
@@ -660,7 +660,7 @@ func testAlertConfigMultipleChannels(name string) string {
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}
-	}`, servicekey, name)
+	}`, serviceKey, name)
 }
 
 func testAlertExists(n string) resource.TestCheckFunc {

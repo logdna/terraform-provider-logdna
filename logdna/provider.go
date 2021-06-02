@@ -36,11 +36,11 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	servicekey := d.Get("servicekey").(string)
+	serviceKey := d.Get("servicekey").(string)
 	url := d.Get("url").(string)
 
 	return &providerConfig{
-		serviceKey: servicekey,
+		serviceKey: serviceKey,
 		baseURL:    url,
 		httpClient: &http.Client{Timeout: 15 * time.Second},
 	}, nil
