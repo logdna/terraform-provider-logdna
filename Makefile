@@ -1,5 +1,7 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-COVERAGEFILE?=coverage/coverage.out
+COVERAGE_DIR?=coverage
+COVERAGE_FILENAME?=coverprofile.out
+COVERAGE_FILE=$(COVERAGE_DIR)/$(COVERAGE_FILENAME)
 HOSTNAME=logdna.com
 NAMESPACE=logdna
 NAME=logdna
@@ -32,11 +34,11 @@ install: build
 
 # Test just the provider directory. Since there aren't multiple dirs, results will show without buffering
 test:
-	TF_ACC=1 go test -v $(TESTARGS) ./logdna
+	TF_ACC=1 go test -v $(TEST_ARGS) ./logdna
 
 testcov:
-	mkdir -p coverage
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -coverprofile $(COVERAGEFILE)
-	go tool cover -html $(COVERAGEFILE) -o $(COVERAGEFILE).html
+	mkdir -p $(COVERAGE_DIR)
+	TF_ACC=1 go test $(TEST) -v $(TEST_ARGS) -coverprofile $(COVERAGE_FILE)
+	go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
 
 .PHONY: build release install test testacc testcov

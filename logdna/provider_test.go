@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var servicekey = os.Getenv("servicekey")
+var serviceKey = os.Getenv("SERVICE_KEY")
 var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 
@@ -31,7 +31,7 @@ func TestProvider_impl(t *testing.T) {
 // testAccPreCheck validates the necessary test API keys exist
 // in the testing environment
 func testAccPreCheck(t *testing.T) {
-	if servicekey == "" {
-		t.Fatal("'servicekey' environment variable must be set for acceptance tests")
+	if serviceKey == "" {
+		t.Fatal("'SERVICE_KEY' environment variable must be set for acceptance tests")
 	}
 }

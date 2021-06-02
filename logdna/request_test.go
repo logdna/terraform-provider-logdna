@@ -14,8 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const serviceKey = "abc123"
-
 type badClient struct{}
 
 func (fc *badClient) Do(*http.Request) (*http.Response, error) {
@@ -42,7 +40,7 @@ func setJSONMarshal(customMarshaller jsonMarshal) func(*requestConfig) {
 
 func TestRequest_MakeRequest(t *testing.T) {
 	assert := assert.New(t)
-	pc := providerConfig{serviceKey: serviceKey}
+	pc := providerConfig{serviceKey: "abc123"}
 	resourceID := "test123456"
 
 	t.Run("Server receives proper method, URL, and headers", func(t *testing.T) {

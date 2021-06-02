@@ -586,7 +586,7 @@ func testViewInvalidURL() string {
 	  resource "logdna_view" "new" {
 		name = "test"
 		query = "test"
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testViewConfigMultipleChannelsInvalidJSON() string {
@@ -626,7 +626,7 @@ func testViewConfigMultipleChannelsInvalidJSON() string {
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testViewConfigTriggerIntervalError() string {
@@ -646,7 +646,7 @@ func testViewConfigTriggerIntervalError() string {
           triggerinterval = "17m"
           triggerlimit    = 15
         }
-      }`, servicekey)
+      }`, serviceKey)
 }
 
 func testViewConfigImmediateError() string {
@@ -666,7 +666,7 @@ func testViewConfigImmediateError() string {
           triggerinterval = "15m"
           triggerlimit    = 15
         }
-      }`, servicekey)
+      }`, serviceKey)
 }
 
 func testViewConfigURLError() string {
@@ -689,7 +689,7 @@ func testViewConfigURLError() string {
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testViewConfigMethodError() string {
@@ -712,7 +712,7 @@ func testViewConfigMethodError() string {
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey)
+	  }`, serviceKey)
 }
 
 func testViewConfigServiceKeyError() string {
@@ -732,7 +732,7 @@ func testViewConfigNameError() string {
 
 	resource "logdna_view" "new" {
 		query = "test"
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigAppsError() string {
@@ -744,7 +744,7 @@ func testViewConfigAppsError() string {
 		name = "test"
 		query = "test"
 		apps = "test"
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigCategoriesError() string {
@@ -756,7 +756,7 @@ func testViewConfigCategoriesError() string {
 		name = "test"
 		query = "test"
 		categories = "test"
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigHostsError() string {
@@ -768,7 +768,7 @@ func testViewConfigHostsError() string {
 		name = "test"
 		query = "test"
 		hosts = "test"
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigLevelsError() string {
@@ -780,7 +780,7 @@ func testViewConfigLevelsError() string {
 		name = "test"
 		query = "test"
 		levels = "test"
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigTagsError() string {
@@ -792,7 +792,7 @@ func testViewConfigTagsError() string {
 		name = "test"
 		query = "test"
 		tags = "test"
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigEmailTriggerLimitError() string {
@@ -812,7 +812,7 @@ func testViewConfigEmailTriggerLimitError() string {
 			triggerlimit    = 0
 			timezone        = "Pacific/Samoa"
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigPagerDutyTriggerLimitError() string {
@@ -830,7 +830,7 @@ func testViewConfigPagerDutyTriggerLimitError() string {
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigWebhookTriggerLimitError() string {
@@ -853,7 +853,7 @@ func testViewConfigWebhookTriggerLimitError() string {
 			triggerinterval = "15m"
 			triggerlimit    = 0
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigMissingEmails() string {
@@ -872,7 +872,7 @@ func testViewConfigMissingEmails() string {
 			triggerlimit    = 15
 			timezone        = "Pacific/Samoa"
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigMissingKey() string {
@@ -889,7 +889,7 @@ func testViewConfigMissingKey() string {
 			triggerinterval = "15m"
 			triggerlimit    = 15
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigMissingTriggerLimit() string {
@@ -903,7 +903,7 @@ func testViewConfigMissingTriggerLimit() string {
 		webhook_channel {
 			url = "https://yourwebhook/endpoint"
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigMissingURL() string {
@@ -917,7 +917,7 @@ func testViewConfigMissingURL() string {
 		webhook_channel {
 			triggerlimit = 15
 		}
-	}`, servicekey)
+	}`, serviceKey)
 }
 
 func testViewConfigBasic(name, query string) string {
@@ -928,7 +928,7 @@ func testViewConfigBasic(name, query string) string {
 	resource "logdna_view" "new" {
 		name     = "%s"
 		query    = "%s"
-	}`, servicekey, name, query)
+	}`, serviceKey, name, query)
 }
 
 func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2 string) string {
@@ -962,7 +962,7 @@ func testViewConfigBulkEmails(name, query, app1, app2, levels1, levels2, host1, 
 	  triggerlimit    = 15
 	  triggerinterval = "15m"
 	}
-  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
+  }`, serviceKey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
 }
 
 func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2 string) string {
@@ -1018,7 +1018,7 @@ func testViewConfigMultipleChannels(name, query, app1, app2, levels1, levels2, h
 		  triggerinterval = "15m"
 		  triggerlimit    = 15
 		}
-	  }`, servicekey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
+	  }`, serviceKey, name, query, app1, app2, levels1, levels2, host1, host2, category1, category2, tags1, tags2)
 }
 
 func testViewExists(n string) resource.TestCheckFunc {
