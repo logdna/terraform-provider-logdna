@@ -307,17 +307,6 @@ func TestAlertMultipleChannels(t *testing.T) {
 	})
 }
 
-func testAlertInvalidURL() string {
-	return fmt.Sprintf(`provider "logdna" {
-		url = "http://api.logdna.co"
-		servicekey = "%s"
-	  }
-
-	  resource "logdna_alert" "new" {
-		name = "test"
-	  }`, serviceKey)
-}
-
 func testAlertConfigMultipleChannelsInvalidJSON() string {
 	return fmt.Sprintf(`provider "logdna" {
 		servicekey = "%s"
@@ -375,23 +364,6 @@ func testAlertConfigTriggerIntervalError() string {
           triggerinterval = "17m"
           triggerlimit    = 15
         }
-      }`, serviceKey)
-}
-
-func testAlertConfigInvalidPagerDutyTriggerLimitError() string {
-	return fmt.Sprintf(`provider "logdna" {
-		servicekey = "%s"
-	}
-
-      resource "logdna_alert" "new" {
-        name = "test"
-		pagerduty_channel {
-			immediate       = "false"
-			key             = "Your PagerDuty API key goes here"
-			terminal        = "true"
-			triggerinterval = "15m"
-			triggerlimit    = 0
-		}
       }`, serviceKey)
 }
 
@@ -577,19 +549,6 @@ func testAlertConfigMissingURL() string {
 		name     = "test"
 		webhook_channel {
 			triggerlimit    = 15
-		}
-	}`, serviceKey)
-}
-
-func testAlertConfigMissingTriggerLimit() string {
-	return fmt.Sprintf(`provider "logdna" {
-		servicekey = "%s"
-	}
-
-	resource "logdna_alert" "new" {
-		name     = "test"
-		webhook_channel {
-			url = "https://yourwebhook/endpoint"
 		}
 	}`, serviceKey)
 }
