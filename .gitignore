@@ -1,5 +1,4 @@
-# In case of `make build`
-terraform-provider-logdna
-
 coverage
+dist
 .vscode
+*.asc
