@@ -1,20 +1,11 @@
-ARG GO_VERSION
+FROM goreleaser/goreleaser:v0.171.0 as goreleaser
+FROM golang:1.16-buster as build
 
-FROM golang:${GO_VERSION}-buster
+COPY --from=goreleaser /usr/local/bin/goreleaser /usr/local/bin/goreleaser
 
-ARG GO_VERSION
+COPY gpgkey.asc /opt/secrets/gpgkey.asc
+RUN gpg --import /opt/secrets/gpgkey.asc
 
-WORKDIR /opt/app
+RUN go get github.com/mattn/goveralls
 
-COPY ./go.mod ./go.sum ./main.go ./Makefile /opt/app/
-COPY ./logdna /opt/app/logdna
-
-RUN go get golang.org/x/lint/golint \
-  && go get github.com/mattn/goveralls \
-  && go get
-
-ENV COVERAGE_FILENAME=coverprofile-${GO_VERSION}
-
-CMD golint -set_exit_status **/*.go \
-  && make testcov \
-  && goveralls -coverprofile=coverage/${COVERAGE_FILENAME} -service jenkins
+WORKDIR /opt/build

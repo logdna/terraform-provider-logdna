@@ -1,44 +1,70 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
 COVERAGE_DIR?=coverage
 COVERAGE_FILENAME?=coverprofile.out
-COVERAGE_FILE=$(COVERAGE_DIR)/$(COVERAGE_FILENAME)
-HOSTNAME=logdna.com
-NAMESPACE=logdna
-NAME=logdna
-BINARY=terraform-provider-${NAME}
-VERSION=1.1.0
-OS_ARCH=darwin_amd64
+COVERAGE_FILE:=$(COVERAGE_DIR)/$(COVERAGE_FILENAME)
+HOSTNAME:=logdna.com
+NAMESPACE:=logdna
+NAME:=logdna
+PROJECT:=terraform-provider-$(NAME)
+VCS_REF:=$(shell git rev-parse --short HEAD)
+BUILD_IMAGE_NAME?=$(PROJECT):$(VCS_REF)
+GOOS:=$(shell go env GOOS)
+GOARCH:=$(shell go env GOARCH)
 
-default: install
+DOCKER_RUN=docker run --rm -i$(shell [ -t 0 ] && echo t)
+BUILD_ENV=$(DOCKER_RUN) -v $(PWD):/opt/build:Z $(BUILD_FLAGS) $(BUILD_IMAGE_NAME)
+LINT_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app golangci/golangci-lint:v1.41.1 golangci-lint run -v
 
-build:
-	go build -o ${BINARY}
+split-part = $(word $2,$(subst _v, ,$1))
 
-release:
-	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
-	GOOS=freebsd GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_freebsd_386
-	GOOS=freebsd GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_freebsd_amd64
-	GOOS=freebsd GOARCH=arm go build -o ./bin/${BINARY}_${VERSION}_freebsd_arm
-	GOOS=linux GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_linux_386
-	GOOS=linux GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_linux_amd64
-	GOOS=linux GOARCH=arm go build -o ./bin/${BINARY}_${VERSION}_linux_arm
-	GOOS=openbsd GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_openbsd_386
-	GOOS=openbsd GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_openbsd_amd64
-	GOOS=solaris GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_solaris_amd64
-	GOOS=windows GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_windows_386
-	GOOS=windows GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_windows_amd64
+default: install-local
 
-install: build
-	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+.env-%:
+	@if [ -z '${${*}}' ]; then echo 'Environment variable $* not set' && exit 1; fi
 
-# Test just the provider directory. Since there aren't multiple dirs, results will show without buffering
-test:
+build-image:
+	docker build . --rm -t $(BUILD_IMAGE_NAME) 
+
+build: build-image
+	$(BUILD_ENV) goreleaser build --rm-dist --snapshot --single-target
+
+build-local:
+	@goreleaser --version >/dev/null 2>&1 || (echo "ERROR: goreleaser is required."; exit 1)
+	goreleaser build --rm-dist --snapshot --single-target
+
+install-local: BIN_DIR=./dist/$(PROJECT)_$(GOOS)_$(GOARCH)
+install-local: BIN=$(shell basename ./dist/*/*)
+install-local: VERSION=$(call split-part,$(shell basename ./dist/*/*),2)
+install-local: TARGET_DIR=$(HOME)/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/${GOOS}_${GOARCH}
+install-local: build-local
+	mkdir -p ${TARGET_DIR}
+	cp ${BIN_DIR}/${BIN} ${TARGET_DIR}/${PROJECT}
+
+lint:
+	$(LINT_CMD)
+
+test-local: .env-SERVICE_KEY lint
 	TF_ACC=1 go test -v $(TEST_ARGS) ./logdna
 
-testcov:
-	mkdir -p $(COVERAGE_DIR)
-	TF_ACC=1 go test $(TEST) -v $(TEST_ARGS) -coverprofile $(COVERAGE_FILE)
-	go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
+test: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1
+test: .env-SERVICE_KEY build-image lint
+	$(BUILD_ENV) go test -v $(TEST_ARGS) ./logdna
 
-.PHONY: build release install test testacc testcov
+testcov: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1 
+testcov: .env-SERVICE_KEY build-image lint
+	mkdir -p $(COVERAGE_DIR)
+	$(BUILD_ENV) go test $(TEST) -v $(TEST_ARGS) -coverprofile $(COVERAGE_FILE)
+	$(BUILD_ENV) go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
+
+postcov: BUILD_FLAGS:=--env COVERALLS_TOKEN 
+postcov: testcov .env-COVERALLS_TOKEN
+	$(BUILD_ENV) goveralls -coverprofile=${COVERAGE_FILE} -service jenkins
+
+test-release: build-image
+	$(BUILD_ENV) goreleaser release --rm-dist --snapshot
+
+release: BUILD_FLAGS:=--env GITHUB_TOKEN
+release: build-image .env-GITHUB_TOKEN
+	$(BUILD_ENV) goreleaser release --rm-dist
+
+.PHONY: build build-image build-local install-local lint test-local test testcov postcov test-release release

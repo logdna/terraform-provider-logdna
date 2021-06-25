@@ -24,62 +24,82 @@ pipeline {
         }
       }
       steps {
-        error("A maintainer needs to approve this PR for CI by commenting")
+        error('A maintainer needs to approve this PR for CI by commenting')
       }
     }
 
-    stage('Test Suite') {
-      matrix {
-        axes {
-          axis {
-              name 'GO_VERSION'
-              values '1.14', '1.16'
+    stage('Test') {
+      agent {
+        node {
+          label 'ec2-fleet'
+          customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
+        }
+      }
+
+      steps {
+        script {
+          withCredentials([
+            string(credentialsId: 'logdna-gpg-key', variable: 'GPG_KEY'),
+            string(credentialsId: 'terraform-provider-servicekey', variable: 'SERVICE_KEY'),
+            string(credentialsId: 'terraform-provider-coveralls', variable: 'COVERALLS_TOKEN')
+          ]) {
+            sh '''
+              set +x
+              echo "$GPG_KEY" > gpgkey.asc              
+              make postcov
+              make test-release
+            '''
           }
         }
+      }
 
-        agent {
-          node {
-            label 'ec2-fleet'
-            customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}-${GO_VERSION}"
+      post {
+        always {
+          sh 'rm -f gpgkey.asc'
+          publishHTML target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'coverage/',
+            reportFiles: '*.html',
+            reportName: 'Code Coverage'
+          ]
+          archiveArtifacts 'dist/*'
+        }
+      }
+    }
+
+    stage('Release') {
+      when {
+        beforeAgent true
+        buildingTag()
+      }
+
+      agent {
+        node {
+          label 'ec2-fleet'
+          customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
+        }
+      }
+
+      steps {
+        script {
+          withCredentials([
+            string(credentialsId: 'logdna-gpg-key', variable: 'GPG_KEY'),
+            string(credentialsId: 'github-api-token', variable: 'GITHUB_TOKEN')
+          ]) {
+            sh '''
+              set +x
+              echo "$GPG_KEY" > gpgkey.asc              
+              make release
+            '''
           }
         }
+      }
 
-        environment {
-          SERVICE_KEY = credentials('terraform-provider-servicekey')
-          COVERALLS_TOKEN = credentials('terraform-provider-coveralls')
-        }
-
-        stages {
-          stage('Test') {
-            steps {
-              script {
-                compose.up(
-                  PROJECT_NAME
-                , ['compose/test.yml']
-                , ['build': true]
-                )
-              }
-            }
-
-            post {
-              always {
-                script {
-                  compose.down(
-                    ['compose/test.yml']
-                  , [('remove-orphans'): true, ('volumes'): true, ('rmi'): 'local']
-                  )
-                }
-                publishHTML target: [
-                  allowMissing: false,
-                  alwaysLinkToLastBuild: false,
-                  keepAll: true,
-                  reportDir: 'coverage/',
-                  reportFiles: '*.html',
-                  reportName: "Code Coverage for Go ${GO_VERSION}"
-                ]
-              }
-            }
-          }
+      post {
+        always {
+          sh 'rm -f gpgkey.asc'
         }
       }
     }
