@@ -70,7 +70,8 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 	t.Run("Reads and decodes response from the server", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
+			err := json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
+			assert.Nil(err, "No errors")
 		}))
 		defer ts.Close()
 
@@ -176,7 +177,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Error(err, "Expected error")
 		assert.Equal(
 			true,
-			strings.Contains(err.Error(), "Error during HTTP request: FAKE ERROR calling httpClient.Do"),
+			strings.Contains(err.Error(), "error during HTTP request: FAKE ERROR calling httpClient.Do"),
 			"Expected error message",
 		)
 	})
@@ -208,7 +209,8 @@ func TestRequest_MakeRequest(t *testing.T) {
 	t.Run("Handles errors when creating a new HTTP request", func(t *testing.T) {
 		const ERROR = "FAKE ERROR for body reader"
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
+			err := json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
+			assert.Nil(err, "No errors")
 		}))
 		defer ts.Close()
 
@@ -227,7 +229,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Error(err, "Expected error")
 		assert.Equal(
 			true,
-			strings.Contains(err.Error(), "Error parsing HTTP response: "+ERROR),
+			strings.Contains(err.Error(), "error parsing HTTP response: "+ERROR),
 			"Expected error message",
 		)
 	})

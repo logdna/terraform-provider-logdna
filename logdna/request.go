@@ -67,13 +67,13 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	req.Header.Set("servicekey", c.serviceKey)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Error during HTTP request: %s", err)
+		return nil, fmt.Errorf("error during HTTP request: %s", err)
 	}
 	defer res.Body.Close()
 
 	body, err := c.bodyReader(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing HTTP response: %s, %s", err, string(body))
+		return nil, fmt.Errorf("error parsing HTTP response: %s, %s", err, string(body))
 	}
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%s %s, status %d NOT OK! %s", c.method, c.apiURL, res.StatusCode, string(body))

@@ -15,7 +15,7 @@ func TestView_expectInvalidURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testViewInvalidURL(),
-				ExpectError: regexp.MustCompile("Error: Error during HTTP request: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co"),
+				ExpectError: regexp.MustCompile("Error: error during HTTP request: Post \"http://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co"),
 			},
 		},
 	})
@@ -888,20 +888,6 @@ func testViewConfigMissingKey() string {
 			terminal        = "true"
 			triggerinterval = "15m"
 			triggerlimit    = 15
-		}
-	}`, serviceKey)
-}
-
-func testViewConfigMissingTriggerLimit() string {
-	return fmt.Sprintf(`provider "logdna" {
-		servicekey = "%s"
-	}
-
-	resource "logdna_view" "new" {
-		name     = "test"
-		query    = "test"
-		webhook_channel {
-			url = "https://yourwebhook/endpoint"
 		}
 	}`, serviceKey)
 }
