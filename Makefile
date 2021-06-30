@@ -11,11 +11,12 @@ BUILD_IMAGE_NAME?=$(PROJECT):$(VCS_REF)
 GOOS:=$(shell go env GOOS)
 GOARCH:=$(shell go env GOARCH)
 
+GOLANG_LINT_VERSION=1.41.1
 DOCKER_RUN=docker run --rm -i$(shell [ -t 0 ] && echo t)
 BUILD_ENV=$(DOCKER_RUN) -v $(PWD):/opt/build:Z $(BUILD_FLAGS) $(BUILD_IMAGE_NAME)
-LINT_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app golangci/golangci-lint:v1.41.1 golangci-lint run -v
+LINT_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app golangci/golangci-lint:v$(GOLANG_LINT_VERSION) golangci-lint run -v
 
-split-part = $(word $2,$(subst _v, ,$1))
+split-bin-filename = $(word $2,$(subst _v, ,$1))
 
 default: install-local
 
@@ -23,6 +24,7 @@ default: install-local
 	@if [ -z '${${*}}' ]; then echo 'Environment variable $* not set' && exit 1; fi
 
 build-image:
+	@test -f gpgkey.asc || (echo GPG key missing: ./gpgkey.asc; exit 1;)
 	docker build . --rm -t $(BUILD_IMAGE_NAME) 
 
 build: build-image
@@ -34,7 +36,7 @@ build-local:
 
 install-local: BIN_DIR=./dist/$(PROJECT)_$(GOOS)_$(GOARCH)
 install-local: BIN=$(shell basename ./dist/*/*)
-install-local: VERSION=$(call split-part,$(shell basename ./dist/*/*),2)
+install-local: VERSION=$(call split-bin-filename,$(shell basename ./dist/*/*),2)
 install-local: TARGET_DIR=$(HOME)/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/${GOOS}_${GOARCH}
 install-local: build-local
 	mkdir -p ${TARGET_DIR}

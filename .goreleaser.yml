@@ -29,6 +29,6 @@ checksum:
 signs:
   - artifacts: checksum
 release:
-  draft: true # REMOVE BEFORE ATTEMPTING PRE-RELEASE
+  draft: true # Require manual release publishing
 changelog:
   skip: true
