@@ -171,6 +171,9 @@ func resourceView() *schema.Resource {
 		ReadContext:   resourceViewRead,
 		UpdateContext: resourceViewUpdate,
 		DeleteContext: resourceViewDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"apps": {
