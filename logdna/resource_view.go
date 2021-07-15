@@ -3,239 +3,161 @@ package logdna
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
+	"reflect"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Channel contains optional and required fields for creating an alert with LogDNA
-type Channel struct {
-	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
-	Emails          []string               `json:"emails,omitempty"`
-	Headers         map[string]string      `json:"headers,omitempty"`
-	Immediate       string                 `json:"immediate,omitempty"`
-	Integration     string                 `json:"integration,omitempty"`
-	Key             string                 `json:"key,omitempty"`
-	Method          string                 `json:"method,omitempty"`
-	Operator        string                 `json:"operator,omitempty"`
-	Terminal        string                 `json:"terminal,omitempty"`
-	TriggerInterval string                 `json:"triggerinterval,omitempty"`
-	TriggerLimit    int                    `json:"triggerlimit,omitempty"`
-	Timezone        string                 `json:"timezone,omitempty"`
-	URL             string                 `json:"url,omitempty"`
-}
-
-func buildChannels(emailChannels []interface{}, pagerDutyChannels []interface{}, webhookChannels []interface{}) ([]Channel, error) {
-	var channels []Channel
-	for _, emailChannel := range emailChannels {
-		i := emailChannel.(map[string]interface{})
-
-		emails := i["emails"].([]interface{})
-		immediate := i["immediate"].(string)
-		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
-		triggerInterval := i["triggerinterval"].(string)
-		triggerLimit := i["triggerlimit"].(int)
-		timezone := i["timezone"].(string)
-
-		var emailStrings []string
-
-		for _, email := range emails {
-			emailStrings = append(emailStrings, email.(string))
-		}
-
-		email := Channel{
-			Emails:          emailStrings,
-			Immediate:       immediate,
-			Integration:     "email",
-			Operator:        operator,
-			Terminal:        terminal,
-			TriggerInterval: triggerInterval,
-			TriggerLimit:    triggerLimit,
-			Timezone:        timezone,
-		}
-
-		channels = append(channels, email)
-	}
-
-	for _, pagerDutyChannel := range pagerDutyChannels {
-		i := pagerDutyChannel.(map[string]interface{})
-
-		immediate := i["immediate"].(string)
-		key := i["key"].(string)
-		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
-		triggerInterval := i["triggerinterval"].(string)
-		triggerLimit := i["triggerlimit"].(int)
-
-		pagerDuty := Channel{
-			Immediate:       immediate,
-			Integration:     "pagerduty",
-			Key:             key,
-			Operator:        operator,
-			Terminal:        terminal,
-			TriggerInterval: triggerInterval,
-			TriggerLimit:    triggerLimit,
-		}
-
-		channels = append(channels, pagerDuty)
-	}
-
-	for _, webhookChannel := range webhookChannels {
-		i := webhookChannel.(map[string]interface{})
-
-		bodytemplate := i["bodytemplate"].(string)
-		headers := i["headers"].(map[string]interface{})
-		immediate := i["immediate"].(string)
-		method := i["method"].(string)
-		operator := i["operator"].(string)
-		terminal := i["terminal"].(string)
-		triggerInterval := i["triggerinterval"].(string)
-		triggerLimit := i["triggerlimit"].(int)
-		url := i["url"].(string)
-
-		headersMap := make(map[string]string)
-
-		for k, v := range headers {
-			headersMap[k] = v.(string)
-		}
-
-		webhook := Channel{
-			Headers:         headersMap,
-			Immediate:       immediate,
-			Integration:     "webhook",
-			Operator:        operator,
-			Method:          method,
-			TriggerInterval: triggerInterval,
-			TriggerLimit:    triggerLimit,
-			URL:             url,
-			Terminal:        terminal,
-		}
-
-		if bodytemplate != "" {
-			var bt map[string]interface{}
-			err := json.Unmarshal([]byte(bodytemplate), &bt)
-
-			if err != nil {
-				return channels, err
-			}
-			webhook.BodyTemplate = bt
-		}
-		channels = append(channels, webhook)
-	}
-	return channels, nil
-}
+// Constants for identifying channel names easily
+const (
+	EMAIL     = "email"
+	PAGERDUTY = "pagerduty"
+	WEBHOOK   = "webhook"
+)
 
 func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
-	name := d.Get("name").(string)
-	query := d.Get("query").(string)
-	categories := d.Get("categories").([]interface{})
-	hosts := d.Get("hosts").([]interface{})
-	tags := d.Get("tags").([]interface{})
-	apps := d.Get("apps").([]interface{})
-	levels := d.Get("levels").([]interface{})
-	emailChannels := d.Get("email_channel").([]interface{})
-	pagerDutyChannels := d.Get("pagerduty_channel").([]interface{})
-	webhookChannels := d.Get("webhook_channel").([]interface{})
+	var diags diag.Diagnostics
+	pc := m.(*providerConfig)
 
-	channels, err := buildChannels(emailChannels, pagerDutyChannels, webhookChannels)
-	if err != nil {
-		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
-	}
-	var categoryStrings []string
-	var hostStrings []string
-	var tagStrings []string
-	var appStrings []string
-	var levelStrings []string
+	view := viewRequest{}
 
-	for _, app := range apps {
-		appStrings = append(appStrings, app.(string))
-	}
-	for _, category := range categories {
-		categoryStrings = append(categoryStrings, category.(string))
-	}
-	for _, host := range hosts {
-		hostStrings = append(hostStrings, host.(string))
-	}
-	for _, level := range levels {
-		levelStrings = append(levelStrings, level.(string))
-	}
-	for _, tag := range tags {
-		tagStrings = append(tagStrings, tag.(string))
+	if diags = view.CreateRequestBody(d); diags.HasError() {
+		return diags
 	}
 
-	payload := ViewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	resp, err := client.CreateView(config.URL, payload)
+	req := newRequestConfig(
+		pc,
+		"POST",
+		"/v1/config/view",
+		view,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(resp)
-	return nil
+
+	createdView := viewResponse{}
+	err = json.Unmarshal(body, &createdView)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("[DEBUG] After %s view, the created view is %+v", req.method, createdView)
+
+	d.SetId(createdView.ViewID)
+
+	return resourceViewRead(ctx, d, m)
 }
 
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+	var diags diag.Diagnostics
+
+	pc := m.(*providerConfig)
+	viewID := d.Id()
+
+	req := newRequestConfig(
+		pc,
+		"GET",
+		fmt.Sprintf("/v1/config/view/%s", viewID),
+		nil,
+	)
+
+	body, err := req.MakeRequest()
+
+	log.Printf("[DEBUG] GET view raw response body %s\n", body)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Cannot read the remote view resource",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
+	view := viewResponse{}
+	err = json.Unmarshal(body, &view)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Cannot unmarshal response from the remote view resource",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+	log.Printf("[DEBUG] The GET view structure is as follows: %+v\n", view)
+
+	// Top level keys can be set directly
+	appendError(d.Set("name", view.Name), &diags)
+	appendError(d.Set("query", view.Query), &diags)
+	appendError(d.Set("categories", view.Category), &diags)
+	appendError(d.Set("hosts", view.Hosts), &diags)
+	appendError(d.Set("tags", view.Tags), &diags)
+	appendError(d.Set("apps", view.Apps), &diags)
+	appendError(d.Set("levels", view.Levels), &diags)
+
+	// Convert types to maps for setting the schema
+	integrations, diags := view.MapChannelsToSchema()
+	log.Printf("[DEBUG] view MapChannelsToSchema result: %+v\n", integrations)
+
+	// Store the channel responses in the schema - note that this should also NUKE missing
+	// integrations since we have done a PUT operation. Thus, remove non-existing things.
+	for name, value := range integrations {
+		schemaKey := fmt.Sprintf("%s_channel", name)
+		appendError(d.Set(schemaKey, value), &diags)
+	}
+
+	return diags
 }
 
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	var diags diag.Diagnostics
+	pc := m.(*providerConfig)
 	viewID := d.Id()
-	name := d.Get("name").(string)
-	query := d.Get("query").(string)
-	categories := d.Get("categories").([]interface{})
-	hosts := d.Get("hosts").([]interface{})
-	tags := d.Get("tags").([]interface{})
-	apps := d.Get("apps").([]interface{})
-	levels := d.Get("levels").([]interface{})
-	emailChannels := d.Get("email_channel").([]interface{})
-	pagerDutyChannels := d.Get("pagerduty_channel").([]interface{})
-	webhookChannels := d.Get("webhook_channel").([]interface{})
+	view := viewRequest{}
 
-	channels, err := buildChannels(emailChannels, pagerDutyChannels, webhookChannels)
-	if err != nil {
-		return diag.FromErr(errors.New("bodytemplate json configuration is invalid"))
-	}
-	var categoryStrings []string
-	var hostStrings []string
-	var tagStrings []string
-	var appStrings []string
-	var levelStrings []string
-
-	for _, app := range apps {
-		appStrings = append(appStrings, app.(string))
-	}
-	for _, category := range categories {
-		categoryStrings = append(categoryStrings, category.(string))
-	}
-	for _, host := range hosts {
-		hostStrings = append(hostStrings, host.(string))
-	}
-	for _, level := range levels {
-		levelStrings = append(levelStrings, level.(string))
-	}
-	for _, tag := range tags {
-		tagStrings = append(tagStrings, tag.(string))
+	if diags = view.CreateRequestBody(d); diags.HasError() {
+		return diags
 	}
 
-	payload := ViewPayload{Name: name, Query: query, Apps: appStrings, Levels: levelStrings, Hosts: hostStrings, Category: categoryStrings, Tags: tagStrings, Channels: channels}
-	err = client.UpdateView(config.URL, viewID, payload)
+	req := newRequestConfig(
+		pc,
+		"PUT",
+		fmt.Sprintf("/v1/config/view/%s", viewID),
+		view,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return nil
+
+	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.method, req.apiURL)
+
+	return resourceViewRead(ctx, d, m)
 }
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	config := m.(*config)
-	client := Client{ServiceKey: config.ServiceKey, HTTPClient: config.HTTPClient}
+	pc := m.(*providerConfig)
 	viewID := d.Id()
-	err := client.DeleteView(config.URL, viewID)
+
+	req := newRequestConfig(
+		pc,
+		"DELETE",
+		fmt.Sprintf("/v1/config/view/%s", viewID),
+		nil,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s view %s", req.method, req.apiURL, body)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -260,6 +182,16 @@ func resourceView() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					shouldSuppress := false
+					lowerCaseOld := strings.ToLower(old)
+					lowerCaseNew := strings.ToLower(new)
+					if lowerCaseOld == lowerCaseNew {
+						shouldSuppress = true
+					}
+					log.Println("[DEBUG] Do view category names appear the same (case-insensitive) between state and remote?", shouldSuppress)
+					return shouldSuppress
+				},
 			},
 			"hosts": {
 				Type:     schema.TypeList,
@@ -299,6 +231,7 @@ func resourceView() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"operator": {
 							Type:     schema.TypeString,
@@ -307,6 +240,7 @@ func resourceView() *schema.Resource {
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"timezone": {
 							Type:     schema.TypeString,
@@ -338,6 +272,7 @@ func resourceView() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"key": {
 							Type:     schema.TypeString,
@@ -346,10 +281,12 @@ func resourceView() *schema.Resource {
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "presence",
 						},
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,
@@ -377,6 +314,23 @@ func resourceView() *schema.Resource {
 						"bodytemplate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							// This function compares JSON, ignoring whitespace that can occur in a .tf config.
+							// Without this, `terraform apply` will think values are different from remote to state.
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								var jsonOld, jsonNew interface{}
+								var err error
+								err = json.Unmarshal([]byte(old), &jsonOld)
+								if err != nil {
+									return false
+								}
+								err = json.Unmarshal([]byte(new), &jsonNew)
+								if err != nil {
+									return false
+								}
+								shouldSuppress := reflect.DeepEqual(jsonNew, jsonOld)
+								log.Println("[DEBUG] Does view 'bodytemplate' value in state appear the same as remote?", shouldSuppress)
+								return shouldSuppress
+							},
 						},
 						"headers": {
 							Type: schema.TypeMap,
@@ -388,6 +342,7 @@ func resourceView() *schema.Resource {
 						"immediate": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"method": {
 							Type:     schema.TypeString,
@@ -396,10 +351,12 @@ func resourceView() *schema.Resource {
 						"operator": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "presence",
 						},
 						"terminal": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "false",
 						},
 						"triggerinterval": {
 							Type:     schema.TypeString,

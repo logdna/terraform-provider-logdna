@@ -7,13 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type config struct {
-	ServiceKey string
-	URL        string
-	HTTPClient *http.Client
+type providerConfig struct {
+	serviceKey string
+	baseURL    string
+	httpClient *http.Client
 }
 
-// Provider sets the schema to a servicekey and url and adds logdna_view as a resource
+// Provider initializes the schema with a service key and hooks for our resources
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -36,8 +36,12 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	servicekey := d.Get("servicekey").(string)
+	serviceKey := d.Get("servicekey").(string)
 	url := d.Get("url").(string)
 
-	return &config{ServiceKey: servicekey, URL: url, HTTPClient: &http.Client{Timeout: 15 * time.Second}}, nil
+	return &providerConfig{
+		serviceKey: serviceKey,
+		baseURL:    url,
+		httpClient: &http.Client{Timeout: 15 * time.Second},
+	}, nil
 }

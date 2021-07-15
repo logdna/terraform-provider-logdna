@@ -1,0 +1,8 @@
+terraform-provider-logdna
+Jenkinsfile
+coverage
+compose
+docs
+examples
+dist
+.vscode
