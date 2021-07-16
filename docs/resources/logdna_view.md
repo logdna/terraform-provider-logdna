@@ -68,6 +68,17 @@ resource "logdna_view" "my_view" {
 }
 ```
 
+## Import
+
+Views can be imported by `id`, which can be found in the URL when editing the
+View in the web UI:
+
+```sh
+$ terraform import logdna_view.your-view-name <id>
+```
+
+Note that only the alert channels supported by this provider will be imported.
+
 ## Argument Reference
 
 The following arguments are supported by `logdna_view`:
