@@ -250,6 +250,11 @@ func TestViewBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "query", query),
 				),
 			},
+			{
+				ResourceName:      "logdna_view.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -279,6 +284,11 @@ func TestViewBasicUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "query", query2),
 				),
 			},
+			{
+				ResourceName:      "logdna_view.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -305,6 +315,11 @@ func TestViewJSONUpdateError(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testViewExists("logdna_view.new"),
 				),
+			},
+			{
+				ResourceName:      "logdna_view.new",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config:      testViewConfigMultipleChannelsInvalidJSON(),
@@ -374,6 +389,11 @@ func TestViewBulkEmails(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "tags.1", tags2),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channels.#", "0"),
 				),
+			},
+			{
+				ResourceName:      "logdna_view.new",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -495,6 +515,11 @@ func TestViewBulkEmailsUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channels.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "logdna_view.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -572,6 +597,11 @@ func TestViewMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.0.url", "https://yourwebhook/endpoint"),
 				),
+			},
+			{
+				ResourceName:      "logdna_view.new",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

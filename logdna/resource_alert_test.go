@@ -196,6 +196,11 @@ func TestAlertBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "logdna_alert.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -245,6 +250,11 @@ func TestAlertBasicUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "logdna_alert.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -260,6 +270,11 @@ func TestAlertJSONUpdateError(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAlertExists("logdna_alert.new"),
 				),
+			},
+			{
+				ResourceName:      "logdna_alert.new",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config:      testAlertConfigMultipleChannelsInvalidJSON(),
@@ -298,6 +313,11 @@ func TestAlertMultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.0.bodytemplate", "{\n  \"fields\": {\n    \"description\": \"{{ matches }} matches found for {{ name }}\",\n    \"issuetype\": {\n      \"name\": \"Bug\"\n    },\n    \"project\": {\n      \"key\": \"test\"\n    },\n    \"summary\": \"Alert From {{ name }}\"\n  }\n}"),
 				),
+			},
+			{
+				ResourceName:      "logdna_alert.new",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config:      testAlertConfigMultipleChannelsInvalidJSON(),
