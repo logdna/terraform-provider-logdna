@@ -135,6 +135,7 @@ func mapChannelPagerDuty(channel *channelResponse) map[string]interface{} {
 
 	return c
 }
+
 func mapChannelWebhook(channel *channelResponse) map[string]interface{} {
 	c := make(map[string]interface{})
 
