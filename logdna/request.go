@@ -42,7 +42,7 @@ func newRequestConfig(pc *providerConfig, method string, uri string, body interf
 		jsonMarshal: json.Marshal,
 	}
 
-	// Used during esting only; Allow mutations passed in by tests
+	// Used during testing only; Allow mutations passed in by tests
 	for _, mutator := range mutators {
 		mutator(rc)
 	}

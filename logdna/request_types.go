@@ -53,21 +53,11 @@ func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 	view.Query = d.Get("query").(string)
 
 	// Simple arrays
-	for _, app := range d.Get("apps").([]interface{}) {
-		view.Apps = append(view.Apps, app.(string))
-	}
-	for _, category := range d.Get("categories").([]interface{}) {
-		view.Category = append(view.Category, category.(string))
-	}
-	for _, host := range d.Get("hosts").([]interface{}) {
-		view.Hosts = append(view.Hosts, host.(string))
-	}
-	for _, level := range d.Get("levels").([]interface{}) {
-		view.Levels = append(view.Levels, level.(string))
-	}
-	for _, tag := range d.Get("tags").([]interface{}) {
-		view.Tags = append(view.Tags, tag.(string))
-	}
+	view.Apps = listToStrings(d.Get("apps").([]interface{}))
+	view.Category = listToStrings(d.Get("categories").([]interface{}))
+	view.Hosts = listToStrings(d.Get("hosts").([]interface{}))
+	view.Levels = listToStrings(d.Get("levels").([]interface{}))
+	view.Tags = listToStrings(d.Get("tags").([]interface{}))
 
 	// Complex array interfaces
 	view.Channels = *aggregateAllChannelsFromSchema(d, &diags)
@@ -230,4 +220,16 @@ func webHookChannelRequest(s map[string]interface{}, diags *diag.Diagnostics) ch
 	}
 
 	return c
+}
+
+func listToStrings(list []interface{}) []string {
+	strs := make([]string, 0, len(list))
+	for _, elem := range list {
+		val, ok := elem.(string)
+		if ok && val != "" {
+			strs = append(strs, val)
+		}
+	}
+
+	return strs
 }
