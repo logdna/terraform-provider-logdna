@@ -23,6 +23,7 @@ pipeline {
           triggeredBy 'issueCommentCause'
         }
       }
+
       steps {
         error('A maintainer needs to approve this PR for CI by commenting')
       }
@@ -34,6 +35,10 @@ pipeline {
           label 'ec2-fleet'
           customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
         }
+      }
+
+      environment {
+        GIT_BRANCH = "${CURRENT_BRANCH}"
       }
 
       steps {
