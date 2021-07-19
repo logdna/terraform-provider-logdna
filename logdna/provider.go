@@ -28,9 +28,10 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"logdna_alert":         resourceAlert(),
-			"logdna_view":          resourceView(),
-			"logdna_stream_config": resourceStreamConfig(),
+			"logdna_alert":            resourceAlert(),
+			"logdna_view":             resourceView(),
+			"logdna_stream_config":    resourceStreamConfig(),
+			"logdna_stream_exclusion": resourceStreamExclusion(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
