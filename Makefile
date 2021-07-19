@@ -46,7 +46,8 @@ lint:
 	$(LINT_CMD)
 
 test-local: .env-SERVICE_KEY lint
-	TF_ACC=1 go test -v $(TEST_ARGS) ./logdna
+	TF_ACC=1 go test -v $(TEST_ARGS) ./logdna -coverprofile $(COVERAGE_FILE)
+	go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
 
 test: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1
 test: .env-SERVICE_KEY build-image lint
@@ -58,7 +59,7 @@ testcov: .env-SERVICE_KEY build-image lint
 	$(BUILD_ENV) go test $(TEST) -v $(TEST_ARGS) -coverprofile $(COVERAGE_FILE)
 	$(BUILD_ENV) go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
 
-postcov: BUILD_FLAGS:=--env COVERALLS_TOKEN 
+postcov: BUILD_FLAGS:=--env COVERALLS_TOKEN --env GIT_BRANCH
 postcov: testcov .env-COVERALLS_TOKEN
 	$(BUILD_ENV) goveralls -coverprofile=${COVERAGE_FILE} -service jenkins
 
