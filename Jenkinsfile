@@ -1,6 +1,7 @@
 library 'magic-butler-catalogue'
 def PROJECT_NAME = 'terraform-provider-logdna'
 def CURRENT_BRANCH = currentBranch()
+def MAIN_BRANCH = 'main'
 def TRIGGER_PATTERN = ".*@logdnabot.*"
 
 pipeline {
@@ -55,6 +56,16 @@ pipeline {
               make test-release
             '''
           }
+
+          sh '''
+            set +x
+            git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+            git fetch --tags
+            export CURRENT_TAG=$(make version-current)
+            export NEXT_TAG=$(make version-next)
+            echo "Latest: ${CURRENT_TAG}"
+            echo "Next: ${NEXT_TAG}"
+          '''
         }
       }
 
@@ -77,7 +88,7 @@ pipeline {
     stage('Release') {
       when {
         beforeAgent true
-        buildingTag()
+        branch MAIN_BRANCH
       }
 
       agent {
@@ -85,6 +96,10 @@ pipeline {
           label 'ec2-fleet'
           customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
         }
+      }
+
+      environment {
+        GIT_BRANCH = "${CURRENT_BRANCH}"
       }
 
       steps {
@@ -95,6 +110,13 @@ pipeline {
           ]) {
             sh '''
               set +x
+              git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+              git fetch --tags
+              export NEXT_TAG=$(make version-next)
+              echo "Creating release for ${NEXT_TAG}"
+              
+              git tag ${NEXT_TAG}
+              git push origin ${NEXT_TAG}
               echo "$GPG_KEY" > gpgkey.asc              
               make release
             '''

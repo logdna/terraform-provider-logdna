@@ -114,17 +114,50 @@ The provider can be built and installed locally in `$HOME` by running:
 make install-local
 ```
 
+After running `make install-local`, you will be able to reference the snapshot build
+version in any local Terraform configuration. For example:
+
+```hcl
+terraform {
+  required_providers {
+    logdna = {
+      source = "logdna.com/logdna/logdna"
+      version = "1.2.0-pre-SNAPSHOT-b9faaaa"
+    }
+  }
+}
+```
+
 ### Docker
 
 The included tooling can be used to test and build the provider inside a Docker build
 environment, without installing any dependencies locally. 
 
 You will need an ascii-armored GPG key in the root of the project at `./gpgkey.asc` for
-signing test builds.
+signing test builds. If you do not already have a personal GPG key, you can generate one
+by [following this guide](https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/generating-a-new-gpg-key).
+
+Export your key to the root of this repository:
+
+```sh
+gpg --armor --export <ID> > ./gpgkey.asc
+```
+
+**NOTE:** This is only for local testing via Docker. The release process should
+only be run from CI which will sign binaries with the proper production key.
+
+The following build targets are useful for running locally within Docker:
 
 ```sh
 make test         # run tests
-make testcov      # run tests and generate a coverage report
 make build        # build the provider for your host OS/ARCH
 make test-release # build for all supported targets
 ```
+
+### Tagging and Release
+
+This project uses [`svu`](https://github.com/caarlos0/svu) for parsing
+[conventional commit messages](https://github.com/caarlos0/svu#commit-messages-vs-what-they-do)
+and determining the next version/tag. Once code is merged into `main`, a release will be
+built and created as a draft in GitHub. The draft release must be published manually in
+GitHub for it to be pulled in by the Terraform Registry.

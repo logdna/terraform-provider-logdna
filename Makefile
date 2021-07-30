@@ -15,6 +15,7 @@ GOLANG_LINT_VERSION=1.41.1
 DOCKER_RUN=docker run --rm -i$(shell [ -t 0 ] && echo t)
 BUILD_ENV=$(DOCKER_RUN) -v $(PWD):/opt/build:Z $(BUILD_FLAGS) $(BUILD_IMAGE_NAME)
 LINT_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app golangci/golangci-lint:v$(GOLANG_LINT_VERSION) golangci-lint run -v
+VERSION_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app -- ghcr.io/caarlos0/svu
 
 split-bin-filename = $(word $2,$(subst _v, ,$1))
 
@@ -70,4 +71,7 @@ release: BUILD_FLAGS:=--env GITHUB_TOKEN
 release: build-image .env-GITHUB_TOKEN
 	$(BUILD_ENV) goreleaser release --rm-dist
 
-.PHONY: build build-image build-local install-local lint test-local test testcov postcov test-release release
+version-%:
+	@$(VERSION_CMD) $*
+
+.PHONY: build build-image build-local install-local lint test-local test testcov postcov test-release release version-%
