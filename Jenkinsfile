@@ -2,6 +2,8 @@ library 'magic-butler-catalogue'
 def PROJECT_NAME = 'terraform-provider-logdna'
 def CURRENT_BRANCH = currentBranch()
 def MAIN_BRANCH = 'main'
+def GIT_REPO = 'logdna/terraform-provider-logdna'
+def GIT_AUTHOR = 'logdnabot'
 def TRIGGER_PATTERN = ".*@logdnabot.*"
 
 pipeline {
@@ -100,6 +102,8 @@ pipeline {
 
       environment {
         GIT_BRANCH = "${CURRENT_BRANCH}"
+        GIT_AUTHOR = "${GIT_AUTHOR}"
+        GIT_REPO = "${GIT_REPO}"
       }
 
       steps {
@@ -111,6 +115,10 @@ pipeline {
             sh '''
               set +x
               git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+              git config user.name "LogDNA Bot"
+              git config user.email "bot@logdna.com"
+              git config remote.origin.url "https://${GIT_AUTHOR}:${GITHUB_TOKEN}@github.com/${GIT_REPO}"
+
               git fetch --tags
               export NEXT_TAG=$(make version-next)
               echo "Creating release for ${NEXT_TAG}"
