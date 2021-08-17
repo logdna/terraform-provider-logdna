@@ -27,6 +27,9 @@ func Provider() *schema.Provider {
 				Default:  "https://api.logdna.com",
 			},
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"logdna_alert": dataSourceAlert(),
+		},
 		ResourcesMap: map[string]*schema.Resource{
 			"logdna_alert":            resourceAlert(),
 			"logdna_view":             resourceView(),
