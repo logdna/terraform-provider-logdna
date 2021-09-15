@@ -100,6 +100,10 @@ In order to test the provider you will need to have a `SERVICE_KEY` environment 
 exported in your shell. Your service key can be generated or retrieved from your LogDNA
 account at **Settings > Organization > API Keys**.
 
+To run the archiving tests, you will need to have `S3_BUCKET`, `GCS_BUCKET`, `GCS_PROJECTID` environment
+variables exported in your shell. These should be valid settings to create S3 and GCS archiving
+configurations.
+
 ### Local Test, Build, & Install
 
 During development, the full test suite can be run with:

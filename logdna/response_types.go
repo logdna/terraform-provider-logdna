@@ -50,6 +50,25 @@ type channelResponse struct {
 	URL             string            `json:"url,omitempty"`
 }
 
+type archiveResponse struct {
+	Integration        string `json:"integration"`
+	Bucket             string `json:"bucket"`
+	Endpoint           string `json:"endpoint"`
+	ApiKey             string `json:"apikey"`
+	ResourceInstanceId string `json:"resourceinstanceid"`
+	AccountName        string `json:"accountname"`
+	AccountKey         string `json:"accountkey"`
+	ProjectId          string `json:"projectid"`
+	Space              string `json:"space"`
+	AccessKey          string `json:"accesskey"`
+	SecretKey          string `json:"secretkey"`
+	AuthURL            string `json:"authurl"`
+	Expires            int    `json:"expires,omitempty"`
+	UserName           string `json:"username"`
+	Password           string `json:"password"`
+	TenantName         string `json:"tenantname"`
+}
+
 func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
 	channels := view.Channels
 	channelIntegrations, diags := mapAllChannelsToSchema("view", &channels)

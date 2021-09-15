@@ -14,7 +14,7 @@ GOARCH:=$(shell go env GOARCH)
 GOLANG_LINT_VERSION=1.41.1
 DOCKER_RUN=docker run --rm -i$(shell [ -t 0 ] && echo t)
 BUILD_ENV=$(DOCKER_RUN) -v $(PWD):/opt/build:Z $(BUILD_FLAGS) $(BUILD_IMAGE_NAME)
-LINT_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app golangci/golangci-lint:v$(GOLANG_LINT_VERSION) golangci-lint run -v
+LINT_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app golangci/golangci-lint:v$(GOLANG_LINT_VERSION) golangci-lint run -v --timeout=1h
 VERSION_CMD=$(DOCKER_RUN) -v $(PWD):/app -w /app -- ghcr.io/caarlos0/svu
 
 split-bin-filename = $(word $2,$(subst _v, ,$1))
