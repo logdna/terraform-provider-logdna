@@ -32,6 +32,7 @@ func Provider() *schema.Provider {
 			"logdna_view":             resourceView(),
 			"logdna_stream_config":    resourceStreamConfig(),
 			"logdna_stream_exclusion": resourceStreamExclusion(),
+			"logdna_archive":          resourceArchiveConfig(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
