@@ -36,13 +36,6 @@ func TestStreamExclusion_expectInvalidError(t *testing.T) {
 			},
 			{
 				Config: testStreamExclusion(`
-					title = ""
-					query = "test-query"
-				`, ""),
-				ExpectError: regexp.MustCompile(`\\"title\\" is not allowed to be empty`),
-			},
-			{
-				Config: testStreamExclusion(`
 					title = "test-title"
 					apps = []
 				`, ""),

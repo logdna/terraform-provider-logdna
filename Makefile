@@ -44,6 +44,7 @@ install-local: build-local
 	cp ${BIN_DIR}/${BIN} ${TARGET_DIR}/${PROJECT}
 
 lint:
+	mkdir -p $(COVERAGE_DIR)
 	$(LINT_CMD)
 
 test-local: .env-SERVICE_KEY lint
@@ -56,7 +57,6 @@ test: .env-SERVICE_KEY build-image lint
 
 testcov: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1 
 testcov: .env-SERVICE_KEY build-image lint
-	mkdir -p $(COVERAGE_DIR)
 	$(BUILD_ENV) go test $(TEST) -v $(TEST_ARGS) -coverprofile $(COVERAGE_FILE)
 	$(BUILD_ENV) go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
 

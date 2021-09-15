@@ -161,7 +161,8 @@ func resourceStreamExclusion() *schema.Resource {
 			},
 			"title": {
 				Type:     schema.TypeString,
-				Required: true,
+				Default:  nil,
+				Optional: true,
 			},
 			"active": {
 				Type:     schema.TypeBool,
