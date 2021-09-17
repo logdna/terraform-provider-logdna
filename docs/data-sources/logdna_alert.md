@@ -25,6 +25,39 @@ resource "logdna_alert" "managed" {
     terminal        = "true"
     timezone        = "Pacific/Samoa"
   }
+
+  pagerduty_channel {
+    immediate       = "true"
+    key             = "Your PagerDuty API key goes here"
+    terminal        = "true"
+    triggerinterval = "15m"
+    triggerlimit    = 15
+  }
+
+  slack_channel {
+    immediate       = "false"
+    operator        = "absence"
+    terminal        = "true"
+    triggerinterval = "15m"
+    triggerlimit    = 15
+    url             = "https://hooks.slack.com/services/identifier/secret"
+  }
+
+  webhook_channel {
+    bodytemplate = jsonencode({
+      message = "Alerts from {{name}}"
+    })
+    headers = {
+      "Authentication" = "auth_header_value"
+      "HeaderTwo"      = "ValueTwo"
+    }
+    immediate       = "false"
+    method          = "post"
+    terminal        = "true"
+    triggerinterval = "15m"
+    triggerlimit    = 15
+    url             = "https://yourwebhook/endpoint"
+ }
 }
 
 # create data source by referencing the ID from an alert declared in the same config
@@ -44,6 +77,7 @@ resource "logdna_view" "test" {
 
   email_channel = data.logdna_alert.managed_remote.email_channel
   pagerduty_channel = data.logdna_alert.external_remote.pagerduty_channel
+  slack_channel = data.logdna_alert.external_remote.slack_channel
   webhook_channel = data.logdna_alert.external_remote.webhook_channel
 }
 ```
@@ -63,4 +97,5 @@ The following attributes (if they exist) can be referenced in the `logdna_alert`
 - `name`: Name of the given preset alert
 - `email_channel`: List of notifications configured via email in the given preset alert
 - `pagerduty_channel`: List of notifications configured via PagerDuty in the given preset alert
+- `slack_channel`: List of notifications configured via Slack in the given preset alert
 - `webhook_channel`: List of notifications configured via webhook(s) in the given preset alert

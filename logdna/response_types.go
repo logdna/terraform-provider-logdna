@@ -93,6 +93,7 @@ func mapAllChannelsToSchema(
 	channelIntegrations := map[string][]interface{}{
 		EMAIL:     make([]interface{}, 0),
 		PAGERDUTY: make([]interface{}, 0),
+		SLACK:     make([]interface{}, 0),
 		WEBHOOK:   make([]interface{}, 0),
 	}
 
@@ -108,6 +109,8 @@ func mapAllChannelsToSchema(
 			prepared = mapChannelEmail(&c)
 		case PAGERDUTY:
 			prepared = mapChannelPagerDuty(&c)
+		case SLACK:
+			prepared = mapChannelSlack(&c)
 		case WEBHOOK:
 			prepared = mapChannelWebhook(&c)
 		default:
@@ -151,6 +154,19 @@ func mapChannelPagerDuty(channel *channelResponse) map[string]interface{} {
 	c["terminal"] = strconv.FormatBool(channel.Terminal)
 	c["triggerlimit"] = channel.TriggerLimit
 	c["triggerinterval"] = channel.TriggerInterval
+
+	return c
+}
+
+func mapChannelSlack(channel *channelResponse) map[string]interface{} {
+	c := make(map[string]interface{})
+
+	c["immediate"] = strconv.FormatBool(channel.Immediate)
+	c["operator"] = channel.Operator
+	c["terminal"] = strconv.FormatBool(channel.Terminal)
+	c["triggerlimit"] = channel.TriggerLimit
+	c["triggerinterval"] = channel.TriggerInterval
+	c["url"] = channel.URL
 
 	return c
 }

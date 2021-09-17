@@ -20,6 +20,7 @@ func TestResponseTypes_mapAllChannelsToSchema(t *testing.T) {
 		expected := map[string][]interface{}{
 			EMAIL:     make([]interface{}, 0),
 			PAGERDUTY: make([]interface{}, 0),
+			SLACK:     make([]interface{}, 0),
 			WEBHOOK:   make([]interface{}, 0),
 		}
 		assert.Equal(expected, channelIntegrations, "Nothing was returned")
