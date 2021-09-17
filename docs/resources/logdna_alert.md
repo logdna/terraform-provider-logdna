@@ -24,9 +24,8 @@ resource "logdna_alert" "my_alert" {
     timezone        = "Pacific/Samoa"
   }
 }
-
-
 ```
+
 ## Example - Multi-channel Preset Alert
 
 ```hcl
@@ -55,6 +54,15 @@ resource "logdna_alert" "my_alert" {
     triggerlimit    = 15
   }
 
+  slack_channel {
+    immediate       = "false"
+    operator        = "absence"
+    terminal        = "true"
+    triggerinterval = "15m"
+    triggerlimit    = 15
+    url             = "https://hooks.slack.com/services/identifier/secret"
+  }
+
   webhook_channel {
     bodytemplate = jsonencode({
       message = "Alerts from {{name}}"
@@ -79,7 +87,7 @@ Preset Alerts can be imported by `id`, which can be found in the URL when editin
 Preset Alert in the web UI:
 
 ```sh
-$ terraform import logdna_alert.your-alert-name <id>
+terraform import logdna_alert.your-alert-name <id>
 ```
 
 Note that only the alert channels supported by this provider will be imported.
@@ -113,6 +121,16 @@ The following arguments are supported by `logdna_alert`:
 - `triggerinterval`: **_string_** _(Optional; Defaults: `"30"` for presence; `"15m"` for absence)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`.
 - `triggerlimit`: **_integer (Required)_** Number of lines before the Alert is triggered (e.g. setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`).
 
+### slack_channel
+
+`slack_channel` supports the following arguments:
+
+- `immediate`: **_string_** _(Optional; Default: `"false"`)_ Whether the Alert will trigger immediately after the trigger limit is reached. Valid options are `"true"` and `"false"` for presence Alerts and `"false"` for absence Alerts.
+- `terminal`: **_string_** _(Optional; Default: `"true"`)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g., send an Alert after 30s). Valid options are `"true"` and `"false"` for presence Alerts and `"true"` for absence Alerts.
+- `triggerinterval`: **_string_** _(Optional; Defaults: `"30"` for presence; `"15m"` for absence)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`.
+- `triggerlimit`: **_integer (Required)_** Number of lines before the Alert is triggered (e.g. setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`).
+- `url`: **_string (Required)_** The URL of the webhook for a given Slack application/integration (& channel).
+
 ### webhook_channel
 
 `webhook_channel` supports the following arguments:
@@ -126,5 +144,3 @@ The following arguments are supported by `logdna_alert`:
 - `triggerinterval`: **_string_** _(Optional; Defaults: `"30"` for presence; `"15m"` for absence)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`.
 - `triggerlimit`: **_integer (Required)_** Number of lines before the Alert is triggered (e.g. setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`).
 - `url`: **_string (Required)_** The URL of the webhook.
-
-

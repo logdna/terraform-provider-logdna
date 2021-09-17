@@ -104,6 +104,15 @@ func aggregateAllChannelsFromSchema(
 	allChannelEntries = append(
 		allChannelEntries,
 		*iterateIntegrationType(
+			d.Get("slack_channel").([]interface{}),
+			SLACK,
+			diags,
+		)...,
+	)
+
+	allChannelEntries = append(
+		allChannelEntries,
+		*iterateIntegrationType(
 			d.Get("webhook_channel").([]interface{}),
 			WEBHOOK,
 			diags,
@@ -133,6 +142,8 @@ func iterateIntegrationType(
 			prepared = emailChannelRequest(e)
 		case PAGERDUTY:
 			prepared = pagerDutyChannelRequest(e)
+		case SLACK:
+			prepared = slackChannelRequest(e)
 		case WEBHOOK:
 			prepared = webHookChannelRequest(e, diags)
 		default:
@@ -179,6 +190,20 @@ func pagerDutyChannelRequest(s map[string]interface{}) channelRequest {
 		Terminal:        s["terminal"].(string),
 		TriggerInterval: s["triggerinterval"].(string),
 		TriggerLimit:    s["triggerlimit"].(int),
+	}
+
+	return c
+}
+
+func slackChannelRequest(s map[string]interface{}) channelRequest {
+	c := channelRequest{
+		Immediate:       s["immediate"].(string),
+		Integration:     SLACK,
+		Operator:        s["operator"].(string),
+		Terminal:        s["terminal"].(string),
+		TriggerInterval: s["triggerinterval"].(string),
+		TriggerLimit:    s["triggerlimit"].(int),
+		URL:             s["url"].(string),
 	}
 
 	return c

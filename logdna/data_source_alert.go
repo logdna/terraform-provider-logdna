@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var schemaStr = &schema.Schema{
+var intSchema = &schema.Schema{
 	Type:     schema.TypeInt,
 	Computed: true,
 }
-var schemaInt = &schema.Schema{
+var strSchema = &schema.Schema{
 	Type:     schema.TypeString,
 	Computed: true,
 }
 var alertProps = map[string]*schema.Schema{
-	"immediate":       schemaInt,
-	"operator":        schemaInt,
-	"terminal":        schemaInt,
-	"triggerinterval": schemaInt,
-	"triggerlimit":    schemaStr,
+	"immediate":       strSchema,
+	"operator":        strSchema,
+	"terminal":        strSchema,
+	"triggerinterval": strSchema,
+	"triggerlimit":    intSchema,
 }
 
 func dataSourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -89,7 +89,7 @@ func dataSourceAlert() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"name": schemaInt,
+			"name": strSchema,
 			"email_channel": {
 				Type: schema.TypeList,
 				Elem: &schema.Resource{
@@ -104,6 +104,13 @@ func dataSourceAlert() *schema.Resource {
 				},
 				Computed: true,
 			},
+			"slack_channel": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: getAlertSchema("slack"),
+				},
+				Computed: true,
+			},
 			"webhook_channel": {
 				Type: schema.TypeList,
 				Elem: &schema.Resource{
@@ -115,15 +122,15 @@ func dataSourceAlert() *schema.Resource {
 	}
 }
 
-func getAlertSchema(chanl string) map[string]*schema.Schema {
+func getAlertSchema(chnl string) map[string]*schema.Schema {
 	schma := map[string]*schema.Schema{}
 	for key, value := range alertProps {
 		schma[key] = value
 	}
 
-	switch chanl {
+	switch chnl {
 	case "email":
-		schma["timezone"] = schemaInt
+		schma["timezone"] = strSchema
 		schma["emails"] = &schema.Schema{
 			Type: schema.TypeList,
 			Elem: &schema.Schema{
@@ -131,12 +138,14 @@ func getAlertSchema(chanl string) map[string]*schema.Schema {
 			},
 			Computed: true,
 		}
+	case "slack":
+		schma["url"] = strSchema
 	case "pagerduty":
-		schma["key"] = schemaInt
+		schma["key"] = strSchema
 	case "webhook":
-		schma["bodytemplate"] = schemaInt
-		schma["method"] = schemaInt
-		schma["url"] = schemaInt
+		schma["bodytemplate"] = strSchema
+		schma["method"] = strSchema
+		schma["url"] = strSchema
 		schma["headers"] = &schema.Schema{
 			Type: schema.TypeMap,
 			Elem: &schema.Schema{

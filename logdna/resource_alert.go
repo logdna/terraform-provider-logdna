@@ -255,6 +255,48 @@ func resourceAlert() *schema.Resource {
 					},
 				},
 			},
+			"slack_channel": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"immediate": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "false",
+						},
+						"operator": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "presence",
+						},
+						"terminal": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "false",
+						},
+						"triggerinterval": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"triggerlimit": {
+							Type:     schema.TypeInt,
+							Required: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(int)
+								if v < 1 || v > 100000 {
+									errs = append(errs, fmt.Errorf("%q must be between 1 and 100,000 inclusive, got: %d", key, v))
+								}
+								return
+							},
+						},
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"webhook_channel": {
 				Type:     schema.TypeList,
 				Optional: true,
