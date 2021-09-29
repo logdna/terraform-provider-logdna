@@ -49,11 +49,14 @@ pipeline {
           withCredentials([
             string(credentialsId: 'logdna-gpg-key', variable: 'GPG_KEY'),
             string(credentialsId: 'terraform-provider-servicekey', variable: 'SERVICE_KEY'),
-            string(credentialsId: 'terraform-provider-coveralls', variable: 'COVERALLS_TOKEN')
+            string(credentialsId: 'terraform-provider-coveralls', variable: 'COVERALLS_TOKEN'),
+            string(credentialsId: 'terraform-test-s3-bucket', variable: 'S3_BUCKET'),
+            string(credentialsId: 'terraform-test-gcs-bucket', variable: 'GCS_BUCKET'),
+            string(credentialsId: 'terraform-test-gcs-projectid', variable: 'GCS_PROJECTID')
           ]) {
             sh '''
               set +x
-              echo "$GPG_KEY" > gpgkey.asc              
+              echo "$GPG_KEY" > gpgkey.asc
               make postcov
               make test-release
             '''
@@ -122,10 +125,10 @@ pipeline {
               git fetch --tags
               export NEXT_TAG=$(make version-next)
               echo "Creating release for ${NEXT_TAG}"
-              
+
               git tag ${NEXT_TAG}
               git push origin ${NEXT_TAG}
-              echo "$GPG_KEY" > gpgkey.asc              
+              echo "$GPG_KEY" > gpgkey.asc
               make release
             '''
           }

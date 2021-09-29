@@ -128,7 +128,7 @@ $ terraform import logdna_archive.config archive
 
 The following arguments are supported by `logdna_archive`:
 
-_Note:_ `integration` field must be specified along with the other fields required for the integration to create an archiving configuration.
+_Note:_ `integration` field must be specified alongside its associated config arguments (ex: integration: "s3" must include s3_config{<args>})
 
 - `integration`: **string _(Required)_** Archiving integration. Valid values are `ibm`, `s3`, `azblob`, `gcs`, `dos`, `swift`
 
@@ -136,43 +136,43 @@ _Note:_ `integration` field must be specified along with the other fields requir
 
 `ibm_config` supports the following arguments:
 
-- `bucket`: **string _(Required)_** Bucket
-- `endpoint`: **string _(Required)_** Public endpoint
-- `apikey`: **string _(Required)_** API key
-- `resourceinstanceid`: **string _(Required)_** Resource Instance ID
+- `bucket`: **string _(Required)_** IBM COS storage bucket name
+- `endpoint`: **string _(Required)_** IBM COS public (region) endpoint
+- `apikey`: **string _(Required)_** IBM COS API key
+- `resourceinstanceid`: **string _(Required)_** IBM COS instance identifier
 
 ### azblob_config
 
 `azblob_config` supports the following arguments:
 
-- `accountname`: **string _(Required)_** Storage account name
-- `accountkey`: **string _(Required)_** Storage account key
+- `accountname`: **string _(Required)_** Azure Blob Storage account name
+- `accountkey`: **string _(Required)_** Azure Blob Storage account access key
 
 ### gcs_config
 
 `gcs_config` supports the following arguments:
 
-- `bucket`: **string _(Required)_** Bucket
-- `projectid`: **string _(Required)_** Project ID
+- `bucket`: **string _(Required)_** Google Cloud Storage bucket name
+- `projectid`: **string _(Required)_** Google Cloud project identifier
 
 ### dos_config
 
 `dos_config` supports the following arguments:
 
-- `space`: **string _(Required)_** Space for Digital Ocean Spaces
-- `endpoint`: **string _(Required)_** Public endpoint
-- `accesskey`: **string _(Required)_** Spaces Access key
-- `secretkey`: **string _(Required)_** Spaces Secret key
+- `space`: **string _(Required)_** DigitalOcean Spaces storage "bucket" name
+- `endpoint`: **string _(Required)_** DigitalOcean Spaces (region) endpoint
+- `accesskey`: **string _(Required)_** DigitalOcean Spaces API access key
+- `secretkey`: **string _(Required)_** DigitalOcean Spaces API secret key
 
 ### swift_config
 
 `swift_config` supports the following arguments:
 
-- `authurl`: **string _(Required)_** Auth URL
-- `expires`: **_integer (Optional)_** Days till expiry
-- `username`: **string _(Required)_** Username
-- `password`: **string _(Required)_** Password
-- `tenantname`: **string _(Required)_** Tenant
+- `authurl`: **string _(Required)_** OpenStack Swift authentication URL
+- `expires`: **_integer (Optional)_** OpenStack Swift storage object days till expiry
+- `username`: **string _(Required)_** OpenStack Swift user name
+- `password`: **string _(Required)_** OpenStack Swift user password
+- `tenantname`: **string _(Required)_** OpenStack Swift tenant/project/account name
 
 Note that the provided settings must be valid. The connection to
 the archiving integration will be validated before the configuration

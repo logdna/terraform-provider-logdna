@@ -165,8 +165,6 @@ func setArchiveConfig(cn archiveResponse, d *schema.ResourceData, diags diag.Dia
 }
 
 func resourceArchiveConfigCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
 	c, err := generateArchiveConfig(d)
 
@@ -194,8 +192,7 @@ func resourceArchiveConfigCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	d.SetId(archiveConfigID)
 
-	setArchiveConfig(cn, d, diags)
-	return diags
+	return resourceArchiveConfigRead(ctx, d, m)
 }
 
 func resourceArchiveConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -236,8 +233,6 @@ func resourceArchiveConfigRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceArchiveConfigUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
 	c, err := generateArchiveConfig(d)
 
@@ -263,8 +258,7 @@ func resourceArchiveConfigUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	setArchiveConfig(cn, d, diags)
-	return diags
+	return resourceArchiveConfigRead(ctx, d, m)
 }
 
 func resourceArchiveConfigDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

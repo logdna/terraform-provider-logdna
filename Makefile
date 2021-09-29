@@ -26,7 +26,7 @@ default: install-local
 
 build-image:
 	@test -f gpgkey.asc || (echo GPG key missing: ./gpgkey.asc; exit 1;)
-	docker build . --rm -t $(BUILD_IMAGE_NAME) 
+	docker build . --rm -t $(BUILD_IMAGE_NAME)
 
 build: build-image
 	$(BUILD_ENV) goreleaser build --rm-dist --snapshot --single-target
@@ -47,15 +47,15 @@ lint:
 	mkdir -p $(COVERAGE_DIR)
 	$(LINT_CMD)
 
-test-local: .env-SERVICE_KEY lint
+test-local: .env-SERVICE_KEY .env-S3_BUCKET .env-GCS_BUCKET .env-GCS_PROJECTID lint
 	TF_ACC=1 go test -v $(TEST_ARGS) ./logdna -coverprofile $(COVERAGE_FILE)
 	go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
 
-test: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1
+test: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1 --env S3_BUCKET --env GCS_BUCKET --env GCS_PROJECTID
 test: .env-SERVICE_KEY build-image lint
 	$(BUILD_ENV) go test -v $(TEST_ARGS) ./logdna
 
-testcov: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1 
+testcov: BUILD_FLAGS:=--env SERVICE_KEY --env TF_ACC=1 --env S3_BUCKET --env GCS_BUCKET --env GCS_PROJECTID
 testcov: .env-SERVICE_KEY build-image lint
 	$(BUILD_ENV) go test $(TEST) -v $(TEST_ARGS) -coverprofile $(COVERAGE_FILE)
 	$(BUILD_ENV) go tool cover -html $(COVERAGE_FILE) -o $(COVERAGE_FILE).html
