@@ -44,7 +44,7 @@ The following arguments are supported by `logdna_stream_exclusion`:
 
 _Note:_ A `title` and at least one of the following properties: `apps`, `hosts`, `query` must be specified to create this resource.
 
-- `title`: **string** _(Required)_ Title of this exclusion rule that will appear in the UI.
+- `title`: **string** _(Optional)_ Title of this exclusion rule that will appear in the UI.
 - `active`: **_bool_** _(Optional; Default: false)_ Whether the rule should be active.
 - `apps`: **_[]string_** _(Optional)_ Array of app names to exclude.
 - `hosts`: **_[]string_** _(Optional)_ Array of hosts to exclude.

@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceStreamExclusionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+const baseIngestionExclusionUrl = "/v1/config/ingestion/exclusions"
+
+func resourceIngestionExclusionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	pc := m.(*providerConfig)
@@ -24,7 +26,7 @@ func resourceStreamExclusionCreate(ctx context.Context, d *schema.ResourceData, 
 	req := newRequestConfig(
 		pc,
 		"POST",
-		"/v1/config/stream/exclusions",
+		baseIngestionExclusionUrl,
 		ex,
 	)
 
@@ -49,14 +51,14 @@ func resourceStreamExclusionCreate(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceStreamExclusionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIngestionExclusionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	pc := m.(*providerConfig)
 	req := newRequestConfig(
 		pc,
 		"GET",
-		fmt.Sprintf("/v1/config/stream/exclusions/%s", d.Id()),
+		fmt.Sprintf("%s/%s", baseIngestionExclusionUrl, d.Id()),
 		nil,
 	)
 
@@ -64,7 +66,7 @@ func resourceStreamExclusionRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Cannot read the remote stream exclusion resource",
+			Summary:  "Cannot read the remote ingestion exclusion resource",
 			Detail:   err.Error(),
 		})
 		return diags
@@ -75,7 +77,7 @@ func resourceStreamExclusionRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Cannot unmarshal response from the remote stream exclusion resource",
+			Summary:  "Cannot unmarshal response from the remote ingestion exclusion resource",
 			Detail:   err.Error(),
 		})
 		return diags
@@ -90,7 +92,7 @@ func resourceStreamExclusionRead(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceStreamExclusionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIngestionExclusionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	pc := m.(*providerConfig)
 	ex := exclusionRule{
 		Title:  d.Get("title").(string),
@@ -103,7 +105,7 @@ func resourceStreamExclusionUpdate(ctx context.Context, d *schema.ResourceData, 
 	req := newRequestConfig(
 		pc,
 		"PATCH",
-		fmt.Sprintf("/v1/config/stream/exclusions/%s", d.Id()),
+		fmt.Sprintf("%s/%s", baseIngestionExclusionUrl, d.Id()),
 		ex,
 	)
 
@@ -112,15 +114,15 @@ func resourceStreamExclusionUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceStreamExclusionRead(ctx, d, m)
+	return resourceIngestionExclusionRead(ctx, d, m)
 }
 
-func resourceStreamExclusionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIngestionExclusionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	pc := m.(*providerConfig)
 	req := newRequestConfig(
 		pc,
 		"DELETE",
-		fmt.Sprintf("/v1/config/stream/exclusions/%s", d.Id()),
+		fmt.Sprintf("%s/%s", baseIngestionExclusionUrl, d.Id()),
 		nil,
 	)
 
@@ -133,12 +135,12 @@ func resourceStreamExclusionDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceStreamExclusion() *schema.Resource {
+func resourceIngestionExclusion() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceStreamExclusionCreate,
-		ReadContext:   resourceStreamExclusionRead,
-		UpdateContext: resourceStreamExclusionUpdate,
-		DeleteContext: resourceStreamExclusionDelete,
+		CreateContext: resourceIngestionExclusionCreate,
+		ReadContext:   resourceIngestionExclusionRead,
+		UpdateContext: resourceIngestionExclusionUpdate,
+		DeleteContext: resourceIngestionExclusionDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
