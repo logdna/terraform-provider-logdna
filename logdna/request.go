@@ -64,6 +64,7 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Request-Source", "terraform")
 	req.Header.Set("servicekey", c.serviceKey)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
