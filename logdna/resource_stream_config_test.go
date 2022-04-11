@@ -19,7 +19,7 @@ func TestStreamConfig_expectInvalidURLError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testStreamConfig(`
-					brokers = ["https://broker-1.example.org:9090"]
+					brokers = ["broker-1.example.org:9090"]
 					topic = "test-topic"
 					user = "test-user"
 					password = "test-password"
@@ -36,12 +36,12 @@ func TestStreamConfig_expectInvalidBrokerError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testStreamConfig(`
-					brokers = ["https://broker-1.example.org:9090"]
+					brokers = ["broker-1.example.org:9090"]
 					topic = "test-topic"
 					user = "test-user"
 					password = "test-password"
 				`, ""),
-				ExpectError: regexp.MustCompile(`Unable to validate connection to the Kafka broker`),
+				ExpectError: regexp.MustCompile(`Failed to connect to Kafka broker`),
 			},
 		},
 	})
@@ -53,7 +53,7 @@ func TestStreamConfig_expectInvalidConfigError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testStreamConfig(`
-					brokers = ["https://broker-1.example.org:9090"]
+					brokers = ["broker-1.example.org:9090"]
 					topic = ""
 					user = ""
 					password = ""
@@ -67,8 +67,8 @@ func TestStreamConfig_expectInvalidConfigError(t *testing.T) {
 func TestStreamConfig_basic(t *testing.T) {
 	assert := assert.New(t)
 	brokers := []string{
-		"https://broker-1.example.org:9090",
-		"https://broker-2.example.org:9090",
+		"broker-1.example.org:9090",
+		"broker-2.example.org:9090",
 	}
 	topic := "test-topic"
 	user := "test-user"

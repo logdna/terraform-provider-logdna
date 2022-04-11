@@ -29,6 +29,10 @@ var rsDefaults = map[string]map[string]string{
 		"query":      `"test"`,
 		"tags":       "",
 	},
+	"category": {
+		"name": `"test"`,
+		"type": `"views"`,
+	},
 }
 var chnlDefaults = map[string]map[string]string{
 	"email": {
@@ -91,9 +95,9 @@ func cloneDefaults(dfts map[string]string) map[string]string {
 	return clone
 }
 
-func fmtTestConfigResource(objTyp, rsName string, pcArgs []string, rsArgs map[string]string, chArgs map[string]map[string]string) string {
+func fmtTestConfigResource(objTyp, rsName string, pcArgs []string, rsArgs map[string]string, chArgs map[string]map[string]string, dependencies []string) string {
 	pc := fmtProviderBlock(pcArgs...)
-	rs := fmtResourceBlock(objTyp, rsName, rsArgs, chArgs)
+	rs := fmtResourceBlock(objTyp, rsName, rsArgs, chArgs, dependencies)
 	return fmt.Sprintf("%s\n%s", pc, rs)
 }
 
@@ -110,7 +114,7 @@ func fmtProviderBlock(args ...string) string {
 	return fmt.Sprintf(tmplPc, pcCfg)
 }
 
-func fmtResourceBlock(objTyp, rsName string, rsArgs map[string]string, chArgs map[string]map[string]string) string {
+func fmtResourceBlock(objTyp, rsName string, rsArgs map[string]string, chArgs map[string]map[string]string, dependencies []string) string {
 	var rsCfg strings.Builder
 	fmt.Fprint(&rsCfg, fmtBlockArgs(1, rsArgs))
 
@@ -119,6 +123,10 @@ func fmtResourceBlock(objTyp, rsName string, rsArgs map[string]string, chArgs ma
 		fmt.Fprintf(&rsCfg, "\t%s_channel {\n", rgxDgt.ReplaceAllString(chName, ""))
 		fmt.Fprint(&rsCfg, fmtBlockArgs(2, chArgs))
 		fmt.Fprintf(&rsCfg, "\t}\n")
+	}
+
+	if len(dependencies) > 0 {
+		fmt.Fprintf(&rsCfg, "\tdepends_on = [\"%s\"]\n", strings.Join(dependencies[:], "\",\""))
 	}
 
 	rsType := fmt.Sprintf("logdna_%s", objTyp)

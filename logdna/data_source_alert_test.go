@@ -19,25 +19,25 @@ func TestDataAlert_BulkChannels(t *testing.T) {
 		"email":  cloneDefaults(chnlDefaults["email"]),
 		"email1": cloneDefaults(chnlDefaults["email"]),
 	}
-	emsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, emArgs)
+	emsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, emArgs, nilLst)
 
 	pdArgs := map[string]map[string]string{
 		"pagerduty":  cloneDefaults(chnlDefaults["pagerduty"]),
 		"pagerduty1": cloneDefaults(chnlDefaults["pagerduty"]),
 	}
-	pdsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, pdArgs)
+	pdsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, pdArgs, nilLst)
 
 	slArgs := map[string]map[string]string{
 		"slack":  cloneDefaults(chnlDefaults["slack"]),
 		"slack1": cloneDefaults(chnlDefaults["slack"]),
 	}
-	slsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, slArgs)
+	slsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, slArgs, nilLst)
 
 	wbArgs := map[string]map[string]string{
 		"webhook":  cloneDefaults(chnlDefaults["webhook"]),
 		"webhook1": cloneDefaults(chnlDefaults["webhook"]),
 	}
-	wbsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, wbArgs)
+	wbsCfg := fmtTestConfigResource("alert", "test", nilLst, alertDefaults, wbArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -104,7 +104,7 @@ func TestDataSourceAlert_MultipleChannels(t *testing.T) {
 		"slack":     cloneDefaults(chnlDefaults["slack"]),
 		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
 	}
-	fmtCfg := fmt.Sprintf("%s\n%s", fmtTestConfigResource("alert", "test", nilLst, alertDefaults, chArgs), ds)
+	fmtCfg := fmt.Sprintf("%s\n%s", fmtTestConfigResource("alert", "test", nilLst, alertDefaults, chArgs, nilLst), ds)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,

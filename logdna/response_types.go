@@ -69,6 +69,12 @@ type archiveResponse struct {
 	TenantName         string `json:"tenantname,omitempty"`
 }
 
+type categoryResponse struct {
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
+	Id   string `json:"id"`
+}
+
 func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
 	channels := view.Channels
 	channelIntegrations, diags := mapAllChannelsToSchema("view", &channels)
