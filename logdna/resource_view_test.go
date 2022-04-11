@@ -20,7 +20,7 @@ func TestView_ErrorProviderUrl(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      fmtTestConfigResource("view", "new", pcArgs, viewDefaults, nilOpt),
+				Config:      fmtTestConfigResource("view", "new", pcArgs, viewDefaults, nilOpt, nilLst),
 				ExpectError: regexp.MustCompile("Error: error during HTTP request: Post \"https://api.logdna.co/v1/config/view\": dial tcp: lookup api.logdna.co"),
 			},
 		},
@@ -30,27 +30,27 @@ func TestView_ErrorProviderUrl(t *testing.T) {
 func TestView_ErrorsResourceFields(t *testing.T) {
 	nme := cloneDefaults(rsDefaults["view"])
 	nme["name"] = ""
-	nmeCfg := fmtTestConfigResource("view", "new", nilLst, nme, nilOpt)
+	nmeCfg := fmtTestConfigResource("view", "new", nilLst, nme, nilOpt, nilLst)
 
 	app := cloneDefaults(rsDefaults["view"])
 	app["apps"] = `"invalid apps value"`
-	appCfg := fmtTestConfigResource("view", "new", nilLst, app, nilOpt)
+	appCfg := fmtTestConfigResource("view", "new", nilLst, app, nilOpt, nilLst)
 
 	ctg := cloneDefaults(rsDefaults["view"])
 	ctg["categories"] = `"invalid categories value"`
-	ctgCfg := fmtTestConfigResource("view", "new", nilLst, ctg, nilOpt)
+	ctgCfg := fmtTestConfigResource("view", "new", nilLst, ctg, nilOpt, nilLst)
 
 	hst := cloneDefaults(rsDefaults["view"])
 	hst["hosts"] = `"invalid hosts value"`
-	hstCfg := fmtTestConfigResource("view", "new", nilLst, hst, nilOpt)
+	hstCfg := fmtTestConfigResource("view", "new", nilLst, hst, nilOpt, nilLst)
 
 	lvl := cloneDefaults(rsDefaults["view"])
 	lvl["levels"] = `"invalid levels value"`
-	lvlCfg := fmtTestConfigResource("view", "new", nilLst, lvl, nilOpt)
+	lvlCfg := fmtTestConfigResource("view", "new", nilLst, lvl, nilOpt, nilLst)
 
 	tgs := cloneDefaults(rsDefaults["view"])
 	tgs["tags"] = `"invalid tags value"`
-	tgsCfg := fmtTestConfigResource("view", "new", nilLst, tgs, nilOpt)
+	tgsCfg := fmtTestConfigResource("view", "new", nilLst, tgs, nilOpt, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -86,23 +86,23 @@ func TestView_ErrorsResourceFields(t *testing.T) {
 func TestView_ErrorsChannel(t *testing.T) {
 	imArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	imArgs["email"]["immediate"] = `"not a bool"`
-	immdte := fmtTestConfigResource("view", "new", nilLst, viewDefaults, imArgs)
+	immdte := fmtTestConfigResource("view", "new", nilLst, viewDefaults, imArgs, nilLst)
 
 	opArgs := map[string]map[string]string{"pagerduty": cloneDefaults(chnlDefaults["pagerduty"])}
 	opArgs["pagerduty"]["operator"] = `1000`
-	opratr := fmtTestConfigResource("view", "new", nilLst, viewDefaults, opArgs)
+	opratr := fmtTestConfigResource("view", "new", nilLst, viewDefaults, opArgs, nilLst)
 
 	trArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	trArgs["webhook"]["terminal"] = `"invalid"`
-	trmnal := fmtTestConfigResource("view", "new", nilLst, viewDefaults, trArgs)
+	trmnal := fmtTestConfigResource("view", "new", nilLst, viewDefaults, trArgs, nilLst)
 
 	tiArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	tiArgs["email"]["triggerinterval"] = `18`
-	tintvl := fmtTestConfigResource("view", "new", nilLst, viewDefaults, tiArgs)
+	tintvl := fmtTestConfigResource("view", "new", nilLst, viewDefaults, tiArgs, nilLst)
 
 	tlArgs := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	tlArgs["slack"]["triggerlimit"] = `0`
-	tlimit := fmtTestConfigResource("view", "new", nilLst, viewDefaults, tlArgs)
+	tlimit := fmtTestConfigResource("view", "new", nilLst, viewDefaults, tlArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -134,11 +134,11 @@ func TestView_ErrorsChannel(t *testing.T) {
 func TestView_ErrorsEmailChannel(t *testing.T) {
 	msArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	msArgs["email"]["emails"] = ""
-	misngE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, msArgs)
+	misngE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, msArgs, nilLst)
 
 	inArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	inArgs["email"]["emails"] = `"not an array of strings"`
-	invldE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, inArgs)
+	invldE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, inArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -163,7 +163,7 @@ func TestView_ErrorsPagerDutyChannel(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      fmtTestConfigResource("view", "new", nilLst, viewDefaults, chArgs),
+				Config:      fmtTestConfigResource("view", "new", nilLst, viewDefaults, chArgs, nilLst),
 				ExpectError: regexp.MustCompile("The argument \"key\" is required, but no definition was found."),
 			},
 		},
@@ -173,11 +173,11 @@ func TestView_ErrorsPagerDutyChannel(t *testing.T) {
 func TestView_ErrorsSlackChannel(t *testing.T) {
 	ulInvd := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	ulInvd["slack"]["url"] = `"this is not a valid url"`
-	ulCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulInvd)
+	ulCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulInvd, nilLst)
 
 	ulMsng := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	ulMsng["slack"]["url"] = ""
-	ulCfgM := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulMsng)
+	ulCfgM := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -197,23 +197,23 @@ func TestView_ErrorsSlackChannel(t *testing.T) {
 func TestView_ErrorsWebhookChannel(t *testing.T) {
 	btArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	btArgs["webhook"]["bodytemplate"] = `"{\"test\": }"`
-	btCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, btArgs)
+	btCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, btArgs, nilLst)
 
 	hdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	hdArgs["webhook"]["headers"] = `["headers", "invalid", "array"]`
-	hdCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, hdArgs)
+	hdCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, hdArgs, nilLst)
 
 	mdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	mdArgs["webhook"]["method"] = `"false"`
-	mdCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, mdArgs)
+	mdCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, mdArgs, nilLst)
 
 	ulInvd := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	ulInvd["webhook"]["url"] = `"this is not a valid url"`
-	ulCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulInvd)
+	ulCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulInvd, nilLst)
 
 	ulMsng := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	ulMsng["webhook"]["url"] = ""
-	ulCfgM := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulMsng)
+	ulCfgM := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -243,12 +243,12 @@ func TestView_ErrorsWebhookChannel(t *testing.T) {
 }
 
 func TestView_Basic(t *testing.T) {
-	iniCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, nilOpt)
+	iniCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, nilOpt, nilLst)
 
 	rsArgs := cloneDefaults(rsDefaults["view"])
 	rsArgs["name"] = `"test2"`
 	rsArgs["query"] = `"test2"`
-	updCfg := fmtTestConfigResource("view", "new", nilLst, rsArgs, nilOpt)
+	updCfg := fmtTestConfigResource("view", "new", nilLst, rsArgs, nilOpt, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -283,25 +283,25 @@ func TestView_BulkChannels(t *testing.T) {
 		"email":  cloneDefaults(chnlDefaults["email"]),
 		"email1": cloneDefaults(chnlDefaults["email"]),
 	}
-	emsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, emArgs)
+	emsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, emArgs, nilLst)
 
 	pdArgs := map[string]map[string]string{
 		"pagerduty":  cloneDefaults(chnlDefaults["pagerduty"]),
 		"pagerduty1": cloneDefaults(chnlDefaults["pagerduty"]),
 	}
-	pdsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, pdArgs)
+	pdsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, pdArgs, nilLst)
 
 	slArgs := map[string]map[string]string{
 		"slack":  cloneDefaults(chnlDefaults["slack"]),
 		"slack1": cloneDefaults(chnlDefaults["slack"]),
 	}
-	slsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, slArgs)
+	slsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, slArgs, nilLst)
 
 	wbArgs := map[string]map[string]string{
 		"webhook":  cloneDefaults(chnlDefaults["webhook"]),
 		"webhook1": cloneDefaults(chnlDefaults["webhook"]),
 	}
-	wbsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, wbArgs)
+	wbsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, wbArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -374,13 +374,29 @@ func TestView_MultipleChannels(t *testing.T) {
 		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
 	}
 
+	dependencies := []string{"logdna_category.cat_1", "logdna_category.cat_2"}
+
+	cat1Args := map[string]string{
+		"name": `"DemoCategory1"`,
+		"type": `"views"`,
+	}
+	cat2Args := map[string]string{
+		"name": `"DemoCategory2"`,
+		"type": `"views"`,
+	}
+
 	rsArgs := cloneDefaults(rsDefaults["view"])
 	rsArgs["apps"] = `["app1", "app2"]`
 	rsArgs["categories"] = ctgies
 	rsArgs["hosts"] = `["host1", "host2"]`
 	rsArgs["levels"] = `["fatal", "critical"]`
 	rsArgs["tags"] = `["tags1", "tags2"]`
-	iniCfg := fmtTestConfigResource("view", "new", nilLst, rsArgs, chArgs)
+	iniCfg := fmt.Sprintf(
+		"%s\n%s\n%s",
+		fmtTestConfigResource("view", "new", nilLst, rsArgs, chArgs, dependencies),
+		fmtResourceBlock("category", "cat_1", cat1Args, nilOpt, nilLst),
+		fmtResourceBlock("category", "cat_2", cat2Args, nilOpt, nilLst),
+	)
 
 	rsUptd := cloneDefaults(rsDefaults["view"])
 	rsUptd["apps"] = `["app3", "app4"]`
@@ -390,7 +406,12 @@ func TestView_MultipleChannels(t *testing.T) {
 	rsUptd["tags"] = `["tags3", "tags4"]`
 	rsUptd["name"] = `"test2"`
 	rsUptd["query"] = `"query2"`
-	updCfg := fmtTestConfigResource("view", "new", nilLst, rsUptd, chArgs)
+	updCfg := fmt.Sprintf(
+		"%s\n%s\n%s",
+		fmtTestConfigResource("view", "new", nilLst, rsUptd, chArgs, dependencies),
+		fmtResourceBlock("category", "cat_1", cat1Args, nilOpt, nilLst),
+		fmtResourceBlock("category", "cat_2", cat2Args, nilOpt, nilLst),
+	)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,

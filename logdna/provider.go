@@ -33,6 +33,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"logdna_alert":               resourceAlert(),
 			"logdna_view":                resourceView(),
+			"logdna_category":            resourceCategory(),
 			"logdna_stream_config":       resourceStreamConfig(),
 			"logdna_stream_exclusion":    resourceStreamExclusion(),
 			"logdna_ingestion_exclusion": resourceIngestionExclusion(),

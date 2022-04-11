@@ -44,6 +44,11 @@ type channelRequest struct {
 	URL             string                 `json:"url,omitempty"`
 }
 
+type categoryRequest struct {
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
+}
+
 func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
 	// This function pulls from the schema in preparation to JSON marshal
 	var diags diag.Diagnostics
@@ -73,6 +78,15 @@ func (alert *alertRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagno
 
 	// Complex array interfaces
 	alert.Channels = *aggregateAllChannelsFromSchema(d, &diags)
+
+	return diags
+}
+
+func (categoty *categoryRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	categoty.Name = d.Get("name").(string)
 
 	return diags
 }
