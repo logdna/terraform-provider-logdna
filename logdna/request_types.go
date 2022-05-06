@@ -21,6 +21,7 @@ type viewRequest struct {
 	Name     string           `json:"name,omitempty"`
 	Query    string           `json:"query,omitempty"`
 	Tags     []string         `json:"tags,omitempty"`
+	PresetId string           `json:"presetid,omitempty"`
 }
 
 type alertRequest struct {
@@ -63,6 +64,8 @@ func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnost
 	view.Hosts = listToStrings(d.Get("hosts").([]interface{}))
 	view.Levels = listToStrings(d.Get("levels").([]interface{}))
 	view.Tags = listToStrings(d.Get("tags").([]interface{}))
+
+	view.PresetId = d.Get("presetid").(string)
 
 	// Complex array interfaces
 	view.Channels = *aggregateAllChannelsFromSchema(d, &diags)

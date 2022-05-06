@@ -23,6 +23,7 @@ var rsDefaults = map[string]map[string]string{
 	"view": {
 		"apps":       "",
 		"categories": "",
+		"presetid":   "",
 		"hosts":      "",
 		"levels":     "",
 		"name":       `"test"`,

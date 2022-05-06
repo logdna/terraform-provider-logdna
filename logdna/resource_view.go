@@ -101,6 +101,8 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	appendError(d.Set("tags", view.Tags), &diags)
 	appendError(d.Set("apps", view.Apps), &diags)
 	appendError(d.Set("levels", view.Levels), &diags)
+	// NOTE There is always one element in the PresetIds slice
+	appendError(d.Set("presetid", strings.Join(view.PresetIds, "")), &diags)
 
 	// Convert types to maps for setting the schema
 	integrations, diags := view.MapChannelsToSchema()
@@ -214,6 +216,16 @@ func resourceView() *schema.Resource {
 			"query": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"presetid": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{
+					"email_channel",
+					"pagerduty_channel",
+					"slack_channel",
+					"webhook_channel",
+				},
 			},
 			"tags": {
 				Type:     schema.TypeList,

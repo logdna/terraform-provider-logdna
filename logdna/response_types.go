@@ -12,16 +12,17 @@ import (
 )
 
 type viewResponse struct {
-	Apps     []string          `json:"apps,omitempty"`
-	Category []string          `json:"category,omitempty"`
-	Channels []channelResponse `json:"channels,omitempty"`
-	Error    string            `json:"error,omitempty"`
-	Hosts    []string          `json:"hosts,omitempty"`
-	Levels   []string          `json:"levels,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Query    string            `json:"query,omitempty"`
-	Tags     []string          `json:"tags,omitempty"`
-	ViewID   string            `json:"viewID"`
+	Apps      []string          `json:"apps,omitempty"`
+	Category  []string          `json:"category,omitempty"`
+	Channels  []channelResponse `json:"channels,omitempty"`
+	Error     string            `json:"error,omitempty"`
+	Hosts     []string          `json:"hosts,omitempty"`
+	Levels    []string          `json:"levels,omitempty"`
+	Name      string            `json:"name,omitempty"`
+	Query     string            `json:"query,omitempty"`
+	Tags      []string          `json:"tags,omitempty"`
+	PresetIds []string          `json:"presetids,omitempty"`
+	ViewID    string            `json:"viewID"`
 }
 
 type alertResponse struct {

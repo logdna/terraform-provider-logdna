@@ -503,6 +503,157 @@ func TestView_MultipleChannels(t *testing.T) {
 	})
 }
 
+func TestView_PresetAlert(t *testing.T) {
+	chArgs := map[string]map[string]string{
+		"email":     cloneDefaults(chnlDefaults["email"]),
+		"pagerduty": cloneDefaults(chnlDefaults["pagerduty"]),
+		"slack":     cloneDefaults(chnlDefaults["slack"]),
+		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
+	}
+
+	dependenciesIns := []string{
+		"logdna_alert.test_preset_alert_ins",
+		"logdna_category.test_category",
+	}
+
+	dependenciesUpd := []string{
+		"logdna_alert.test_preset_alert_upd",
+		"logdna_category.test_category",
+	}
+
+	catArgs := map[string]string{
+		"name": `"DemoCategory"`,
+		"type": `"views"`,
+	}
+	alertInsArgs := map[string]string{
+		"name": `"Test Alert Ins"`,
+	}
+	alertUpdArgs := map[string]string{
+		"name": `"Test Alert Upd"`,
+	}
+
+	rsArgs := cloneDefaults(rsDefaults["view"])
+	rsArgs["apps"] = `["app1", "app2"]`
+	rsArgs["categories"] = `[logdna_category.test_category.name]`
+	rsArgs["hosts"] = `["host1", "host2"]`
+	rsArgs["levels"] = `["fatal", "critical"]`
+	rsArgs["tags"] = `["tags1", "tags2"]`
+	rsArgs["presetid"] = `logdna_alert.test_preset_alert_ins.id`
+	iniCfg := fmt.Sprintf(
+		"%s\n%s\n%s",
+		fmtResourceBlock("category", "test_category", catArgs, nilOpt, nilLst),
+		fmtResourceBlock("alert", "test_preset_alert_ins", alertInsArgs, chArgs, nilLst),
+		fmtTestConfigResource("view", "test_view", nilLst, rsArgs, nilOpt, dependenciesIns),
+	)
+
+	rsUptd := cloneDefaults(rsDefaults["view"])
+	rsUptd["apps"] = `["app3", "app4"]`
+	rsUptd["categories"] = `[logdna_category.test_category.name]`
+	rsUptd["hosts"] = `["host3", "host4"]`
+	rsUptd["levels"] = `["error", "warning"]`
+	rsUptd["tags"] = `["tags3", "tags4"]`
+	rsUptd["name"] = `"test2"`
+	rsUptd["query"] = `"query2"`
+	rsUptd["presetid"] = `logdna_alert.test_preset_alert_upd.id`
+	updCfg := fmt.Sprintf(
+		"%s\n%s\n%s",
+		fmtResourceBlock("category", "test_category", catArgs, nilOpt, nilLst),
+		fmtResourceBlock("alert", "test_preset_alert_upd", alertUpdArgs, chArgs, nilLst),
+		fmtTestConfigResource("view", "test_view", nilLst, rsUptd, nilOpt, dependenciesUpd),
+	)
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: iniCfg,
+				Check: resource.ComposeTestCheckFunc(
+					testViewExists("logdna_view.test_view"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "name", "test"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "query", "test"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.0", "app1"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.1", "app2"),
+					resource.TestCheckResourceAttrPair(
+						"logdna_alert.test_preset_alert_ins",
+						"id",
+						"logdna_view.test_view",
+						"presetid",
+					),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "categories.#", "1"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "categories.0", "DemoCategory"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "hosts.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "hosts.0", "host1"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "hosts.1", "host2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "levels.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "levels.0", "fatal"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "levels.1", "critical"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "tags.#", "2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "tags.0", "tags1"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "tags.1", "tags2"),
+				),
+			},
+			{
+				Config: updCfg,
+				Check: resource.ComposeTestCheckFunc(
+					testViewExists("logdna_view.test_view"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "name", "test2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "query", "query2"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.0", "app3"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.1", "app4"),
+					resource.TestCheckResourceAttrPair(
+						"logdna_alert.test_preset_alert_upd",
+						"id",
+						"logdna_view.test_view",
+						"presetid",
+					),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "categories.#", "1"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "categories.0", "DemoCategory"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "hosts.0", "host3"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "hosts.1", "host4"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "levels.0", "error"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "levels.1", "warning"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "tags.0", "tags3"),
+					resource.TestCheckResourceAttr("logdna_view.test_view", "tags.1", "tags4"),
+				),
+			},
+			{
+				ResourceName:      "logdna_view.test_view",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestView_ErrorsConflictPresetId(t *testing.T) {
+	chArgs := map[string]map[string]string{
+		"email":     cloneDefaults(chnlDefaults["email"]),
+		"pagerduty": cloneDefaults(chnlDefaults["pagerduty"]),
+		"slack":     cloneDefaults(chnlDefaults["slack"]),
+		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
+	}
+
+	rsArgs := cloneDefaults(rsDefaults["view"])
+	rsArgs["apps"]     = `["app1", "app2"]`
+	rsArgs["hosts"]    = `["host1", "host2"]`
+	rsArgs["levels"]   = `["fatal", "critical"]`
+	rsArgs["tags"]     = `["tags1", "tags2"]`
+	rsArgs["presetid"] = `"1q2w3e4r5t"`
+
+	incCfg := fmtTestConfigResource("view", "test_view", nilLst, rsArgs, chArgs, nilLst)
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: incCfg,
+				ExpectError: regexp.MustCompile("Error: Conflicting configuration arguments"),
+			},
+		},
+	})
+}
+
 func testViewExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
