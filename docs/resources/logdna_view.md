@@ -11,8 +11,31 @@ provider "logdna" {
 }
 
 resource "logdna_view" "my_view" {
-  name  = "Basic View"
-  query = "level:debug my query"
+  name     = "Basic View"
+  query    = "level:debug my query"
+  category = ["My Category"]
+}
+```
+
+## Example - Preset Alert View
+
+```hcl
+provider "logdna" {
+  servicekey = "xxxxxxxxxxxxxxxxxxxxxxxx"
+  url = "https://api.logdna.com" # (Optional) specify a LogDNA region
+}
+
+resource "logdna_alert" "my_alert" {
+  name = "Email Preset Alert"
+}
+
+resource "logdna_view" "my_view" {
+  name     = "Basic View"
+  query    = "level:debug my query"
+  category = ["My Category"]
+  presetid = logdna_alert.my_alert.id
+
+  depends_on = ["logdna_alert.my_alert"]
 }
 ```
 
@@ -32,6 +55,7 @@ resource "logdna_view" "my_view" {
   name     = "Terraform Multi-channel View"
   query    = "my query"
   tags     = ["tag1", "tag2"]
+  category = ["My Category"]
 
   email_channel {
     emails          = ["test@logdna.com"]
@@ -85,6 +109,8 @@ The following arguments are supported by `logdna_view`:
 
 _Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, `levels`, `query`, `tags` must be specified to create a View.
 
+_Note:_ Any of `*_channel` parameters are not allowed if a `presetid` parameter is passed.
+
 - `apps`: **_string_** _(Optional)_ Array of app names to filter the View by.
 - `categories`: **[]string** _(Optional)_ Array of existing category names that this View should be nested under. _Note: If the category does not exist, the View will by default be created in uncategorized_.
 - `hosts`: **[]string** _(Optional)_ Array of host names to filter the View by.
@@ -92,6 +118,7 @@ _Note:_ A `name` and at least one of the following properties: `apps`, `hosts`, 
 - `name`: **string _(Required)_** The name of this View.
 - `query`: **string** _(Optional)_  Search query for the View.
 - `tags`: **[]string** _(Optional)_ Array of tag names to filter the View by.
+- `presetid`: **string** _(Optional)_ Preset Alert ID.
 
 ### email_channel
 
