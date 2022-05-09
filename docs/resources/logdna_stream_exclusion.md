@@ -34,6 +34,24 @@ resource "logdna_stream_exclusion" "http-noise" {
 Stream Exclusions can be imported by `id`, which can be found
 in the URL when editing the Stream Exclusion in the web UI:
 
+Stream Exclusions can be imported by `id`, which can be found using the List Stream Exclusions API:
+
+1. Custom HTTP Headers - `servicekey: <SERVICE_KEY>` or `apikey: <SERVICE_KEY>`
+```sh
+curl --request GET \
+     --url <API_URL>/v1/config/stream/exclusions \
+     --header 'Accept: application/json' \
+     --header 'servicekey: <SERVICE_KEY>'
+```
+2. Basic Auth - `Authorization: Basic <encodeInBase64(credentials)>`.<br />
+Credentials is a string composed of formatted as `<username>:<password>`, our usage here entails substituting `<SERVICE_KEY>` as the username and leaving the password blank. The colon separator should still included in the resulting string `<SERVICE_KEY>:`
+```sh
+curl --request GET \
+     --url <API_URL>/v1/config/stream/exclusions \
+     --header 'Accept: application/json' \
+     --header 'Authorization: Basic <BASE_64_ENCODED_CREDENTIALS>'
+```
+
 ```sh
 $ terraform import logdna_stream_exclusion.your-rule-name <id>
 ```

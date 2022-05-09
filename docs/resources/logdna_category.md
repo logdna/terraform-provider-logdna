@@ -20,8 +20,32 @@ resource "logdna_category" "my_category" {
 
 ## Import
 
-Preset Categories can be imported by `type` and `id`:
+Categories can be imported by `type` and `id`, which can be found using the [List Categories API](https://docs.logdna.com/reference/list-categories):
+
+1. Custom HTTP Headers - `servicekey: <SERVICE_KEY>` or `apikey: <SERVICE_KEY>`
+```sh
+curl --request GET \
+     --url <API_URL>/v1/config/categories/<CATEGORY_TYPE> \
+     --header 'Accept: application/json' \
+     --header 'servicekey: <SERVICE_KEY>'
+```
+2. Basic Auth - `Authorization: Basic <encodeInBase64(credentials)>`.<br />
+Credentials is a string composed of formatted as `<username>:<password>`, our usage here entails substituting `<SERVICE_KEY>` as the username and leaving the password blank. The colon separator should still included in the resulting string `<SERVICE_KEY>:`
+```sh
+curl --request GET \
+     --url <API_URL>/v1/config/categories/<CATEGORY_TYPE> \
+     --header 'Accept: application/json' \
+     --header 'Authorization: Basic <BASE_64_ENCODED_CREDENTIALS>'
+```
 
 ```sh
 terraform import logdna_category.your-category-name <type>:<id>
 ```
+
+## Argument Reference
+
+The following arguments are supported by `logdna_category`:
+
+- `name`: **string (Required)** The name this Category will be given
+- `type`: **string (Required)** The type this Category belongs to, valid options are: `views`, `boards`, `screens`
+
