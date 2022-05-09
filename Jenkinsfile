@@ -42,6 +42,7 @@ pipeline {
 
       environment {
         GIT_BRANCH = "${CURRENT_BRANCH}"
+        MAKEFLAGS='-j1'
       }
 
       steps {
@@ -107,6 +108,7 @@ pipeline {
         GIT_BRANCH = "${CURRENT_BRANCH}"
         GIT_AUTHOR = "${GIT_AUTHOR}"
         GIT_REPO = "${GIT_REPO}"
+        MAKEFLAGS='-j1'
       }
 
       steps {

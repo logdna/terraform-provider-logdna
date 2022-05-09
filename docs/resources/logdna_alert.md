@@ -83,11 +83,26 @@ resource "logdna_alert" "my_alert" {
 
 ## Import
 
-Preset Alerts can be imported by `id`, which can be found in the URL when editing the
-Preset Alert in the web UI:
+Preset Alerts can be imported by `presetid`, which can be found using the [List Preset Alerts API](https://docs.logdna.com/reference/list-alerts):
+
+1. Custom HTTP Headers - `servicekey: <SERVICE_KEY>` or `apikey: <SERVICE_KEY>`
+```sh
+curl --request GET \
+     --url <API_URL>/v1/config/presetalert \
+     --header 'Accept: application/json' \
+     --header 'servicekey: <SERVICE_KEY>'
+```
+2. Basic Auth - `Authorization: Basic <encodeInBase64(credentials)>`.<br />
+Credentials is a string composed of formatted as `<username>:<password>`, our usage here entails substituting `<SERVICE_KEY>` as the username and leaving the password blank. The colon separator should still included in the resulting string `<SERVICE_KEY>:`
+```sh
+curl --request GET \
+     --url <API_URL>/v1/config/presetalert \
+     --header 'Accept: application/json' \
+     --header 'Authorization: Basic <BASE_64_ENCODED_CREDENTIALS>'
+```
 
 ```sh
-terraform import logdna_alert.your-alert-name <id>
+terraform import logdna_alert.your-alert-name <presetid>
 ```
 
 Note that only the alert channels supported by this provider will be imported.
