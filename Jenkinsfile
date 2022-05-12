@@ -117,22 +117,24 @@ pipeline {
             string(credentialsId: 'logdna-gpg-key', variable: 'GPG_KEY'),
             string(credentialsId: 'github-api-token', variable: 'GITHUB_TOKEN')
           ]) {
-            sh '''
-              set +x
-              git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
-              git config user.name "LogDNA Bot"
-              git config user.email "bot@logdna.com"
-              git config remote.origin.url "https://${GIT_AUTHOR}:${GITHUB_TOKEN}@github.com/${GIT_REPO}"
+            configFileProvider([configFile(fileId: 'git-askpass', variable: 'GIT_ASKPASS')]) {
+              sh 'chmod +x \$GIT_ASKPASS'
+              sh '''
+                set +x
+                git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+                git config user.name "LogDNA Bot"
+                git config user.email "bot@logdna.com"
 
-              git fetch --tags
-              export NEXT_TAG=$(make version-next)
-              echo "Creating release for ${NEXT_TAG}"
+                git fetch --tags
+                export NEXT_TAG=$(make version-next)
+                echo "Creating release for ${NEXT_TAG}"
 
-              git tag ${NEXT_TAG}
-              git push origin ${NEXT_TAG}
-              echo "$GPG_KEY" > gpgkey.asc
-              make release
-            '''
+                git tag ${NEXT_TAG}
+                git push origin ${NEXT_TAG}
+                echo "$GPG_KEY" > gpgkey.asc
+                make release
+              '''
+            }
           }
         }
       }
