@@ -8,18 +8,25 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
 	keyType := d.Get("type").(string)
+	key := keyRequest{}
+
+	if diags = key.CreateRequestBody(d); diags.HasError() {
+		return diags
+	}
 
 	req := newRequestConfig(
 		pc,
 		"POST",
 		fmt.Sprintf("/v1/config/keys?type=%s", keyType),
-		nil,
+		key,
 	)
 
 	body, err := req.MakeRequest()
@@ -37,6 +44,35 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	log.Printf("[DEBUG] After %s key, the created key is %+v", req.method, createdKey)
 
 	d.SetId(createdKey.KeyID)
+
+	return resourceKeyRead(ctx, d, m)
+}
+
+func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+	pc := m.(*providerConfig)
+	keyID := d.Id()
+
+	key := keyRequest{}
+	if diags = key.CreateRequestBody(d); diags.HasError() {
+		return diags
+	}
+
+	req := newRequestConfig(
+		pc,
+		"PUT",
+		fmt.Sprintf("/v1/config/keys/%s", keyID),
+		key,
+	)
+
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] %s %s, payload is: %s", req.method, req.apiURL, body)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	log.Printf("[DEBUG] %s %s SUCCESS. Remote resource updated.", req.method, req.apiURL)
 
 	return resourceKeyRead(ctx, d, m)
 }
@@ -80,6 +116,7 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, m interface{})
 
 	// Top level keys can be set directly
 	appendError(d.Set("type", key.Type), &diags)
+	appendError(d.Set("name", key.Name), &diags)
 	appendError(d.Set("id", key.KeyID), &diags)
 	appendError(d.Set("key", key.Key), &diags)
 	appendError(d.Set("created", key.Created), &diags)
@@ -112,6 +149,7 @@ func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{
 func resourceKey() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceKeyCreate,
+		UpdateContext: resourceKeyUpdate,
 		ReadContext:   resourceKeyRead,
 		DeleteContext: resourceKeyDelete,
 		Importer: &schema.ResourceImporter{
@@ -120,9 +158,17 @@ func resourceKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"type": {
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"ingestion", "service"}, false),
+			},
+			"name": {
 				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Optional: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return new == ""
+				},
 			},
 			"id": {
 				Type:     schema.TypeString,

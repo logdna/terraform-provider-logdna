@@ -34,6 +34,7 @@ type alertResponse struct {
 type keyResponse struct {
 	KeyID   string `json:"id"`
 	Key     string `json:"key"`
+	Name    string `json:"name"`
 	Type    string `json:"type"`
 	Created int    `json:"created,omitempty"`
 }
