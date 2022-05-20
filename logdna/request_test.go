@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -40,7 +41,7 @@ func setJSONMarshal(customMarshaller jsonMarshal) func(*requestConfig) {
 
 func TestRequest_MakeRequest(t *testing.T) {
 	assert := assert.New(t)
-	pc := providerConfig{serviceKey: "abc123"}
+	pc := providerConfig{serviceKey: "abc123", httpClient: &http.Client{Timeout: 15 * time.Second}}
 	resourceID := "test123456"
 
 	t.Run("Server receives proper method, URL, and headers", func(t *testing.T) {

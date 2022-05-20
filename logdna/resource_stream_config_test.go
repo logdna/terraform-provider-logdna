@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,7 +39,7 @@ func TestStreamConfig_expectInvalidBrokerError(t *testing.T) {
 					topic = "test-topic"
 					user = "test-user"
 					password = "test-password"
-				`, ""),
+				`, apiHostUrl),
 				ExpectError: regexp.MustCompile(`Failed to connect to Kafka broker`),
 			},
 		},
@@ -57,7 +56,7 @@ func TestStreamConfig_expectInvalidConfigError(t *testing.T) {
 					topic = ""
 					user = ""
 					password = ""
-				`, ""),
+				`, apiHostUrl),
 				ExpectError: regexp.MustCompile(`\\"topic\\" is not allowed to be empty.*\\"user\\" is not allowed to be empty.*\\"password\\" is not allowed to be empty`),
 			},
 		},
@@ -112,7 +111,7 @@ func TestStreamConfig_basic(t *testing.T) {
 				`, brokers[0], brokers[1], topic, user, password,
 				), ts.URL),
 				Check: resource.ComposeTestCheckFunc(
-					testStreamConfigExists("logdna_stream_config.stream"),
+					testResourceExists("stream_config", "stream"),
 					resource.TestCheckResourceAttr("logdna_stream_config.stream", "topic", topic),
 					resource.TestCheckResourceAttr("logdna_stream_config.stream", "user", user),
 					resource.TestCheckResourceAttr("logdna_stream_config.stream", "status", "active"),
@@ -134,7 +133,7 @@ func TestStreamConfig_basic(t *testing.T) {
 				`, brokers[0], brokers[1], user, password,
 				), ts.URL),
 				Check: resource.ComposeTestCheckFunc(
-					testStreamConfigExists("logdna_stream_config.stream"),
+					testResourceExists("stream_config", "stream"),
 					resource.TestCheckResourceAttr("logdna_stream_config.stream", "topic", "updated"),
 				),
 			},
@@ -148,20 +147,6 @@ func TestStreamConfig_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testStreamConfigExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID set")
-		}
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		return nil
-	}
 }
 
 func testStreamConfig(fields string, url string) string {

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestStreamExclusion_expectInvalidURLError(t *testing.T) {
@@ -38,7 +37,7 @@ func TestStreamExclusion_expectInvalidError(t *testing.T) {
 				Config: testStreamExclusion(`
 					title = "test-title"
 					apps = []
-				`, ""),
+				`, apiHostUrl),
 				ExpectError: regexp.MustCompile("requires 1 item minimum, but config has only 0 declared"),
 			},
 		},
@@ -62,9 +61,9 @@ func TestStreamExclusion_basic(t *testing.T) {
 						"host-2"
 					]
 					query = "query-foo AND query-bar"
-				`, ""),
+				`, apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testStreamExclusionExists("logdna_stream_exclusion.new"),
+					testResourceExists("stream_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "title", "test-title"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "active", "true"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "apps.#", "2"),
@@ -89,9 +88,9 @@ func TestStreamExclusion_basic(t *testing.T) {
 						"host-2"
 					]
 					query = "query-foo AND query-bar"
-				`, ""),
+				`, apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testStreamExclusionExists("logdna_stream_exclusion.new"),
+					testResourceExists("stream_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "title", "test-title-update"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "active", "false"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "apps.#", "2"),
@@ -108,9 +107,9 @@ func TestStreamExclusion_basic(t *testing.T) {
 						"app-2"
 					]
 					query = "query-foo AND query-bar"
-				`, ""),
+				`, apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testStreamExclusionExists("logdna_stream_exclusion.new"),
+					testResourceExists("stream_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_stream_exclusion.new", "hosts.#", "0"),
 				),
 			},
@@ -121,20 +120,6 @@ func TestStreamExclusion_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testStreamExclusionExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID set")
-		}
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		return nil
-	}
 }
 
 func testStreamExclusion(fields string, url string) string {

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 const tmplPc = `provider "logdna" {
@@ -147,4 +150,20 @@ func fmtBlockArgs(nstLvl int, opts map[string]string) string {
 		}
 	}
 	return blkCfg.String()
+}
+
+func testResourceExists(rsType string, rsName string) resource.TestCheckFunc {
+	identifier := fmt.Sprintf("logdna_%s.%s", rsType, rsName)
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[identifier]
+		if !ok {
+			return fmt.Errorf("Not found: %s", identifier)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID set")
+		}
+
+		return nil
+	}
 }

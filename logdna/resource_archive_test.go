@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 var s3Bucket = os.Getenv("S3_BUCKET")
@@ -57,7 +56,7 @@ func TestArchiveConfig_expectInvalidIntegrationError(t *testing.T) {
 			{
 				Config: testArchiveConfig(`
 					integration = "invalid"
-				`, ""),
+				`, apiHostUrl),
 				ExpectError: regexp.MustCompile(`"integration" must be one of \[ibm s3 azblob gcs dos swift\]`),
 			},
 		},
@@ -73,7 +72,7 @@ func TestArchiveConfig_expectMissingFieldError(t *testing.T) {
 					integration = "s3"
 					s3_config {
 					}
-				`, ""),
+				`, apiHostUrl),
 				ExpectError: regexp.MustCompile("Missing required argument"),
 			},
 		},
@@ -91,9 +90,9 @@ func TestArchiveConfig_basic(t *testing.T) {
 					s3_config {
 						bucket = "%s"
 					}
-				`, s3Bucket), ""),
+				`, s3Bucket), apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testArchiveConfigExists("logdna_archive.archive"),
+					testResourceExists("archive", "archive"),
 					resource.TestCheckResourceAttr("logdna_archive.archive", "integration", "s3"),
 					resource.TestCheckResourceAttr("logdna_archive.archive", "s3_config.0.bucket", s3Bucket),
 				),
@@ -105,9 +104,9 @@ func TestArchiveConfig_basic(t *testing.T) {
 						bucket = "%s"
 						projectid = "%s"
 					}
-				`, gcsBucket, gcsProjectid), ""),
+				`, gcsBucket, gcsProjectid), apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testArchiveConfigExists("logdna_archive.archive"),
+					testResourceExists("archive", "archive"),
 					resource.TestCheckResourceAttr("logdna_archive.archive", "integration", "gcs"),
 					resource.TestCheckResourceAttr("logdna_archive.archive", "gcs_config.0.bucket", gcsBucket),
 					resource.TestCheckResourceAttr("logdna_archive.archive", "gcs_config.0.projectid", gcsProjectid),
@@ -120,20 +119,6 @@ func TestArchiveConfig_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testArchiveConfigExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID set")
-		}
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		return nil
-	}
 }
 
 func testArchiveConfig(fields string, url string) string {

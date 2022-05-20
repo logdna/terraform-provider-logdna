@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestIngestionExclusion_expectInvalidURLError(t *testing.T) {
@@ -64,7 +63,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 					query = "foo bar"
 				`, apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testIngestionExclusionExists("logdna_ingestion_exclusion.new"),
+					testResourceExists("ingestion_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "title", "test-title"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "active", "true"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "apps.#", "2"),
@@ -91,7 +90,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 					query = "foo bar"
 				`, apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testIngestionExclusionExists("logdna_ingestion_exclusion.new"),
+					testResourceExists("ingestion_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "title", "test-title-update"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "active", "false"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "apps.#", "2"),
@@ -110,7 +109,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 					query = "foo bar"
 				`, apiHostUrl),
 				Check: resource.ComposeTestCheckFunc(
-					testIngestionExclusionExists("logdna_ingestion_exclusion.new"),
+					testResourceExists("ingestion_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "hosts.#", "0"),
 				),
 			},
@@ -121,20 +120,6 @@ func TestIngestionExclusion_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testIngestionExclusionExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID set")
-		}
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		return nil
-	}
 }
 
 func testIngestionExclusion(fields string, url string) string {

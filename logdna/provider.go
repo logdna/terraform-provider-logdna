@@ -38,6 +38,7 @@ func Provider() *schema.Provider {
 			"logdna_stream_exclusion":    resourceStreamExclusion(),
 			"logdna_ingestion_exclusion": resourceIngestionExclusion(),
 			"logdna_archive":             resourceArchiveConfig(),
+			"logdna_key":                 resourceKey(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
