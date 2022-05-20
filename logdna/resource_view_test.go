@@ -567,7 +567,7 @@ func TestView_PresetAlert(t *testing.T) {
 			{
 				Config: iniCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testResourceExists("view", "test-view"),
+					testResourceExists("view", "test_view"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.#", "2"),
@@ -595,7 +595,7 @@ func TestView_PresetAlert(t *testing.T) {
 			{
 				Config: updCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testResourceExists("view", "test-view"),
+					testResourceExists("view", "test_view"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "name", "test2"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "query", "query2"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.0", "app3"),
@@ -634,10 +634,10 @@ func TestView_ErrorsConflictPresetId(t *testing.T) {
 	}
 
 	rsArgs := cloneDefaults(rsDefaults["view"])
-	rsArgs["apps"]     = `["app1", "app2"]`
-	rsArgs["hosts"]    = `["host1", "host2"]`
-	rsArgs["levels"]   = `["fatal", "critical"]`
-	rsArgs["tags"]     = `["tags1", "tags2"]`
+	rsArgs["apps"] = `["app1", "app2"]`
+	rsArgs["hosts"] = `["host1", "host2"]`
+	rsArgs["levels"] = `["fatal", "critical"]`
+	rsArgs["tags"] = `["tags1", "tags2"]`
 	rsArgs["presetid"] = `"1q2w3e4r5t"`
 
 	incCfg := fmtTestConfigResource("view", "test_view", globalPcArgs, rsArgs, chArgs, nilLst)
@@ -646,7 +646,7 @@ func TestView_ErrorsConflictPresetId(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: incCfg,
+				Config:      incCfg,
 				ExpectError: regexp.MustCompile("Error: Conflicting configuration arguments"),
 			},
 		},

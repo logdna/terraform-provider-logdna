@@ -11,6 +11,7 @@ provider "logdna" {
 
 resource "logdna_key" "service-key" {
   type = "service"
+  name = "terraform-my_service_key"
 
   lifecycle {
     create_before_destroy = true
@@ -19,6 +20,7 @@ resource "logdna_key" "service-key" {
 
 resource "logdna_key" "ingestion-key" {
   type = "ingestion"
+  name = "terraform-my_ingestion_key"
 
   lifecycle {
     create_before_destroy = true
@@ -26,7 +28,9 @@ resource "logdna_key" "ingestion-key" {
 }
 ```
 
-The `create_before_destroy` and `lifecycle` meta-argument are not required, but ensure a valid key is always available so there's no disruption of service.
+The `create_before_destroy` and `lifecycle` meta-argument are not required; however, these options ensure a valid key is always available when a key is being recreated. This helps avoid any disruptions in service.
+
+~> **NOTE:** We recommend prefixing the name of your terraform resources so they can be distinguished from other resources in the UI.
 
 ## Key Rotation
 
@@ -41,7 +45,8 @@ $ terraform apply -replace="logdna_key.my_key"
 
 The following arguments are supported:
 
-- `type`: **string** _(Required)_ The type of key to be used. Should be either `service` or `ingestion`.
+- `type`: **string** _(Required)_ The type of key to be used. Can be one of either `service` or `ingestion`.
+- `name`: **string** _(Optional)_ A non-unique name for the key. If not supplied, a default one is generated.
 
 ## Attributes Reference
 
@@ -49,7 +54,8 @@ In addition to all the arguments above, the following attributes are exported:
 
 - `id`: **string** The unique identifier of this key.
 - `key`: **string** The actual key value.
-- `type`: **string** The type of key.
+- `name`: **string** The name of the key.
+- `type`: **string** The type of key. Can be one of either `service` or `ingestion`.
 - `created`: **int** The date the key was created in Unix time milliseconds.
 
 ## Import
