@@ -1,12 +1,10 @@
 package logdna
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 var alertDefaults = cloneDefaults(rsDefaults["alert"])
@@ -33,7 +31,7 @@ func TestAlert_ErrorResourceName(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      fmtTestConfigResource("alert", "new", nilLst, args, nilOpt, nilLst),
+				Config:      fmtTestConfigResource("alert", "new", globalPcArgs, args, nilOpt, nilLst),
 				ExpectError: regexp.MustCompile("The argument \"name\" is required, but no definition was found."),
 			},
 		},
@@ -43,23 +41,23 @@ func TestAlert_ErrorResourceName(t *testing.T) {
 func TestAlert_ErrorsChannel(t *testing.T) {
 	imArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	imArgs["email"]["immediate"] = `"not a bool"`
-	immdte := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, imArgs, nilLst)
+	immdte := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, imArgs, nilLst)
 
 	opArgs := map[string]map[string]string{"pagerduty": cloneDefaults(chnlDefaults["pagerduty"])}
 	opArgs["pagerduty"]["operator"] = `1000`
-	opratr := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, opArgs, nilLst)
+	opratr := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, opArgs, nilLst)
 
 	trArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	trArgs["webhook"]["terminal"] = `"invalid"`
-	trmnal := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, trArgs, nilLst)
+	trmnal := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, trArgs, nilLst)
 
 	tiArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	tiArgs["email"]["triggerinterval"] = `18`
-	tintvl := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, tiArgs, nilLst)
+	tintvl := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, tiArgs, nilLst)
 
 	tlArgs := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	tlArgs["slack"]["triggerlimit"] = `0`
-	tlimit := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, tlArgs, nilLst)
+	tlimit := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, tlArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -91,11 +89,11 @@ func TestAlert_ErrorsChannel(t *testing.T) {
 func TestAlert_ErrorsEmailChannel(t *testing.T) {
 	msArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	msArgs["email"]["emails"] = ""
-	misngE := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, msArgs, nilLst)
+	misngE := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, msArgs, nilLst)
 
 	inArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	inArgs["email"]["emails"] = `"not an array of strings"`
-	invldE := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, inArgs, nilLst)
+	invldE := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, inArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -120,7 +118,7 @@ func TestAlert_ErrorsPagerDutyChannel(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      fmtTestConfigResource("alert", "new", nilLst, alertDefaults, chArgs, nilLst),
+				Config:      fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, chArgs, nilLst),
 				ExpectError: regexp.MustCompile("The argument \"key\" is required, but no definition was found."),
 			},
 		},
@@ -130,11 +128,11 @@ func TestAlert_ErrorsPagerDutyChannel(t *testing.T) {
 func TestAlert_ErrorsSlackChannel(t *testing.T) {
 	ulInvd := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	ulInvd["slack"]["url"] = `"this is not a valid url"`
-	ulCfgE := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, ulInvd, nilLst)
+	ulCfgE := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, ulInvd, nilLst)
 
 	ulMsng := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	ulMsng["slack"]["url"] = ""
-	ulCfgM := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, ulMsng, nilLst)
+	ulCfgM := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -154,19 +152,19 @@ func TestAlert_ErrorsSlackChannel(t *testing.T) {
 func TestAlert_ErrorsWebhookChannel(t *testing.T) {
 	btArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	btArgs["webhook"]["bodytemplate"] = `"{\"test\": }"`
-	btCfgE := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, btArgs, nilLst)
+	btCfgE := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, btArgs, nilLst)
 
 	mdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	mdArgs["webhook"]["method"] = `"false"`
-	mdCfgE := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, mdArgs, nilLst)
+	mdCfgE := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, mdArgs, nilLst)
 
 	ulInvd := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	ulInvd["webhook"]["url"] = `"this is not a valid url"`
-	ulCfgE := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, ulInvd, nilLst)
+	ulCfgE := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, ulInvd, nilLst)
 
 	ulMsng := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	ulMsng["webhook"]["url"] = ""
-	ulCfgM := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, ulMsng, nilLst)
+	ulCfgM := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -193,11 +191,11 @@ func TestAlert_ErrorsWebhookChannel(t *testing.T) {
 
 func TestAlert_Basic(t *testing.T) {
 	chArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
-	iniCfg := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, chArgs, nilLst)
+	iniCfg := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, chArgs, nilLst)
 
 	rsArgs := cloneDefaults(rsDefaults["alert"])
 	rsArgs["name"] = `"test2"`
-	updCfg := fmtTestConfigResource("alert", "new", nilLst, rsArgs, chArgs, nilLst)
+	updCfg := fmtTestConfigResource("alert", "new", globalPcArgs, rsArgs, chArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -205,7 +203,7 @@ func TestAlert_Basic(t *testing.T) {
 			{
 				Config: iniCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.0.%", "7"),
@@ -225,7 +223,7 @@ func TestAlert_Basic(t *testing.T) {
 			{
 				Config: updCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test2"),
 				),
 			},
@@ -243,25 +241,25 @@ func TestAlert_BulkChannels(t *testing.T) {
 		"email":  cloneDefaults(chnlDefaults["email"]),
 		"email1": cloneDefaults(chnlDefaults["email"]),
 	}
-	emsCfg := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, emArgs, nilLst)
+	emsCfg := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, emArgs, nilLst)
 
 	pdArgs := map[string]map[string]string{
 		"pagerduty":  cloneDefaults(chnlDefaults["pagerduty"]),
 		"pagerduty1": cloneDefaults(chnlDefaults["pagerduty"]),
 	}
-	pdsCfg := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, pdArgs, nilLst)
+	pdsCfg := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, pdArgs, nilLst)
 
 	slArgs := map[string]map[string]string{
 		"slack":  cloneDefaults(chnlDefaults["slack"]),
 		"slack1": cloneDefaults(chnlDefaults["slack"]),
 	}
-	slsCfg := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, slArgs, nilLst)
+	slsCfg := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, slArgs, nilLst)
 
 	wbArgs := map[string]map[string]string{
 		"webhook":  cloneDefaults(chnlDefaults["webhook"]),
 		"webhook1": cloneDefaults(chnlDefaults["webhook"]),
 	}
-	wbsCfg := fmtTestConfigResource("alert", "new", nilLst, alertDefaults, wbArgs, nilLst)
+	wbsCfg := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, wbArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -269,7 +267,7 @@ func TestAlert_BulkChannels(t *testing.T) {
 			{
 				Config: emsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.0.%", "7"),
@@ -282,7 +280,7 @@ func TestAlert_BulkChannels(t *testing.T) {
 			{
 				Config: pdsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "6"),
@@ -295,7 +293,7 @@ func TestAlert_BulkChannels(t *testing.T) {
 			{
 				Config: slsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "slack_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "slack_channel.0.%", "6"),
@@ -308,7 +306,7 @@ func TestAlert_BulkChannels(t *testing.T) {
 			{
 				Config: wbsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.#", "2"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.0.%", "9"),
@@ -334,9 +332,9 @@ func TestAlert_MultipleChannels(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: fmtTestConfigResource("alert", "new", nilLst, alertDefaults, chArgs, nilLst),
+				Config: fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, chArgs, nilLst),
 				Check: resource.ComposeTestCheckFunc(
-					testAlertExists("logdna_alert.new"),
+					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.#", "1"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.0.emails.#", "1"),
@@ -386,18 +384,4 @@ func TestAlert_MultipleChannels(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAlertExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID set")
-		}
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		return nil
-	}
 }

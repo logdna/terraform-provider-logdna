@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const ctgies = `["DEMOCATEGORY1", "DemoCategory2"]`
@@ -30,27 +29,27 @@ func TestView_ErrorProviderUrl(t *testing.T) {
 func TestView_ErrorsResourceFields(t *testing.T) {
 	nme := cloneDefaults(rsDefaults["view"])
 	nme["name"] = ""
-	nmeCfg := fmtTestConfigResource("view", "new", nilLst, nme, nilOpt, nilLst)
+	nmeCfg := fmtTestConfigResource("view", "new", globalPcArgs, nme, nilOpt, nilLst)
 
 	app := cloneDefaults(rsDefaults["view"])
 	app["apps"] = `"invalid apps value"`
-	appCfg := fmtTestConfigResource("view", "new", nilLst, app, nilOpt, nilLst)
+	appCfg := fmtTestConfigResource("view", "new", globalPcArgs, app, nilOpt, nilLst)
 
 	ctg := cloneDefaults(rsDefaults["view"])
 	ctg["categories"] = `"invalid categories value"`
-	ctgCfg := fmtTestConfigResource("view", "new", nilLst, ctg, nilOpt, nilLst)
+	ctgCfg := fmtTestConfigResource("view", "new", globalPcArgs, ctg, nilOpt, nilLst)
 
 	hst := cloneDefaults(rsDefaults["view"])
 	hst["hosts"] = `"invalid hosts value"`
-	hstCfg := fmtTestConfigResource("view", "new", nilLst, hst, nilOpt, nilLst)
+	hstCfg := fmtTestConfigResource("view", "new", globalPcArgs, hst, nilOpt, nilLst)
 
 	lvl := cloneDefaults(rsDefaults["view"])
 	lvl["levels"] = `"invalid levels value"`
-	lvlCfg := fmtTestConfigResource("view", "new", nilLst, lvl, nilOpt, nilLst)
+	lvlCfg := fmtTestConfigResource("view", "new", globalPcArgs, lvl, nilOpt, nilLst)
 
 	tgs := cloneDefaults(rsDefaults["view"])
 	tgs["tags"] = `"invalid tags value"`
-	tgsCfg := fmtTestConfigResource("view", "new", nilLst, tgs, nilOpt, nilLst)
+	tgsCfg := fmtTestConfigResource("view", "new", globalPcArgs, tgs, nilOpt, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -86,23 +85,23 @@ func TestView_ErrorsResourceFields(t *testing.T) {
 func TestView_ErrorsChannel(t *testing.T) {
 	imArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	imArgs["email"]["immediate"] = `"not a bool"`
-	immdte := fmtTestConfigResource("view", "new", nilLst, viewDefaults, imArgs, nilLst)
+	immdte := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, imArgs, nilLst)
 
 	opArgs := map[string]map[string]string{"pagerduty": cloneDefaults(chnlDefaults["pagerduty"])}
 	opArgs["pagerduty"]["operator"] = `1000`
-	opratr := fmtTestConfigResource("view", "new", nilLst, viewDefaults, opArgs, nilLst)
+	opratr := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, opArgs, nilLst)
 
 	trArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	trArgs["webhook"]["terminal"] = `"invalid"`
-	trmnal := fmtTestConfigResource("view", "new", nilLst, viewDefaults, trArgs, nilLst)
+	trmnal := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, trArgs, nilLst)
 
 	tiArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	tiArgs["email"]["triggerinterval"] = `18`
-	tintvl := fmtTestConfigResource("view", "new", nilLst, viewDefaults, tiArgs, nilLst)
+	tintvl := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, tiArgs, nilLst)
 
 	tlArgs := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	tlArgs["slack"]["triggerlimit"] = `0`
-	tlimit := fmtTestConfigResource("view", "new", nilLst, viewDefaults, tlArgs, nilLst)
+	tlimit := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, tlArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -134,11 +133,11 @@ func TestView_ErrorsChannel(t *testing.T) {
 func TestView_ErrorsEmailChannel(t *testing.T) {
 	msArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	msArgs["email"]["emails"] = ""
-	misngE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, msArgs, nilLst)
+	misngE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, msArgs, nilLst)
 
 	inArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
 	inArgs["email"]["emails"] = `"not an array of strings"`
-	invldE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, inArgs, nilLst)
+	invldE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, inArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -163,7 +162,7 @@ func TestView_ErrorsPagerDutyChannel(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:      fmtTestConfigResource("view", "new", nilLst, viewDefaults, chArgs, nilLst),
+				Config:      fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, chArgs, nilLst),
 				ExpectError: regexp.MustCompile("The argument \"key\" is required, but no definition was found."),
 			},
 		},
@@ -173,11 +172,11 @@ func TestView_ErrorsPagerDutyChannel(t *testing.T) {
 func TestView_ErrorsSlackChannel(t *testing.T) {
 	ulInvd := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	ulInvd["slack"]["url"] = `"this is not a valid url"`
-	ulCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulInvd, nilLst)
+	ulCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulInvd, nilLst)
 
 	ulMsng := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
 	ulMsng["slack"]["url"] = ""
-	ulCfgM := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulMsng, nilLst)
+	ulCfgM := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -197,23 +196,23 @@ func TestView_ErrorsSlackChannel(t *testing.T) {
 func TestView_ErrorsWebhookChannel(t *testing.T) {
 	btArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	btArgs["webhook"]["bodytemplate"] = `"{\"test\": }"`
-	btCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, btArgs, nilLst)
+	btCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, btArgs, nilLst)
 
 	hdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	hdArgs["webhook"]["headers"] = `["headers", "invalid", "array"]`
-	hdCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, hdArgs, nilLst)
+	hdCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, hdArgs, nilLst)
 
 	mdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	mdArgs["webhook"]["method"] = `"false"`
-	mdCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, mdArgs, nilLst)
+	mdCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, mdArgs, nilLst)
 
 	ulInvd := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	ulInvd["webhook"]["url"] = `"this is not a valid url"`
-	ulCfgE := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulInvd, nilLst)
+	ulCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulInvd, nilLst)
 
 	ulMsng := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
 	ulMsng["webhook"]["url"] = ""
-	ulCfgM := fmtTestConfigResource("view", "new", nilLst, viewDefaults, ulMsng, nilLst)
+	ulCfgM := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -243,12 +242,12 @@ func TestView_ErrorsWebhookChannel(t *testing.T) {
 }
 
 func TestView_Basic(t *testing.T) {
-	iniCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, nilOpt, nilLst)
+	iniCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, nilOpt, nilLst)
 
 	rsArgs := cloneDefaults(rsDefaults["view"])
 	rsArgs["name"] = `"test2"`
 	rsArgs["query"] = `"test2"`
-	updCfg := fmtTestConfigResource("view", "new", nilLst, rsArgs, nilOpt, nilLst)
+	updCfg := fmtTestConfigResource("view", "new", globalPcArgs, rsArgs, nilOpt, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -256,7 +255,7 @@ func TestView_Basic(t *testing.T) {
 			{
 				Config: iniCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test"),
 				),
@@ -264,7 +263,7 @@ func TestView_Basic(t *testing.T) {
 			{
 				Config: updCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test2"),
 				),
@@ -283,25 +282,25 @@ func TestView_BulkChannels(t *testing.T) {
 		"email":  cloneDefaults(chnlDefaults["email"]),
 		"email1": cloneDefaults(chnlDefaults["email"]),
 	}
-	emsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, emArgs, nilLst)
+	emsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, emArgs, nilLst)
 
 	pdArgs := map[string]map[string]string{
 		"pagerduty":  cloneDefaults(chnlDefaults["pagerduty"]),
 		"pagerduty1": cloneDefaults(chnlDefaults["pagerduty"]),
 	}
-	pdsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, pdArgs, nilLst)
+	pdsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, pdArgs, nilLst)
 
 	slArgs := map[string]map[string]string{
 		"slack":  cloneDefaults(chnlDefaults["slack"]),
 		"slack1": cloneDefaults(chnlDefaults["slack"]),
 	}
-	slsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, slArgs, nilLst)
+	slsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, slArgs, nilLst)
 
 	wbArgs := map[string]map[string]string{
 		"webhook":  cloneDefaults(chnlDefaults["webhook"]),
 		"webhook1": cloneDefaults(chnlDefaults["webhook"]),
 	}
-	wbsCfg := fmtTestConfigResource("view", "new", nilLst, viewDefaults, wbArgs, nilLst)
+	wbsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, wbArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -309,7 +308,7 @@ func TestView_BulkChannels(t *testing.T) {
 			{
 				Config: emsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "email_channel.#", "2"),
@@ -323,7 +322,7 @@ func TestView_BulkChannels(t *testing.T) {
 			{
 				Config: pdsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "pagerduty_channel.#", "2"),
@@ -337,7 +336,7 @@ func TestView_BulkChannels(t *testing.T) {
 			{
 				Config: slsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "slack_channel.#", "2"),
@@ -351,7 +350,7 @@ func TestView_BulkChannels(t *testing.T) {
 			{
 				Config: wbsCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "webhook_channel.#", "2"),
@@ -393,7 +392,7 @@ func TestView_MultipleChannels(t *testing.T) {
 	rsArgs["tags"] = `["tags1", "tags2"]`
 	iniCfg := fmt.Sprintf(
 		"%s\n%s\n%s",
-		fmtTestConfigResource("view", "new", nilLst, rsArgs, chArgs, dependencies),
+		fmtTestConfigResource("view", "new", globalPcArgs, rsArgs, chArgs, dependencies),
 		fmtResourceBlock("category", "cat_1", cat1Args, nilOpt, nilLst),
 		fmtResourceBlock("category", "cat_2", cat2Args, nilOpt, nilLst),
 	)
@@ -408,7 +407,7 @@ func TestView_MultipleChannels(t *testing.T) {
 	rsUptd["query"] = `"query2"`
 	updCfg := fmt.Sprintf(
 		"%s\n%s\n%s",
-		fmtTestConfigResource("view", "new", nilLst, rsUptd, chArgs, dependencies),
+		fmtTestConfigResource("view", "new", globalPcArgs, rsUptd, chArgs, dependencies),
 		fmtResourceBlock("category", "cat_1", cat1Args, nilOpt, nilLst),
 		fmtResourceBlock("category", "cat_2", cat2Args, nilOpt, nilLst),
 	)
@@ -419,7 +418,7 @@ func TestView_MultipleChannels(t *testing.T) {
 			{
 				Config: iniCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.#", "2"),
@@ -481,7 +480,7 @@ func TestView_MultipleChannels(t *testing.T) {
 			{
 				Config: updCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.new"),
+					testResourceExists("view", "new"),
 					resource.TestCheckResourceAttr("logdna_view.new", "name", "test2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "query", "query2"),
 					resource.TestCheckResourceAttr("logdna_view.new", "apps.0", "app3"),
@@ -543,7 +542,7 @@ func TestView_PresetAlert(t *testing.T) {
 		"%s\n%s\n%s",
 		fmtResourceBlock("category", "test_category", catArgs, nilOpt, nilLst),
 		fmtResourceBlock("alert", "test_preset_alert_ins", alertInsArgs, chArgs, nilLst),
-		fmtTestConfigResource("view", "test_view", nilLst, rsArgs, nilOpt, dependenciesIns),
+		fmtTestConfigResource("view", "test_view", globalPcArgs, rsArgs, nilOpt, dependenciesIns),
 	)
 
 	rsUptd := cloneDefaults(rsDefaults["view"])
@@ -559,7 +558,7 @@ func TestView_PresetAlert(t *testing.T) {
 		"%s\n%s\n%s",
 		fmtResourceBlock("category", "test_category", catArgs, nilOpt, nilLst),
 		fmtResourceBlock("alert", "test_preset_alert_upd", alertUpdArgs, chArgs, nilLst),
-		fmtTestConfigResource("view", "test_view", nilLst, rsUptd, nilOpt, dependenciesUpd),
+		fmtTestConfigResource("view", "test_view", globalPcArgs, rsUptd, nilOpt, dependenciesUpd),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -568,7 +567,7 @@ func TestView_PresetAlert(t *testing.T) {
 			{
 				Config: iniCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.test_view"),
+					testResourceExists("view", "test-view"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "query", "test"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.#", "2"),
@@ -596,7 +595,7 @@ func TestView_PresetAlert(t *testing.T) {
 			{
 				Config: updCfg,
 				Check: resource.ComposeTestCheckFunc(
-					testViewExists("logdna_view.test_view"),
+					testResourceExists("view", "test-view"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "name", "test2"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "query", "query2"),
 					resource.TestCheckResourceAttr("logdna_view.test_view", "apps.0", "app3"),
@@ -641,7 +640,7 @@ func TestView_ErrorsConflictPresetId(t *testing.T) {
 	rsArgs["tags"]     = `["tags1", "tags2"]`
 	rsArgs["presetid"] = `"1q2w3e4r5t"`
 
-	incCfg := fmtTestConfigResource("view", "test_view", nilLst, rsArgs, chArgs, nilLst)
+	incCfg := fmtTestConfigResource("view", "test_view", globalPcArgs, rsArgs, chArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -652,18 +651,4 @@ func TestView_ErrorsConflictPresetId(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testViewExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID set")
-		}
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		return nil
-	}
 }
