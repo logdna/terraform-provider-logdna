@@ -54,6 +54,17 @@ type keyRequest struct {
 	Name string `json:"name,omitempty"`
 }
 
+type memberRequest struct {
+	Email  string   `json:"email,omitempty"`
+	Role   string   `json:"role,omitempty"`
+	Groups []string `json:"groups,omitempty"`
+}
+
+type memberPutRequest struct {
+	Role   string   `json:"role,omitempty"`
+	Groups []string `json:"groups"`
+}
+
 func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
 	// This function pulls from the schema in preparation to JSON marshal
 	var diags diag.Diagnostics
@@ -103,6 +114,27 @@ func (key *keyRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostic
 
 	// Scalars
 	key.Name = d.Get("name").(string)
+
+	return diags
+}
+
+func (member *memberRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	member.Email = d.Get("email").(string)
+	member.Role = d.Get("role").(string)
+	member.Groups = listToStrings(d.Get("groups").([]interface{}))
+
+	return diags
+}
+
+func (member *memberPutRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	member.Role = d.Get("role").(string)
+	member.Groups = listToStrings(d.Get("groups").([]interface{}))
 
 	return diags
 }
