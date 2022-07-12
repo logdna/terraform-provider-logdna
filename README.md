@@ -165,3 +165,6 @@ This project uses [`svu`](https://github.com/caarlos0/svu) for parsing
 and determining the next version/tag. Once code is merged into `main`, a release will be
 built and created as a draft in GitHub. The draft release must be published manually in
 GitHub for it to be pulled in by the Terraform Registry.
+
+**NOTE**: The way conventional commit types map to versions is slightly different than
+our other projects. See the list [here](https://github.com/caarlos0/svu#commit-messages-vs-what-they-do).
