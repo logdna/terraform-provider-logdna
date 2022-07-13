@@ -6,11 +6,6 @@ def GIT_REPO = 'logdna/terraform-provider-logdna'
 def GIT_AUTHOR = 'logdnabot'
 def TRIGGER_PATTERN = ".*@logdnabot.*"
 
-def GetRepoName() {
-  def parsed_url = GIT_URL.tokenize('/')
-  return parsed_url[2].split("\\.")[0] + "/" + parsed_url[3].split("\\.")[0]
-}
-
 pipeline {
   agent none
 
@@ -47,8 +42,7 @@ pipeline {
 
       environment {
         GIT_BRANCH = "${CURRENT_BRANCH}"
-        GIT_REPO = "${GIT_REPO}"
-        CURRENT_REPO = GetRepoName()
+        CHANGE_FORK = "${CHANGE_FORK}"
         MAKEFLAGS='-j1'
       }
 
@@ -70,7 +64,8 @@ pipeline {
             '''
           }
 
-          if (CURRENT_REPO == GIT_REPO) {
+          // NOTE Version validation will be run only for a non fork branch
+          if (CHANGE_FORK == null) {
             sh '''
               set +x
               git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
