@@ -168,3 +168,5 @@ GitHub for it to be pulled in by the Terraform Registry.
 
 **NOTE**: The way conventional commit types map to versions is slightly different than
 our other projects. See the list [here](https://github.com/caarlos0/svu#commit-messages-vs-what-they-do).
+
+Test CI pipeline with fork branches
