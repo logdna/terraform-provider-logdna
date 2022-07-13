@@ -6,6 +6,11 @@ def GIT_REPO = 'logdna/terraform-provider-logdna'
 def GIT_AUTHOR = 'logdnabot'
 def TRIGGER_PATTERN = ".*@logdnabot.*"
 
+def GetRepoName() {
+  def parsed_url = GIT_URL.tokenize('/')
+  return parsed_url[2].split("\\.")[0] + "/" + parsed_url[3].split("\\.")[0]
+}
+
 pipeline {
   agent none
 
@@ -42,6 +47,8 @@ pipeline {
 
       environment {
         GIT_BRANCH = "${CURRENT_BRANCH}"
+        GIT_REPO = "${GIT_REPO}"
+        CURRENT_REPO = GetRepoName()
         MAKEFLAGS='-j1'
       }
 
@@ -63,15 +70,17 @@ pipeline {
             '''
           }
 
-          sh '''
-            set +x
-            git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
-            git fetch --tags
-            export CURRENT_TAG=$(make version-current)
-            export NEXT_TAG=$(make version-next)
-            echo "Latest: ${CURRENT_TAG}"
-            echo "Next: ${NEXT_TAG}"
-          '''
+          if (CURRENT_REPO == GIT_REPO) {
+            sh '''
+              set +x
+              git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+              git fetch --tags
+              export CURRENT_TAG=$(make version-current)
+              export NEXT_TAG=$(make version-next)
+              echo "Latest: ${CURRENT_TAG}"
+              echo "Next: ${NEXT_TAG}"
+            '''
+          }
         }
       }
 
