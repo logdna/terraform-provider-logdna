@@ -104,6 +104,13 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	// NOTE There is always one element in the PresetIds slice
 	appendError(d.Set("presetid", strings.Join(view.PresetIds, "")), &diags)
 
+	// NOTE API does DB denormalization and extend a view record in DB
+	//      with a alert channels which break a schema validation here.
+	//      We don't need the channels field in case when a presetid exists 
+	if len(d.Get("presetid").(string)) > 0 {
+		return diags
+	}
+
 	// Convert types to maps for setting the schema
 	integrations, diags := view.MapChannelsToSchema()
 	log.Printf("[DEBUG] view MapChannelsToSchema result: %+v\n", integrations)

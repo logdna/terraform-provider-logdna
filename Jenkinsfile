@@ -42,6 +42,7 @@ pipeline {
 
       environment {
         GIT_BRANCH = "${CURRENT_BRANCH}"
+        CHANGE_FORK = "${CHANGE_FORK}"
         MAKEFLAGS='-j1'
       }
 
@@ -63,15 +64,18 @@ pipeline {
             '''
           }
 
-          sh '''
-            set +x
-            git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
-            git fetch --tags
-            export CURRENT_TAG=$(make version-current)
-            export NEXT_TAG=$(make version-next)
-            echo "Latest: ${CURRENT_TAG}"
-            echo "Next: ${NEXT_TAG}"
-          '''
+          // NOTE Version validation will be run only for a non fork branch
+          if (CHANGE_FORK == null) {
+            sh '''
+              set +x
+              git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+              git fetch --tags
+              export CURRENT_TAG=$(make version-current)
+              export NEXT_TAG=$(make version-next)
+              echo "Latest: ${CURRENT_TAG}"
+              echo "Next: ${NEXT_TAG}"
+            '''
+          }
         }
       }
 
