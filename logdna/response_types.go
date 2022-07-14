@@ -31,6 +31,14 @@ type alertResponse struct {
 	PresetID string            `json:"presetid"`
 }
 
+type keyResponse struct {
+	KeyID   string `json:"id"`
+	Key     string `json:"key"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Created int    `json:"created,omitempty"`
+}
+
 // channelResponse contains channel data returned from the logdna APIs
 // NOTE - Properties with `interface` are due to the APIs returning
 // some things as strings (PUT/emails) and other times arrays (GET/emails)

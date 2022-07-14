@@ -1,13 +1,11 @@
 package logdna
 
 import (
-  "fmt"
   "regexp"
   "testing"
   "strings"
 
   "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-  "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestCategory_ErrorProviderUrl(t *testing.T) {
@@ -37,7 +35,7 @@ func TestCategory_ErrorResourceName(t *testing.T) {
     Providers: testAccProviders,
     Steps: []resource.TestStep{
       {
-        Config: fmtTestConfigResource("category", "new", nilLst, catArgs, nilOpt, nilLst),
+        Config: fmtTestConfigResource("category", "new", globalPcArgs, catArgs, nilOpt, nilLst),
         ExpectError: regexp.MustCompile("The argument \"name\" is required, but no definition was found."),
       },
     },
@@ -54,8 +52,8 @@ func TestCategory_ErrorResourceType(t *testing.T) {
     Providers: testAccProviders,
     Steps: []resource.TestStep{
       {
-        Config: fmtTestConfigResource("category", "new", nilLst, catArgs, nilOpt, nilLst),
-        ExpectError: regexp.MustCompile("Error: POST https://api.logdna.com/v1/config/categories/incorrect, status 400 NOT OK!"),
+        Config: fmtTestConfigResource("category", "new", globalPcArgs, catArgs, nilOpt, nilLst),
+        ExpectError: regexp.MustCompile("Error: POST .+?, status 400 NOT OK!"),
       },
     },
   })
@@ -77,17 +75,17 @@ func TestCategory_Basic(t *testing.T) {
     Steps: []resource.TestStep{
       {
         // NOTE It tests a category create operation
-        Config: fmtTestConfigResource("category", "new-category", nilLst, catInsArgs, nilOpt, nilLst),
+        Config: fmtTestConfigResource("category", "new-category", globalPcArgs, catInsArgs, nilOpt, nilLst),
         Check: resource.ComposeTestCheckFunc(
-          testCategoryExists("logdna_category.new-category"),
+          testResourceExists("category", "new-category"),
           resource.TestCheckResourceAttr("logdna_category.new-category", "name", strings.Replace(catInsArgs["name"], "\"", "", 2)),
         ),
       },
       {
         // NOTE It tests a category update operation
-        Config: fmtTestConfigResource("category", "new-category", nilLst, catUpdArgs, nilOpt, nilLst),
+        Config: fmtTestConfigResource("category", "new-category", globalPcArgs, catUpdArgs, nilOpt, nilLst),
         Check: resource.ComposeTestCheckFunc(
-          testCategoryExists("logdna_category.new-category"),
+          testResourceExists("category", "new-category"),
           resource.TestCheckResourceAttr("logdna_category.new-category", "name", strings.Replace(catUpdArgs["name"], "\"", "", 2)),
         ),
       },
@@ -98,18 +96,4 @@ func TestCategory_Basic(t *testing.T) {
       },
     },
   })
-}
-
-func testCategoryExists(n string) resource.TestCheckFunc {
-  return func(s *terraform.State) error {
-    rs, ok := s.RootModule().Resources[n]
-    if rs.Primary.ID == "" {
-      return fmt.Errorf("No ID set")
-    }
-    if !ok {
-      return fmt.Errorf("Not found: %s", n)
-    }
-
-    return nil
-  }
 }

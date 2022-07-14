@@ -40,4 +40,4 @@ Before using Terraform for creating resources in LogDNA, review the following no
 The following arguments are supported by the `provider` section of the `.tf` file:
 
 - `servicekey`: **string _(Required)_** LogDNA Account Service Key. This can be generated or retrieved from Settings > Organization > API Keys.
-- `url`: **string** _(Optional; Default: api.logdna.com)_ The LogDNA region URL. If you’re configuring an IBM Log Analysis with LogDNA or IBM Cloud Activity Tracker with LogDNA, you’ll need to ensure `url` is set to the [correct endpoint depending on the IBM region](https://cloud.ibm.com/docs/Log-Analysis-with-LogDNA?topic=Log-Analysis-with-LogDNA-endpoints#endpoints_api).
+- `url`: **string** _(Optional; Default: api.logdna.com)_ The LogDNA region URL. If you’re configuring an IBM Log Analysis with LogDNA or IBM Cloud Activity Tracker with LogDNA, you’ll need to ensure `url` is set to the [correct endpoint depending on the IBM region](https://cloud.ibm.com/docs/log-analysis?topic=log-analysis-endpoints#endpoints_api).

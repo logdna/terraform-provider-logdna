@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 type httpRequest func(string, string, io.Reader) (*http.Request, error)
@@ -32,8 +31,8 @@ type requestConfig struct {
 // newRequestConfig abstracts the struct creation to allow for mocking
 func newRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
 	rc := &requestConfig{
-		serviceKey:  pc.serviceKey,
-		httpClient:  &http.Client{Timeout: 15 * time.Second},
+		serviceKey: pc.serviceKey,
+		httpClient: pc.httpClient,
 		apiURL:      fmt.Sprintf("%s%s", pc.baseURL, uri), // uri should have a preceding slash (/)
 		method:      method,
 		body:        body,

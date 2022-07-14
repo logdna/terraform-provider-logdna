@@ -50,6 +50,10 @@ type categoryRequest struct {
 	Type string `json:"type,omitempty"`
 }
 
+type keyRequest struct {
+	Name string `json:"name,omitempty"`
+}
+
 func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
 	// This function pulls from the schema in preparation to JSON marshal
 	var diags diag.Diagnostics
@@ -85,11 +89,20 @@ func (alert *alertRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagno
 	return diags
 }
 
-func (categoty *categoryRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+func (category *categoryRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Scalars
-	categoty.Name = d.Get("name").(string)
+	category.Name = d.Get("name").(string)
+
+	return diags
+}
+
+func (key *keyRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	key.Name = d.Get("name").(string)
 
 	return diags
 }
