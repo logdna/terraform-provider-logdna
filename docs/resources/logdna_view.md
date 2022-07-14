@@ -13,7 +13,7 @@ provider "logdna" {
 resource "logdna_view" "my_view" {
   name     = "Basic View"
   query    = "level:debug my query"
-  category = ["My Category"]
+  categories = ["My Category"]
 }
 ```
 
@@ -32,7 +32,7 @@ resource "logdna_alert" "my_alert" {
 resource "logdna_view" "my_view" {
   name     = "Basic View"
   query    = "level:debug my query"
-  category = ["My Category"]
+  categories = ["My Category"]
   presetid = logdna_alert.my_alert.id
 
   depends_on = ["logdna_alert.my_alert"]
@@ -55,8 +55,7 @@ resource "logdna_view" "my_view" {
   name     = "Terraform Multi-channel View"
   query    = "my query"
   tags     = ["tag1", "tag2"]
-  category = ["My Category"]
-
+  
   email_channel {
     emails          = ["test@logdna.com"]
     immediate       = "false"
