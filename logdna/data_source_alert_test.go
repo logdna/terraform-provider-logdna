@@ -16,26 +16,26 @@ data "logdna_alert" "remote" {
 
 func TestDataAlert_BulkChannels(t *testing.T) {
 	emArgs := map[string]map[string]string{
-		"email":  cloneDefaults(chnlDefaults["email"]),
-		"email1": cloneDefaults(chnlDefaults["email"]),
+		"email_channel":  cloneDefaults(chnlDefaults["email_channel"]),
+		"email1_channel": cloneDefaults(chnlDefaults["email_channel"]),
 	}
 	emsCfg := fmtTestConfigResource("alert", "test", globalPcArgs, alertDefaults, emArgs, nilLst)
 
 	pdArgs := map[string]map[string]string{
-		"pagerduty":  cloneDefaults(chnlDefaults["pagerduty"]),
-		"pagerduty1": cloneDefaults(chnlDefaults["pagerduty"]),
+		"pagerduty_channel":  cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"pagerduty1_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
 	}
 	pdsCfg := fmtTestConfigResource("alert", "test", globalPcArgs, alertDefaults, pdArgs, nilLst)
 
 	slArgs := map[string]map[string]string{
-		"slack":  cloneDefaults(chnlDefaults["slack"]),
-		"slack1": cloneDefaults(chnlDefaults["slack"]),
+		"slack_channel":  cloneDefaults(chnlDefaults["slack_channel"]),
+		"slack1_channel": cloneDefaults(chnlDefaults["slack_channel"]),
 	}
 	slsCfg := fmtTestConfigResource("alert", "test", globalPcArgs, alertDefaults, slArgs, nilLst)
 
 	wbArgs := map[string]map[string]string{
-		"webhook":  cloneDefaults(chnlDefaults["webhook"]),
-		"webhook1": cloneDefaults(chnlDefaults["webhook"]),
+		"webhook_channel":  cloneDefaults(chnlDefaults["webhook_channel"]),
+		"webhook1_channel": cloneDefaults(chnlDefaults["webhook_channel"]),
 	}
 	wbsCfg := fmtTestConfigResource("alert", "test", globalPcArgs, alertDefaults, wbArgs, nilLst)
 
@@ -99,10 +99,10 @@ func TestDataAlert_BulkChannels(t *testing.T) {
 
 func TestDataSourceAlert_MultipleChannels(t *testing.T) {
 	chArgs := map[string]map[string]string{
-		"email":     cloneDefaults(chnlDefaults["email"]),
-		"pagerduty": cloneDefaults(chnlDefaults["pagerduty"]),
-		"slack":     cloneDefaults(chnlDefaults["slack"]),
-		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
+		"email_channel":     cloneDefaults(chnlDefaults["email_channel"]),
+		"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"slack_channel":     cloneDefaults(chnlDefaults["slack_channel"]),
+		"webhook_channel":   cloneDefaults(chnlDefaults["webhook_channel"]),
 	}
 	fmtCfg := fmt.Sprintf("%s\n%s", fmtTestConfigResource("alert", "test", globalPcArgs, alertDefaults, chArgs, nilLst), ds)
 

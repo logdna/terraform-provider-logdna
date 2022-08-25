@@ -84,6 +84,21 @@ type categoryResponse struct {
 	Id   string `json:"id"`
 }
 
+type indexRateAlertChannelResponse struct {
+	Email     []string `json:"email,omitempty"`
+	Pagerduty []string `json:"pagerduty,omitempty"`
+	Slack     []string `json:"slack,omitempty"`
+}
+
+type indexRateAlertResponse struct {
+	MaxLines       int                           `json:"max_lines,omitempty"`
+	MaxZScore      int                           `json:"max_z_score,omitempty"`
+	ThresholdAlert string                        `json:"threshold_alert,omitempty"`
+	Frequency      string                        `json:"frequency,omitempty"`
+	Channels       indexRateAlertChannelResponse `json:"channels,omitempty"`
+	Enabled        bool                          `json:"enabled,omitempty"`
+}
+
 func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
 	channels := view.Channels
 	channelIntegrations, diags := mapAllChannelsToSchema("view", &channels)

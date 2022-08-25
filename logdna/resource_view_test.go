@@ -83,24 +83,24 @@ func TestView_ErrorsResourceFields(t *testing.T) {
 }
 
 func TestView_ErrorsChannel(t *testing.T) {
-	imArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
-	imArgs["email"]["immediate"] = `"not a bool"`
+	imArgs := map[string]map[string]string{"email_channel": cloneDefaults(chnlDefaults["email_channel"])}
+	imArgs["email_channel"]["immediate"] = `"not a bool"`
 	immdte := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, imArgs, nilLst)
 
-	opArgs := map[string]map[string]string{"pagerduty": cloneDefaults(chnlDefaults["pagerduty"])}
-	opArgs["pagerduty"]["operator"] = `1000`
+	opArgs := map[string]map[string]string{"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel"])}
+	opArgs["pagerduty_channel"]["operator"] = `1000`
 	opratr := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, opArgs, nilLst)
 
-	trArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
-	trArgs["webhook"]["terminal"] = `"invalid"`
+	trArgs := map[string]map[string]string{"webhook_channel": cloneDefaults(chnlDefaults["webhook_channel"])}
+	trArgs["webhook_channel"]["terminal"] = `"invalid"`
 	trmnal := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, trArgs, nilLst)
 
-	tiArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
-	tiArgs["email"]["triggerinterval"] = `18`
+	tiArgs := map[string]map[string]string{"email_channel": cloneDefaults(chnlDefaults["email_channel"])}
+	tiArgs["email_channel"]["triggerinterval"] = `18`
 	tintvl := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, tiArgs, nilLst)
 
-	tlArgs := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
-	tlArgs["slack"]["triggerlimit"] = `0`
+	tlArgs := map[string]map[string]string{"slack_channel": cloneDefaults(chnlDefaults["slack_channel"])}
+	tlArgs["slack_channel"]["triggerlimit"] = `0`
 	tlimit := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, tlArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
@@ -131,12 +131,12 @@ func TestView_ErrorsChannel(t *testing.T) {
 }
 
 func TestView_ErrorsEmailChannel(t *testing.T) {
-	msArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
-	msArgs["email"]["emails"] = ""
+	msArgs := map[string]map[string]string{"email_channel": cloneDefaults(chnlDefaults["email_channel"])}
+	msArgs["email_channel"]["emails"] = ""
 	misngE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, msArgs, nilLst)
 
-	inArgs := map[string]map[string]string{"email": cloneDefaults(chnlDefaults["email"])}
-	inArgs["email"]["emails"] = `"not an array of strings"`
+	inArgs := map[string]map[string]string{"email_channel": cloneDefaults(chnlDefaults["email_channel"])}
+	inArgs["email_channel"]["emails"] = `"not an array of strings"`
 	invldE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, inArgs, nilLst)
 
 	resource.Test(t, resource.TestCase{
@@ -155,8 +155,8 @@ func TestView_ErrorsEmailChannel(t *testing.T) {
 }
 
 func TestView_ErrorsPagerDutyChannel(t *testing.T) {
-	chArgs := map[string]map[string]string{"pagerduty": cloneDefaults(chnlDefaults["pagerduty"])}
-	chArgs["pagerduty"]["key"] = ""
+	chArgs := map[string]map[string]string{"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel"])}
+	chArgs["pagerduty_channel"]["key"] = ""
 
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
@@ -170,12 +170,12 @@ func TestView_ErrorsPagerDutyChannel(t *testing.T) {
 }
 
 func TestView_ErrorsSlackChannel(t *testing.T) {
-	ulInvd := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
-	ulInvd["slack"]["url"] = `"this is not a valid url"`
+	ulInvd := map[string]map[string]string{"slack_channel": cloneDefaults(chnlDefaults["slack_channel"])}
+	ulInvd["slack_channel"]["url"] = `"this is not a valid url"`
 	ulCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulInvd, nilLst)
 
-	ulMsng := map[string]map[string]string{"slack": cloneDefaults(chnlDefaults["slack"])}
-	ulMsng["slack"]["url"] = ""
+	ulMsng := map[string]map[string]string{"slack_channel": cloneDefaults(chnlDefaults["slack_channel"])}
+	ulMsng["slack_channel"]["url"] = ""
 	ulCfgM := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
@@ -194,24 +194,24 @@ func TestView_ErrorsSlackChannel(t *testing.T) {
 }
 
 func TestView_ErrorsWebhookChannel(t *testing.T) {
-	btArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
-	btArgs["webhook"]["bodytemplate"] = `"{\"test\": }"`
+	btArgs := map[string]map[string]string{"webhook_channel": cloneDefaults(chnlDefaults["webhook_channel"])}
+	btArgs["webhook_channel"]["bodytemplate"] = `"{\"test\": }"`
 	btCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, btArgs, nilLst)
 
-	hdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
-	hdArgs["webhook"]["headers"] = `["headers", "invalid", "array"]`
+	hdArgs := map[string]map[string]string{"webhook_channel": cloneDefaults(chnlDefaults["webhook_channel"])}
+	hdArgs["webhook_channel"]["headers"] = `["headers", "invalid", "array"]`
 	hdCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, hdArgs, nilLst)
 
-	mdArgs := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
-	mdArgs["webhook"]["method"] = `"false"`
+	mdArgs := map[string]map[string]string{"webhook_channel": cloneDefaults(chnlDefaults["webhook_channel"])}
+	mdArgs["webhook_channel"]["method"] = `"false"`
 	mdCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, mdArgs, nilLst)
 
-	ulInvd := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
-	ulInvd["webhook"]["url"] = `"this is not a valid url"`
+	ulInvd := map[string]map[string]string{"webhook_channel": cloneDefaults(chnlDefaults["webhook_channel"])}
+	ulInvd["webhook_channel"]["url"] = `"this is not a valid url"`
 	ulCfgE := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulInvd, nilLst)
 
-	ulMsng := map[string]map[string]string{"webhook": cloneDefaults(chnlDefaults["webhook"])}
-	ulMsng["webhook"]["url"] = ""
+	ulMsng := map[string]map[string]string{"webhook_channel": cloneDefaults(chnlDefaults["webhook_channel"])}
+	ulMsng["webhook_channel"]["url"] = ""
 	ulCfgM := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, ulMsng, nilLst)
 
 	resource.Test(t, resource.TestCase{
@@ -279,26 +279,26 @@ func TestView_Basic(t *testing.T) {
 
 func TestView_BulkChannels(t *testing.T) {
 	emArgs := map[string]map[string]string{
-		"email":  cloneDefaults(chnlDefaults["email"]),
-		"email1": cloneDefaults(chnlDefaults["email"]),
+		"email_channel":  cloneDefaults(chnlDefaults["email_channel"]),
+		"email1_channel": cloneDefaults(chnlDefaults["email_channel"]),
 	}
 	emsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, emArgs, nilLst)
 
 	pdArgs := map[string]map[string]string{
-		"pagerduty":  cloneDefaults(chnlDefaults["pagerduty"]),
-		"pagerduty1": cloneDefaults(chnlDefaults["pagerduty"]),
+		"pagerduty_channel":  cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"pagerduty1_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
 	}
 	pdsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, pdArgs, nilLst)
 
 	slArgs := map[string]map[string]string{
-		"slack":  cloneDefaults(chnlDefaults["slack"]),
-		"slack1": cloneDefaults(chnlDefaults["slack"]),
+		"slack_channel":  cloneDefaults(chnlDefaults["slack_channel"]),
+		"slack1_channel": cloneDefaults(chnlDefaults["slack_channel"]),
 	}
 	slsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, slArgs, nilLst)
 
 	wbArgs := map[string]map[string]string{
-		"webhook":  cloneDefaults(chnlDefaults["webhook"]),
-		"webhook1": cloneDefaults(chnlDefaults["webhook"]),
+		"webhook_channel":  cloneDefaults(chnlDefaults["webhook_channel"]),
+		"webhook1_channel": cloneDefaults(chnlDefaults["webhook_channel"]),
 	}
 	wbsCfg := fmtTestConfigResource("view", "new", globalPcArgs, viewDefaults, wbArgs, nilLst)
 
@@ -367,10 +367,10 @@ func TestView_BulkChannels(t *testing.T) {
 
 func TestView_MultipleChannels(t *testing.T) {
 	chArgs := map[string]map[string]string{
-		"email":     cloneDefaults(chnlDefaults["email"]),
-		"pagerduty": cloneDefaults(chnlDefaults["pagerduty"]),
-		"slack":     cloneDefaults(chnlDefaults["slack"]),
-		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
+		"email_channel":     cloneDefaults(chnlDefaults["email_channel"]),
+		"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"slack_channel":     cloneDefaults(chnlDefaults["slack_channel"]),
+		"webhook_channel":   cloneDefaults(chnlDefaults["webhook_channel"]),
 	}
 
 	dependencies := []string{"logdna_category.cat_1", "logdna_category.cat_2"}
@@ -504,10 +504,10 @@ func TestView_MultipleChannels(t *testing.T) {
 
 func TestView_PresetAlert(t *testing.T) {
 	chArgs := map[string]map[string]string{
-		"email":     cloneDefaults(chnlDefaults["email"]),
-		"pagerduty": cloneDefaults(chnlDefaults["pagerduty"]),
-		"slack":     cloneDefaults(chnlDefaults["slack"]),
-		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
+		"email_channel":     cloneDefaults(chnlDefaults["email_channel"]),
+		"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"slack_channel":     cloneDefaults(chnlDefaults["slack_channel"]),
+		"webhook_channel":   cloneDefaults(chnlDefaults["webhook_channel"]),
 	}
 
 	dependenciesIns := []string{
@@ -627,10 +627,10 @@ func TestView_PresetAlert(t *testing.T) {
 
 func TestView_ErrorsConflictPresetId(t *testing.T) {
 	chArgs := map[string]map[string]string{
-		"email":     cloneDefaults(chnlDefaults["email"]),
-		"pagerduty": cloneDefaults(chnlDefaults["pagerduty"]),
-		"slack":     cloneDefaults(chnlDefaults["slack"]),
-		"webhook":   cloneDefaults(chnlDefaults["webhook"]),
+		"email_channel":     cloneDefaults(chnlDefaults["email_channel"]),
+		"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"slack_channel":     cloneDefaults(chnlDefaults["slack_channel"]),
+		"webhook_channel":   cloneDefaults(chnlDefaults["webhook_channel"]),
 	}
 
 	rsArgs := cloneDefaults(rsDefaults["view"])
