@@ -39,7 +39,7 @@ var rsDefaults = map[string]map[string]string{
 	},
 }
 var chnlDefaults = map[string]map[string]string{
-	"email": {
+	"email_channel": {
 		"emails":          `["test@logdna.com"]`,
 		"immediate":       `"false"`,
 		"operator":        `"absence"`,
@@ -48,7 +48,7 @@ var chnlDefaults = map[string]map[string]string{
 		"triggerinterval": `"15m"`,
 		"triggerlimit":    `15`,
 	},
-	"pagerduty": {
+	"pagerduty_channel": {
 		"immediate":       `"false"`,
 		"operator":        `"presence"`,
 		"key":             `"Your PagerDuty API key goes here"`,
@@ -56,7 +56,7 @@ var chnlDefaults = map[string]map[string]string{
 		"triggerinterval": `"15m"`,
 		"triggerlimit":    `15`,
 	},
-	"slack": {
+	"slack_channel": {
 		"immediate":       `"false"`,
 		"operator":        `"absence"`,
 		"terminal":        `"true"`,
@@ -64,7 +64,7 @@ var chnlDefaults = map[string]map[string]string{
 		"triggerlimit":    `15`,
 		"url":             `"https://hooks.slack.com/services/identifier/secret"`,
 	},
-	"webhook": {
+	"webhook_channel": {
 		"headers": "{\n" +
 			"\t\t\thello = \"test3\"\n" +
 			"\t\t\ttest = \"test2\"\n" +
@@ -124,7 +124,7 @@ func fmtResourceBlock(objTyp, rsName string, rsArgs map[string]string, chArgs ma
 
 	rgxDgt := regexp.MustCompile(`\d+`)
 	for chName, chArgs := range chArgs {
-		fmt.Fprintf(&rsCfg, "\t%s_channel {\n", rgxDgt.ReplaceAllString(chName, ""))
+		fmt.Fprintf(&rsCfg, "\t%s {\n", rgxDgt.ReplaceAllString(chName, ""))
 		fmt.Fprint(&rsCfg, fmtBlockArgs(2, chArgs))
 		fmt.Fprintf(&rsCfg, "\t}\n")
 	}

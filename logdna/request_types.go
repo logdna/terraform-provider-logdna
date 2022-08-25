@@ -7,6 +7,7 @@ package logdna
 import (
 	"encoding/json"
 	"fmt"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -52,6 +53,21 @@ type categoryRequest struct {
 
 type keyRequest struct {
 	Name string `json:"name,omitempty"`
+}
+
+type indexRateAlertChannelRequest struct {
+	Email     []string `json:"email,omitempty"`
+	Pagerduty []string `json:"pagerduty,omitempty"`
+	Slack     []string `json:"slack,omitempty"`
+}
+
+type indexRateAlertRequest struct {
+	MaxLines       int                          `json:"max_lines,omitempty"`
+	MaxZScore      int                          `json:"max_z_score,omitempty"`
+	ThresholdAlert string                       `json:"threshold_alert,omitempty"`
+	Frequency      string                       `json:"frequency,omitempty"`
+	Channels       indexRateAlertChannelRequest `json:"channels,omitempty"`
+	Enabled        bool                         `json:"enabled,omitempty"`
 }
 
 func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
@@ -103,6 +119,36 @@ func (key *keyRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostic
 
 	// Scalars
 	key.Name = d.Get("name").(string)
+
+	return diags
+}
+
+func (doc *indexRateAlertRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	// This function pulls from the schema in preparation to JSON marshal
+	var diags diag.Diagnostics
+
+	var channels = d.Get("channels").([]interface{})
+
+	if len(channels) > 1 {
+		return diag.FromErr(
+			errors.New("Index rate alert resource supports only one channels object"),
+		)
+	}
+
+	doc.MaxLines       = d.Get("max_lines").(int)
+	doc.MaxZScore      = d.Get("max_z_score").(int)
+	doc.Enabled        = d.Get("enabled").(bool)
+	doc.ThresholdAlert = d.Get("threshold_alert").(string)
+	doc.Frequency      = d.Get("frequency").(string)
+
+	var indexRateAlertChannel indexRateAlertChannelRequest
+	var channel = channels[0].(map[string]interface{})
+
+	indexRateAlertChannel.Email     = listToStrings(channel["email"].([]interface{}))
+	indexRateAlertChannel.Pagerduty = listToStrings(channel["pagerduty"].([]interface{}))
+	indexRateAlertChannel.Slack     = listToStrings(channel["slack"].([]interface{}))
+
+	doc.Channels = indexRateAlertChannel
 
 	return diags
 }
