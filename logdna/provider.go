@@ -40,6 +40,7 @@ func Provider() *schema.Provider {
 			"logdna_archive":             resourceArchiveConfig(),
 			"logdna_key":                 resourceKey(),
 			"logdna_index_rate_alert":    resourceIndexRateAlert(),
+			"logdna_member":              resourceMember(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

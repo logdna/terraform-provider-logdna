@@ -39,6 +39,12 @@ type keyResponse struct {
 	Created int    `json:"created,omitempty"`
 }
 
+type memberResponse struct {
+	Email  string   `json:"email"`
+	Role   string   `json:"role"`
+	Groups []string `json:"groups,omitempty"`
+}
+
 // channelResponse contains channel data returned from the logdna APIs
 // NOTE - Properties with `interface` are due to the APIs returning
 // some things as strings (PUT/emails) and other times arrays (GET/emails)
