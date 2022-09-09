@@ -6,8 +6,8 @@ package logdna
 
 import (
 	"encoding/json"
-	"fmt"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,6 +68,17 @@ type indexRateAlertRequest struct {
 	Frequency      string                       `json:"frequency,omitempty"`
 	Channels       indexRateAlertChannelRequest `json:"channels,omitempty"`
 	Enabled        bool                         `json:"enabled,omitempty"`
+}
+
+type memberRequest struct {
+	Email  string   `json:"email,omitempty"`
+	Role   string   `json:"role,omitempty"`
+	Groups []string `json:"groups,omitempty"`
+}
+
+type memberPutRequest struct {
+	Role   string   `json:"role,omitempty"`
+	Groups []string `json:"groups"`
 }
 
 func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
@@ -135,20 +146,41 @@ func (doc *indexRateAlertRequest) CreateRequestBody(d *schema.ResourceData) diag
 		)
 	}
 
-	doc.MaxLines       = d.Get("max_lines").(int)
-	doc.MaxZScore      = d.Get("max_z_score").(int)
-	doc.Enabled        = d.Get("enabled").(bool)
+	doc.MaxLines = d.Get("max_lines").(int)
+	doc.MaxZScore = d.Get("max_z_score").(int)
+	doc.Enabled = d.Get("enabled").(bool)
 	doc.ThresholdAlert = d.Get("threshold_alert").(string)
-	doc.Frequency      = d.Get("frequency").(string)
+	doc.Frequency = d.Get("frequency").(string)
 
 	var indexRateAlertChannel indexRateAlertChannelRequest
 	var channel = channels[0].(map[string]interface{})
 
-	indexRateAlertChannel.Email     = listToStrings(channel["email"].([]interface{}))
+	indexRateAlertChannel.Email = listToStrings(channel["email"].([]interface{}))
 	indexRateAlertChannel.Pagerduty = listToStrings(channel["pagerduty"].([]interface{}))
-	indexRateAlertChannel.Slack     = listToStrings(channel["slack"].([]interface{}))
+	indexRateAlertChannel.Slack = listToStrings(channel["slack"].([]interface{}))
 
 	doc.Channels = indexRateAlertChannel
+
+	return diags
+}
+
+func (member *memberRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	member.Email = d.Get("email").(string)
+	member.Role = d.Get("role").(string)
+	member.Groups = listToStrings(d.Get("groups").([]interface{}))
+
+	return diags
+}
+
+func (member *memberPutRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	member.Role = d.Get("role").(string)
+	member.Groups = listToStrings(d.Get("groups").([]interface{}))
 
 	return diags
 }
