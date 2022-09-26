@@ -15,6 +15,11 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeKey], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	keyType := d.Get("type").(string)
 	key := keyRequest{}
 
@@ -51,6 +56,12 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{
 func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeKey], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	keyID := d.Id()
 
 	key := keyRequest{}
@@ -79,8 +90,13 @@ func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 
 func resourceKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeKey], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	keyID := d.Id()
 
 	req := newRequestConfig(
@@ -125,7 +141,14 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, m interface{})
 }
 
 func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeKey], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	keyID := d.Id()
 
 	req := newRequestConfig(

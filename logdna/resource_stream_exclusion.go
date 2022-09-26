@@ -11,8 +11,13 @@ import (
 
 func resourceStreamExclusionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	ex := exclusionRule{
 		Title:  d.Get("title").(string),
 		Active: d.Get("active").(bool),
@@ -51,8 +56,13 @@ func resourceStreamExclusionCreate(ctx context.Context, d *schema.ResourceData, 
 
 func resourceStreamExclusionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"GET",
@@ -91,7 +101,14 @@ func resourceStreamExclusionRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceStreamExclusionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	ex := exclusionRule{
 		Title:  d.Get("title").(string),
 		Active: d.Get("active").(bool),
@@ -116,7 +133,14 @@ func resourceStreamExclusionUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceStreamExclusionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"DELETE",

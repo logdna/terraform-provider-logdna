@@ -165,9 +165,15 @@ func setArchiveConfig(cn archiveResponse, d *schema.ResourceData, diags diag.Dia
 }
 
 func resourceArchiveConfigCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
-	c, err := generateArchiveConfig(d)
 
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeArchive], diags)
+	if diags.HasError() {
+		return diags
+	}
+
+	c, err := generateArchiveConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,8 +203,13 @@ func resourceArchiveConfigCreate(ctx context.Context, d *schema.ResourceData, m 
 
 func resourceArchiveConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeArchive], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"GET",
@@ -233,7 +244,14 @@ func resourceArchiveConfigRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceArchiveConfigUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeArchive], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	c, err := generateArchiveConfig(d)
 
 	if err != nil {
@@ -262,7 +280,14 @@ func resourceArchiveConfigUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceArchiveConfigDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeArchive], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"DELETE",

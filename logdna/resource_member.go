@@ -16,6 +16,11 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeMember], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	member := memberRequest{}
 
 	if diags = member.CreateRequestBody(d); diags.HasError() {
@@ -49,8 +54,13 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeMember], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	memberID := d.Id()
 
 	req := newRequestConfig(
@@ -95,6 +105,12 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeMember], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	memberID := d.Id()
 
 	member := memberPutRequest{}
@@ -122,7 +138,14 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeMember], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	memberID := d.Id()
 
 	req := newRequestConfig(

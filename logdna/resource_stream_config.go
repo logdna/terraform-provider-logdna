@@ -20,8 +20,13 @@ type streamConfig struct {
 
 func resourceStreamConfigCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamConfig], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	c := streamConfig{
 		Brokers:  listToStrings(d.Get("brokers").([]interface{})),
 		Topic:    d.Get("topic").(string),
@@ -58,8 +63,13 @@ func resourceStreamConfigCreate(ctx context.Context, d *schema.ResourceData, m i
 
 func resourceStreamConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamConfig], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"GET",
@@ -98,7 +108,14 @@ func resourceStreamConfigRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceStreamConfigUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamConfig], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	c := streamConfig{
 		Brokers:  listToStrings(d.Get("brokers").([]interface{})),
 		Topic:    d.Get("topic").(string),
@@ -122,7 +139,14 @@ func resourceStreamConfigUpdate(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceStreamConfigDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeStreamConfig], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"DELETE",

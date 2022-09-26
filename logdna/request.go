@@ -18,27 +18,37 @@ type httpClientInterface interface {
 
 // Configuration for the HTTP client used to make requests to remote resources
 type requestConfig struct {
-	serviceKey  string
-	httpClient  httpClientInterface
-	apiURL      string
-	method      string
-	body        interface{}
-	httpRequest httpRequest
-	bodyReader  bodyReader
-	jsonMarshal jsonMarshal
+	serviceKey    string
+	enterpriseKey string
+	httpClient    httpClientInterface
+	apiURL        string
+	method        string
+	body          interface{}
+	httpRequest   httpRequest
+	bodyReader    bodyReader
+	jsonMarshal   jsonMarshal
 }
 
 // newRequestConfig abstracts the struct creation to allow for mocking
 func newRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
+	serviceKey := ""
+	enterpriseKey := ""
+	switch pc.orgType {
+	case OrgTypeRegular:
+		serviceKey = pc.serviceKey
+	case OrgTypeEnterprise:
+		enterpriseKey = pc.serviceKey
+	}
 	rc := &requestConfig{
-		serviceKey:  pc.serviceKey,
-		httpClient:  pc.httpClient,
-		apiURL:      fmt.Sprintf("%s%s", pc.baseURL, uri), // uri should have a preceding slash (/)
-		method:      method,
-		body:        body,
-		httpRequest: http.NewRequest,
-		bodyReader:  ioutil.ReadAll,
-		jsonMarshal: json.Marshal,
+		serviceKey:    serviceKey,
+		enterpriseKey: enterpriseKey,
+		httpClient:    pc.httpClient,
+		apiURL:        fmt.Sprintf("%s%s", pc.baseURL, uri), // uri should have a preceding slash (/)
+		method:        method,
+		body:          body,
+		httpRequest:   http.NewRequest,
+		bodyReader:    ioutil.ReadAll,
+		jsonMarshal:   json.Marshal,
 	}
 
 	// Used during testing only; Allow mutations passed in by tests
@@ -63,7 +73,14 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("servicekey", c.serviceKey)
+
+	if c.serviceKey != "" {
+		req.Header.Set("servicekey", c.serviceKey)
+	}
+	if c.enterpriseKey != "" {
+		req.Header.Set("enterprise-servicekey", c.enterpriseKey)
+	}
+
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error during HTTP request: %s", err)

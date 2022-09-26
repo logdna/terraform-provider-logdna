@@ -28,8 +28,13 @@ var alertProps = map[string]*schema.Schema{
 
 func dataSourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(dataSourceInfoMap[DataSourceTypeAlert], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	id := d.Get("presetid").(string)
 
 	req := newRequestConfig(

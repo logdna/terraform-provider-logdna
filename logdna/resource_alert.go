@@ -15,6 +15,11 @@ func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeAlert], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	alert := alertRequest{}
 
 	if diags = alert.CreateRequestBody(d); diags.HasError() {
@@ -51,6 +56,12 @@ func resourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{
 	var diags diag.Diagnostics
 
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeAlert], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	presetID := d.Id()
 
 	req := newRequestConfig(
@@ -104,6 +115,12 @@ func resourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{
 func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeAlert], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	presetID := d.Id()
 	alert := alertRequest{}
 
@@ -131,8 +148,14 @@ func resourceAlertUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceAlertDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 	presetID := d.Id()
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeAlert], diags)
+	if diags.HasError() {
+		return diags
+	}
 
 	req := newRequestConfig(
 		pc,

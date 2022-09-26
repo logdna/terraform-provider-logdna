@@ -24,6 +24,11 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeView], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	view := viewRequest{}
 
 	if diags = view.CreateRequestBody(d); diags.HasError() {
@@ -58,8 +63,13 @@ func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeView], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	viewID := d.Id()
 
 	req := newRequestConfig(
@@ -106,7 +116,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	// NOTE API does DB denormalization and extend a view record in DB
 	//      with a alert channels which break a schema validation here.
-	//      We don't need the channels field in case when a presetid exists 
+	//      We don't need the channels field in case when a presetid exists
 	if len(d.Get("presetid").(string)) > 0 {
 		return diags
 	}
@@ -128,6 +138,12 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeView], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	viewID := d.Id()
 	view := viewRequest{}
 
@@ -155,7 +171,14 @@ func resourceViewUpdate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceViewDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeView], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	viewID := d.Id()
 
 	req := newRequestConfig(
@@ -225,8 +248,8 @@ func resourceView() *schema.Resource {
 				Optional: true,
 			},
 			"presetid": {
-				Type:          schema.TypeString,
-				Optional:      true,
+				Type:     schema.TypeString,
+				Optional: true,
 				ConflictsWith: []string{
 					"email_channel",
 					"pagerduty_channel",

@@ -13,8 +13,13 @@ const baseIngestionExclusionUrl = "/v1/config/ingestion/exclusions"
 
 func resourceIngestionExclusionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeIngestionExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	ex := exclusionRule{
 		Title:  d.Get("title").(string),
 		Active: d.Get("active").(bool),
@@ -53,8 +58,13 @@ func resourceIngestionExclusionCreate(ctx context.Context, d *schema.ResourceDat
 
 func resourceIngestionExclusionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeIngestionExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"GET",
@@ -93,7 +103,14 @@ func resourceIngestionExclusionRead(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceIngestionExclusionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeIngestionExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	ex := exclusionRule{
 		Title:  d.Get("title").(string),
 		Active: d.Get("active").(bool),
@@ -118,7 +135,14 @@ func resourceIngestionExclusionUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceIngestionExclusionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
+
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeIngestionExclusion], diags)
+	if diags.HasError() {
+		return diags
+	}
+
 	req := newRequestConfig(
 		pc,
 		"DELETE",
