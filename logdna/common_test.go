@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const tmplPc = `provider "logdna" {
@@ -108,11 +108,15 @@ func fmtTestConfigResource(objTyp, rsName string, pcArgs []string, rsArgs map[st
 func fmtProviderBlock(args ...string) string {
 	opts := []string{serviceKey, ""}
 	copy(opts, args)
-	sk, ul := opts[0], opts[1]
+	sk, ul, tp := opts[0], opts[1], opts[2]
 
 	pcCfg := fmt.Sprintf(`servicekey = %q`, sk)
 	if ul != "" {
 		pcCfg = pcCfg + fmt.Sprintf("\n\turl = %q", ul)
+	}
+
+	if tp != "" {
+		pcCfg = pcCfg + fmt.Sprintf("\n\ttype = %q", tp)
 	}
 
 	return fmt.Sprintf(tmplPc, pcCfg)

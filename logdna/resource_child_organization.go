@@ -94,14 +94,27 @@ func resourceChildOrgRead(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceChildOrgDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
-	childOrgID := d.Id()
 
-	_ = pc
-	_ = childOrgID
-	/*
-		to be filled in later
-	*/
+	diags = pc.CheckOrgType(resourceInfoMap[ResourceTypeChildOrg], diags)
+	if diags.HasError() {
+		return diags
+	}
+
+	req := newRequestConfig(
+		pc,
+		"DELETE",
+		"/v1/enterprise/account",
+		nil,
+	)
+	req.serviceKey = d.Get("serviceKey").(string)
+	body, err := req.MakeRequest()
+	log.Printf("[DEBUG] DELETE request body : %s", body)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId("")
 	return nil
