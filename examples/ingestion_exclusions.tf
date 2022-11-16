@@ -7,6 +7,7 @@ resource "logdna_ingestion_exclusion" "http-success" {
   apps   = ["nginx", "apache"]
   query  = "response:(>=200 <300)"
   active = true
+  indexonly = false
 }
 
 resource "logdna_ingestion_exclusion" "http-noise" {
@@ -14,4 +15,5 @@ resource "logdna_ingestion_exclusion" "http-noise" {
   apps   = ["nginx", "apache"]
   query  = "robots.txt OR favicon.ico OR .well-known"
   active = true
+  indexonly = true
 }
