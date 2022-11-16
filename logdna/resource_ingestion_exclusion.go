@@ -15,12 +15,15 @@ func resourceIngestionExclusionCreate(ctx context.Context, d *schema.ResourceDat
 	var diags diag.Diagnostics
 
 	pc := m.(*providerConfig)
-	ex := exclusionRule{
-		Title:  d.Get("title").(string),
-		Active: d.Get("active").(bool),
-		Apps:   listToStrings(d.Get("apps").([]interface{})),
-		Hosts:  listToStrings(d.Get("hosts").([]interface{})),
-		Query:  d.Get("query").(string),
+	ex := ingestionExclusionRule{
+		exclusionRule: exclusionRule{
+			Title:  d.Get("title").(string),
+			Active: d.Get("active").(bool),
+			Apps:   listToStrings(d.Get("apps").([]interface{})),
+			Hosts:  listToStrings(d.Get("hosts").([]interface{})),
+			Query:  d.Get("query").(string),
+		},
+		IndexOnly: d.Get("indexonly").(bool),
 	}
 
 	req := newRequestConfig(
@@ -35,7 +38,7 @@ func resourceIngestionExclusionCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	exn := exclusionRule{}
+	exn := ingestionExclusionRule{}
 	err = json.Unmarshal(body, &exn)
 	if err != nil {
 		return diag.FromErr(err)
@@ -72,7 +75,7 @@ func resourceIngestionExclusionRead(ctx context.Context, d *schema.ResourceData,
 		return diags
 	}
 
-	ex := exclusionRule{}
+	ex := ingestionExclusionRule{}
 	err = json.Unmarshal(body, &ex)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -85,6 +88,7 @@ func resourceIngestionExclusionRead(ctx context.Context, d *schema.ResourceData,
 
 	appendError(d.Set("title", ex.Title), &diags)
 	appendError(d.Set("active", ex.Active), &diags)
+	appendError(d.Set("indexonly", ex.IndexOnly), &diags)
 	appendError(d.Set("apps", ex.Apps), &diags)
 	appendError(d.Set("hosts", ex.Hosts), &diags)
 	appendError(d.Set("query", ex.Query), &diags)
@@ -94,12 +98,15 @@ func resourceIngestionExclusionRead(ctx context.Context, d *schema.ResourceData,
 
 func resourceIngestionExclusionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	pc := m.(*providerConfig)
-	ex := exclusionRule{
-		Title:  d.Get("title").(string),
-		Active: d.Get("active").(bool),
-		Apps:   listToStrings(d.Get("apps").([]interface{})),
-		Hosts:  listToStrings(d.Get("hosts").([]interface{})),
-		Query:  d.Get("query").(string),
+	ex := ingestionExclusionRule{
+		exclusionRule: exclusionRule{
+			Title:  d.Get("title").(string),
+			Active: d.Get("active").(bool),
+			Apps:   listToStrings(d.Get("apps").([]interface{})),
+			Hosts:  listToStrings(d.Get("hosts").([]interface{})),
+			Query:  d.Get("query").(string),
+		},
+		IndexOnly: d.Get("indexonly").(bool),
 	}
 
 	req := newRequestConfig(
@@ -145,6 +152,6 @@ func resourceIngestionExclusion() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: exclusionRuleSchema,
+		Schema: ingestionExclusionRuleSchema,
 	}
 }
