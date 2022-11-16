@@ -52,6 +52,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 				Config: testIngestionExclusion(`
 					title = "test-title"
 					active = true
+					indexonly = true
 					apps = [
 						"app-1",
 						"app-2"
@@ -66,6 +67,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 					testResourceExists("ingestion_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "title", "test-title"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "active", "true"),
+					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "indexonly", "true"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "apps.#", "2"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "apps.0", "app-1"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "apps.1", "app-2"),
@@ -79,6 +81,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 				Config: testIngestionExclusion(`
 					title = "test-title-update"
 					active = false
+					indexonly = false
 					apps = [
 						"app-1",
 						"app-2"
@@ -93,6 +96,7 @@ func TestIngestionExclusion_basic(t *testing.T) {
 					testResourceExists("ingestion_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "title", "test-title-update"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "active", "false"),
+					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "indexonly", "false"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "apps.#", "2"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "hosts.#", "2"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "query", "foo bar"),
@@ -111,6 +115,8 @@ func TestIngestionExclusion_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testResourceExists("ingestion_exclusion", "new"),
 					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "hosts.#", "0"),
+					// `indexonly` should default to `true`
+					resource.TestCheckResourceAttr("logdna_ingestion_exclusion.new", "indexonly", "true"),
 				),
 			},
 			{
