@@ -1,5 +1,5 @@
 FROM goreleaser/goreleaser:v0.171.0 as goreleaser
-FROM golang:1.16-buster as build
+FROM golang:1.18.8-buster as build
 
 COPY --from=goreleaser /usr/local/bin/goreleaser /usr/local/bin/goreleaser
 
