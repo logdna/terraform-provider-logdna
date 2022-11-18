@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -96,7 +95,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 	t.Run("Successfully marshals a provided body", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			postedBody, _ := ioutil.ReadAll(r.Body)
+			postedBody, _ := io.ReadAll(r.Body)
 			assert.Equal(
 				`{"name":"Test View"}`,
 				strings.TrimSpace(string(postedBody)),

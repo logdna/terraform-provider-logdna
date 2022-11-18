@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -37,7 +36,7 @@ func newRequestConfig(pc *providerConfig, method string, uri string, body interf
 		method:      method,
 		body:        body,
 		httpRequest: http.NewRequest,
-		bodyReader:  ioutil.ReadAll,
+		bodyReader:  io.ReadAll,
 		jsonMarshal: json.Marshal,
 	}
 
