@@ -168,3 +168,12 @@ GitHub for it to be pulled in by the Terraform Registry.
 
 **NOTE**: The way conventional commit types map to versions is slightly different than
 our other projects. See the list [here](https://github.com/caarlos0/svu#commit-messages-vs-what-they-do).
+
+## Go Compatibility
+
+This project follows the [support policy](https://golang.org/doc/devel/release.html#policy)
+of Go as its support policy. The two latest major releases of Go are supported
+by the project.
+
+Currently, that means Go **1.18** or later must be used when including this
+project as a dependency.
