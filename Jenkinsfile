@@ -7,7 +7,12 @@ def GIT_AUTHOR = 'logdnabot'
 def TRIGGER_PATTERN = ".*@logdnabot.*"
 
 pipeline {
-  agent none
+  agent {
+    node {
+      label 'ec2-fleet'
+      customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
+    }
+  }
 
   options {
     timestamps()
@@ -33,13 +38,6 @@ pipeline {
     }
 
     stage('Test') {
-      agent {
-        node {
-          label 'ec2-fleet'
-          customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
-        }
-      }
-
       environment {
         GIT_BRANCH = "${CURRENT_BRANCH}"
         CHANGE_FORK = "${CHANGE_FORK}"
@@ -97,15 +95,7 @@ pipeline {
 
     stage('Release') {
       when {
-        beforeAgent true
         branch MAIN_BRANCH
-      }
-
-      agent {
-        node {
-          label 'ec2-fleet'
-          customWorkspace "${PROJECT_NAME}-${BUILD_NUMBER}"
-        }
       }
 
       environment {
