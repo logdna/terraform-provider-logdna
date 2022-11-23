@@ -36,7 +36,7 @@ _Note:_ A `title` and at least one of the following properties: `apps`, `hosts`,
 
 - `title`: **string** _(Optional)_ Title of this exclusion rule that will appear in the UI.
 - `active`: **_bool_** _(Optional; Default: false)_ Whether the rule should be active.
-- `indexonly`: **_bool_** _(Optional; Default: true)_ Live-tail and alerting will be preserved when `false`.
+- `indexonly`: **_bool_** _(Optional; Default: true)_ Live-tail and alerting will be preserved when `true`.
 - `apps`: **_[]string_** _(Optional)_ Array of app names to exclude.
 - `hosts`: **_[]string_** _(Optional)_ Array of hosts to exclude.
 - `query`: **_string_** _(Optional)_ A search query to match lines to exclude
