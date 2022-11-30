@@ -164,6 +164,42 @@ func TestIndexRateAlert_ErrorChannels(t *testing.T) {
 	})
 }
 
+func TestIndexRateAlert_ErrorInvalidTokenWebhookBodyTemplate(t *testing.T) {
+	iraArgs := map[string]string{
+		"max_lines":       `3`,
+		"max_z_score":     `3`,
+		"threshold_alert": `"separate"`,
+		"frequency":       `"hourly"`,
+		"enabled":         `false`,
+	}
+
+	chArgs := map[string]map[string]string{
+		"channels": {
+			"email": `["test@logdna.com"]`,
+		},
+		"webhook_channel": {
+			"url":    `"https://something.com"`,
+			"method": `"POST"`,
+			"headers": `{
+        field2 = "value2"
+      }`,
+			"bodytemplate": `jsonencode({
+        something = "{{maxLines}}"
+      })`,
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("index_rate_alert", "test_config", globalPcArgs, iraArgs, chArgs, nilLst),
+				ExpectError: regexp.MustCompile("Invalid bodyTemplate: {{maxLines}} is not a valid token"),
+			},
+		},
+	})
+}
+
 func TestIndexRateAlert_Basic(t *testing.T) {
 	iraArgs := map[string]string{
 		"max_lines":       `3`,
@@ -178,6 +214,16 @@ func TestIndexRateAlert_Basic(t *testing.T) {
 			"email":     `["test@logdna.com", "test2@logdna.com"]`,
 			"slack":     `["https://hooks.slack.com/KEY"]`,
 			"pagerduty": `["ndt3k75rsw520d8t55dv35decdyt3mkcb3r"]`,
+		},
+		"webhook_channel": {
+		  "url" : `"https://something.com"`,
+		  "method": `"POST"`,
+		  "headers" : `{
+			field2 = "value2"
+		  }`,
+		  "bodytemplate" :`jsonencode({
+			something = "something"
+		  })`,
 		},
 	}
 
@@ -195,6 +241,16 @@ func TestIndexRateAlert_Basic(t *testing.T) {
 			"slack":     `["https://hooks.slack.com/UPDATED_KEY", "https://hooks.slack.com/KEY_2"]`,
 			"pagerduty": `["new3k75rsw520d8t55dv35decdyt3mkcnew"]`,
 		},
+		"webhook_channel": {
+			"url" : `"https://something.com"`,
+			"method": `"PUT"`,
+			"headers" : `{
+			  field2 = "value2"
+			}`,
+			"bodytemplate" :`jsonencode({
+			  something = "!something"
+			})`,
+		  },
 	}
 
 	createdEmails := strings.Split(

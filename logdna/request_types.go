@@ -55,10 +55,18 @@ type keyRequest struct {
 	Name string `json:"name,omitempty"`
 }
 
+type indexRateAlertWebhookRequest struct {
+	URL          string                 `json:"url,omitempty"`
+	Method       string                 `json:"method,omitempty"`
+	Headers      map[string]string      `json:"headers,omitempty"`
+	BodyTemplate map[string]interface{} `json:"bodyTemplate,omitempty"`
+}
+
 type indexRateAlertChannelRequest struct {
-	Email     []string `json:"email,omitempty"`
-	Pagerduty []string `json:"pagerduty,omitempty"`
-	Slack     []string `json:"slack,omitempty"`
+	Email     []string                       `json:"email,omitempty"`
+	Pagerduty []string                       `json:"pagerduty,omitempty"`
+	Slack     []string                       `json:"slack,omitempty"`
+	Webhook   []indexRateAlertWebhookRequest `json:"webhook,omitempty"`
 }
 
 type indexRateAlertRequest struct {
@@ -139,7 +147,6 @@ func (doc *indexRateAlertRequest) CreateRequestBody(d *schema.ResourceData) diag
 	var diags diag.Diagnostics
 
 	var channels = d.Get("channels").([]interface{})
-
 	if len(channels) > 1 {
 		return diag.FromErr(
 			errors.New("Index rate alert resource supports only one channels object"),
@@ -158,7 +165,7 @@ func (doc *indexRateAlertRequest) CreateRequestBody(d *schema.ResourceData) diag
 	indexRateAlertChannel.Email = listToStrings(channel["email"].([]interface{}))
 	indexRateAlertChannel.Pagerduty = listToStrings(channel["pagerduty"].([]interface{}))
 	indexRateAlertChannel.Slack = listToStrings(channel["slack"].([]interface{}))
-
+	indexRateAlertChannel.Webhook = *aggregateIndexRateAlertWebhookFromSchema(d, &diags)
 	doc.Channels = indexRateAlertChannel
 
 	return diags
@@ -183,6 +190,24 @@ func (member *memberPutRequest) CreateRequestBody(d *schema.ResourceData) diag.D
 	member.Groups = listToStrings(d.Get("groups").([]interface{}))
 
 	return diags
+}
+
+func aggregateIndexRateAlertWebhookFromSchema(
+	d *schema.ResourceData,
+	diags *diag.Diagnostics,
+) *[]indexRateAlertWebhookRequest {
+
+	allWebhookEntries := make([]indexRateAlertWebhookRequest, 0)
+
+	allWebhookEntries = append(
+		allWebhookEntries,
+		*iterateIndexRateAlertWebhookType(
+			d.Get("webhook_channel").([]interface{}),
+			diags,
+		)...,
+	)
+
+	return &allWebhookEntries
 }
 
 func aggregateAllChannelsFromSchema(
@@ -269,6 +294,49 @@ func iterateIntegrationType(
 	return &channelRequests
 }
 
+func iterateIndexRateAlertWebhookType(
+	listEntries []interface{},
+	diags *diag.Diagnostics,
+) *[]indexRateAlertWebhookRequest {
+	webhookRequests := []indexRateAlertWebhookRequest{}
+
+	for _, entry := range listEntries {
+		e := entry.(map[string]interface{})
+		headersMap := make(map[string]string)
+
+		for k, v := range e["headers"].(map[string]interface{}) {
+			headersMap[k] = v.(string)
+		}
+
+		var c interface{}
+		var bt map[string]interface{}
+
+		if bodyTemplate := e["bodytemplate"].(string); bodyTemplate != "" {
+			// See if the JSON is valid, but don't use the value or it will double encode
+			err := json.Unmarshal([]byte(bodyTemplate), &bt)
+
+			if err != nil {
+				*diags = append(*diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "bodytemplate is not a valid JSON string",
+					Detail:   err.Error(),
+				})
+			}
+		}
+
+		c = indexRateAlertWebhookRequest{
+			Headers:      headersMap,
+			Method:       e["method"].(string),
+			URL:          e["url"].(string),
+			BodyTemplate: bt,
+		}
+
+		webhookRequests = append(webhookRequests, c.(indexRateAlertWebhookRequest))
+	}
+
+	return &webhookRequests
+}
+
 func emailChannelRequest(s map[string]interface{}) channelRequest {
 	var emails []string
 	for _, email := range s["emails"].([]interface{}) {
@@ -317,7 +385,10 @@ func slackChannelRequest(s map[string]interface{}) channelRequest {
 	return c
 }
 
-func webHookChannelRequest(s map[string]interface{}, diags *diag.Diagnostics) channelRequest {
+func webHookChannelRequest(
+	s map[string]interface{},
+	diags *diag.Diagnostics,
+) channelRequest {
 	headersMap := make(map[string]string)
 
 	for k, v := range s["headers"].(map[string]interface{}) {

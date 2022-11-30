@@ -90,10 +90,18 @@ type categoryResponse struct {
 	Id   string `json:"id"`
 }
 
+type indexRateAlertWebhookResponse struct {
+	URL          string            `json:"url,omitempty"`
+	Method       string            `json:"method,omitempty"`
+	Headers      map[string]string `json:"headers,omitempty"`
+	BodyTemplate string            `json:"bodyTemplate,omitempty"`
+}
+
 type indexRateAlertChannelResponse struct {
-	Email     []string `json:"email,omitempty"`
-	Pagerduty []string `json:"pagerduty,omitempty"`
-	Slack     []string `json:"slack,omitempty"`
+	Email     []string                        `json:"email,omitempty"`
+	Pagerduty []string                        `json:"pagerduty,omitempty"`
+	Slack     []string                        `json:"slack,omitempty"`
+	Webhook   []indexRateAlertWebhookResponse `json:"webhook,omitempty"`
 }
 
 type indexRateAlertResponse struct {
@@ -105,6 +113,21 @@ type indexRateAlertResponse struct {
 	Enabled        bool                          `json:"enabled,omitempty"`
 }
 
+func mapIndexRateAlertWebhookToSchema(indexRateAlert indexRateAlertResponse) []interface{} {
+	webhooks := make([]interface{}, 0)
+
+	for _, webhook := range indexRateAlert.Channels.Webhook {
+		w := make(map[string]interface{})
+
+		w["bodytemplate"] = webhook.BodyTemplate
+		w["headers"] = webhook.Headers
+		w["method"] = webhook.Method
+		w["url"] = webhook.URL
+
+		webhooks = append(webhooks, w)
+	}
+	return webhooks
+}
 func (view *viewResponse) MapChannelsToSchema() (map[string][]interface{}, diag.Diagnostics) {
 	channels := view.Channels
 	channelIntegrations, diags := mapAllChannelsToSchema("view", &channels)

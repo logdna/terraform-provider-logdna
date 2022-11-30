@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,6 +101,9 @@ func resourceIndexRateAlertRead(ctx context.Context, d *schema.ResourceData, m i
 	integrations["email"] = indexRateAlert.Channels.Email
 	integrations["pagerduty"] = indexRateAlert.Channels.Pagerduty
 	integrations["slack"] = indexRateAlert.Channels.Slack
+	webhooks := mapIndexRateAlertWebhookToSchema(indexRateAlert)
+
+	appendError(d.Set("webhook_channel", webhooks), &diags)
 
 	channels = append(channels, integrations)
 
@@ -214,6 +218,52 @@ func resourceIndexRateAlert() *schema.Resource {
 					},
 				},
 			},
+			"webhook_channel":{
+				Type: schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+				  Schema: map[string]*schema.Schema{
+					"url": {
+					  Type: schema.TypeString,
+					  Required: true,
+					},
+					"method": {
+					  Type: schema.TypeString,
+					  Required: true,
+					  ValidateFunc: validation.StringInSlice([]string{"GET", "POST","PUT","DELETE"}, false),
+					},
+					"headers": &schema.Schema{
+					  Type: schema.TypeMap,
+					  Optional:true,
+					  Elem: &schema.Schema{
+						Type: schema.TypeString,
+					  },
+					  Computed: true,
+					},
+					"bodytemplate": {
+					  Type:     schema.TypeString,
+					  Optional: true,
+					  // This function compares JSON, ignoring whitespace that can occur in a .tf config.
+					  // Without this, `terraform apply` will think values are different from remote to state.
+					  DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+						var jsonOld, jsonNew interface{}
+						var err error
+						err = json.Unmarshal([]byte(old), &jsonOld)
+						if err != nil {
+						  return false
+						}
+						err = json.Unmarshal([]byte(new), &jsonNew)
+						if err != nil {
+						  return false
+						}
+						shouldSuppress := reflect.DeepEqual(jsonNew, jsonOld)
+						log.Println("[DEBUG] Does view 'bodytemplate' value in state appear the same as remote?", shouldSuppress)
+						return shouldSuppress
+					  },
+					},
+				  },
+				},
+			  },
 			"enabled": {
 				Type:     schema.TypeBool,
 				Required: true,

@@ -25,7 +25,18 @@ resource "logdna_index_rate_alert" "config" {
     slack = ["https://slack_url/key"]
     pagerduty = ["service_key"]
   }
+  webhook_channel {
+    url = "https:/testurl.com"
+    method = "POST"
+    headers = {
+      header1 = "value1"
+    }
+      bodytemplate = jsonencode({
+      something = "something"
+    })
+  }
 }
+
 ```
 
 ## Destroy
