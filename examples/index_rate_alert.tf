@@ -13,4 +13,14 @@ resource "logdna_index_rate_alert" "config" {
     slack = ["https://slack_url/key"]
     pagerduty = ["service_key"]
   }
+  webhook_channel {
+    url = "https://something.com"
+    method = "PUT"
+    headers = {
+      field2 = "value2"
+    }
+    bodytemplate = `jsonencode({
+      something = "!something"
+    })`
+  }
 }
