@@ -106,7 +106,7 @@ func resourceViewRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	// NOTE API does DB denormalization and extend a view record in DB
 	//      with a alert channels which break a schema validation here.
-	//      We don't need the channels field in case when a presetid exists 
+	//      We don't need the channels field in case when a presetid exists
 	if len(d.Get("presetid").(string)) > 0 {
 		return diags
 	}
@@ -225,8 +225,8 @@ func resourceView() *schema.Resource {
 				Optional: true,
 			},
 			"presetid": {
-				Type:          schema.TypeString,
-				Optional:      true,
+				Type:     schema.TypeString,
+				Optional: true,
 				ConflictsWith: []string{
 					"email_channel",
 					"pagerduty_channel",

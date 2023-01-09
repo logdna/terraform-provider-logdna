@@ -9,7 +9,7 @@ import (
 
 var serviceKey = os.Getenv("SERVICE_KEY")
 var apiHostUrl = os.Getenv("API_URL")
-var globalPcArgs = []string {serviceKey, apiHostUrl}
+var globalPcArgs = []string{serviceKey, apiHostUrl}
 var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 
