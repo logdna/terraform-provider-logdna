@@ -61,7 +61,7 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if c.method != http.MethodDelete {
+	if payloadBuf.Len() > 0 {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	req.Header.Set("servicekey", c.serviceKey)
