@@ -61,7 +61,9 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	if c.method != http.MethodDelete {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	req.Header.Set("servicekey", c.serviceKey)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
