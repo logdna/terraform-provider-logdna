@@ -10,6 +10,13 @@ import (
 
 const streamConfigID = "stream"
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_stream_config",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceStreamConfig(),
+})
+
 type streamConfig struct {
 	Status   string   `json:"status,omitempty"`
 	Brokers  []string `json:"brokers"`

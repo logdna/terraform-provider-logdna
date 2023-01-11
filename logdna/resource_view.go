@@ -20,6 +20,13 @@ const (
 	WEBHOOK   = "webhook"
 )
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_view",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceView(),
+})
+
 func resourceViewCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)

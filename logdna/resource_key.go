@@ -11,6 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_key",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceKey(),
+})
+
 func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)

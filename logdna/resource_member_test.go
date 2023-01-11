@@ -24,6 +24,24 @@ func TestMember_ErrorRoleEmpty(t *testing.T) {
 	})
 }
 
+func TestMember_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	memberArgs := map[string]string{
+		"email": `"member@example.org"`,
+		"role":  `"member"`,
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("member", "new", pcArgs, memberArgs, nilOpt, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_member\" resource"),
+			},
+		},
+	})
+}
+
 func TestMember_Basic(t *testing.T) {
 	memberArgs := map[string]string{
 		"email": `"member@example.org"`,

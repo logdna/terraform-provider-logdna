@@ -2,6 +2,7 @@ package logdna
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -13,6 +14,21 @@ data "logdna_alert" "remote" {
 	presetid = logdna_alert.test.id
 }
 `
+
+func TestDataAlert_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	alertConfig := fmtTestConfigResource("alert", "test", pcArgs, alertDefaults, nilOpt, nilLst)
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmt.Sprintf("%s\n%s", alertConfig, ds),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_alert\" resource"),
+			},
+		},
+	})
+}
 
 func TestDataAlert_BulkChannels(t *testing.T) {
 	emArgs := map[string]map[string]string{

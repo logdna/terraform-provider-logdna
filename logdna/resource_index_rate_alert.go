@@ -13,6 +13,13 @@ import (
 
 const indexRateAlertConfigID = "config"
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_index_rate_alert",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceIndexRateAlert(),
+})
+
 /**
  * Create/Update index rate alert resource
  * As API does not allow the POST method, this method calls PUT to be used for both create and update.

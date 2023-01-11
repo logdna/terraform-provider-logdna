@@ -9,10 +9,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_stream_exclusion",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceStreamExclusion(),
+})
+
 func resourceStreamExclusionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	pc := m.(*providerConfig)
+
 	ex := exclusionRule{
 		Title:  d.Get("title").(string),
 		Active: d.Get("active").(bool),

@@ -11,6 +11,13 @@ import (
 
 const archiveConfigID = "archive"
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_archive",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceArchiveConfig(),
+})
+
 type ibmConfig struct {
 	Bucket             string `json:"bucket"`
 	Endpoint           string `json:"endpoint"`

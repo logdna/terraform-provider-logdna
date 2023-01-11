@@ -11,12 +11,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_alert",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceAlert(),
+})
+
 func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
-
 	alert := alertRequest{}
-
 	if diags = alert.CreateRequestBody(d); diags.HasError() {
 		return diags
 	}

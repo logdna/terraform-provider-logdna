@@ -12,12 +12,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_member",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceMember(),
+})
+
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
 
 	member := memberRequest{}
-
 	if diags = member.CreateRequestBody(d); diags.HasError() {
 		return diags
 	}

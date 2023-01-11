@@ -38,6 +38,35 @@ func TestIndexRateAlert_ErrorProviderUrl(t *testing.T) {
 	})
 }
 
+func TestIndexRateAlert_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	iraArgs := map[string]string{
+		"max_lines":       `3`,
+		"max_z_score":     `3`,
+		"threshold_alert": `"separate"`,
+		"frequency":       `"hourly"`,
+		"enabled":         `false`,
+	}
+
+	chArgs := map[string]map[string]string{
+		"channels": {
+			"email":     `["test@logdna.com", "test2@logdna.com"]`,
+			"slack":     `["https://hooks.slack.com/KEY"]`,
+			"pagerduty": `["ndt3k75rsw520d8t55dv35decdyt3mkcb3r"]`,
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("index_rate_alert", "new", pcArgs, iraArgs, chArgs, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_index_rate_alert\" resource"),
+			},
+		},
+	})
+}
+
 func TestIndexRateAlert_ErrorResourceThresholdAlertInvalid(t *testing.T) {
 	iraArgs := map[string]string{
 		"max_lines":       `3`,
