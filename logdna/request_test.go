@@ -16,6 +16,8 @@ import (
 
 type badClient struct{}
 
+type testRequest struct{}
+
 func (fc *badClient) Do(*http.Request) (*http.Response, error) {
 	return nil, errors.New("FAKE ERROR calling httpClient.Do")
 }
@@ -43,7 +45,7 @@ func TestRequest_MakeRequest(t *testing.T) {
 	pc := providerConfig{serviceKey: "abc123", httpClient: &http.Client{Timeout: 15 * time.Second}}
 	resourceID := "test123456"
 
-	t.Run("Server receives proper method, URL, and headers", func(t *testing.T) {
+	t.Run("Server receives proper method, URL, and headers for request with a body", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal("GET", r.Method, "method is correct")
 			assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
@@ -52,6 +54,31 @@ func TestRequest_MakeRequest(t *testing.T) {
 			assert.Equal(1, len(key), "servicekey header is correct")
 			key = r.Header["Content-Type"]
 			assert.Equal("application/json", key[0], "content-type header is correct")
+		}))
+		defer ts.Close()
+
+		pc.baseURL = ts.URL
+
+		req := newRequestConfig(
+			&pc,
+			"GET",
+			fmt.Sprintf("/someapi/%s", resourceID),
+			testRequest{},
+		)
+
+		_, err := req.MakeRequest()
+		assert.Nil(err, "No errors")
+	})
+
+	t.Run("Server receives proper method, URL, and headers for request without a body", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal("GET", r.Method, "method is correct")
+			assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
+			key, ok := r.Header["Servicekey"]
+			assert.Equal(true, ok, "servicekey header exists")
+			assert.Equal(1, len(key), "servicekey header is correct")
+			_, ok = r.Header["Content-Type"]
+			assert.Equal(false, ok, "content-type header is not set")
 		}))
 		defer ts.Close()
 
