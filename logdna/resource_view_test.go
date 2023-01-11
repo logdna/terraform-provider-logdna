@@ -26,6 +26,20 @@ func TestView_ErrorProviderUrl(t *testing.T) {
 	})
 }
 
+func TestView_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("view", "new", pcArgs, viewDefaults, nilOpt, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_view\" resource"),
+			},
+		},
+	})
+}
+
 func TestView_ErrorsResourceFields(t *testing.T) {
 	nme := cloneDefaults(rsDefaults["view"])
 	nme["name"] = ""

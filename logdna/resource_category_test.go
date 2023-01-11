@@ -26,6 +26,24 @@ func TestCategory_ErrorProviderUrl(t *testing.T) {
 	})
 }
 
+func TestCategory_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	catArgs := map[string]string{
+		"name": `"test-category"`,
+		"type": `"views"`,
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("category", "new", pcArgs, catArgs, nilOpt, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_category\" resource"),
+			},
+		},
+	})
+}
+
 func TestCategory_ErrorResourceName(t *testing.T) {
 	catArgs := map[string]string{
 		"type": `"views"`,

@@ -10,6 +10,17 @@ import (
 
 const streamConfigID = "stream"
 
+/*
+  This resource needs to initialize before Terraform initializes so we can correctly populate the Provider schema.
+  We can't use the init() function because Terraform initializes before that.
+*/
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_stream_config",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceStreamConfig(),
+})
+
 type streamConfig struct {
 	Status   string   `json:"status,omitempty"`
 	Brokers  []string `json:"brokers"`

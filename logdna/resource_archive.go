@@ -11,6 +11,17 @@ import (
 
 const archiveConfigID = "archive"
 
+/*
+  This resource needs to initialize before Terraform initializes so we can correctly populate the Provider schema.
+  We can't use the init() function because Terraform initializes before that.
+*/
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_archive",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceArchiveConfig(),
+})
+
 type ibmConfig struct {
 	Bucket             string `json:"bucket"`
 	Endpoint           string `json:"endpoint"`

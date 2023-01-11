@@ -13,6 +13,17 @@ import (
 
 const indexRateAlertConfigID = "config"
 
+/*
+  This resource needs to initialize before Terraform initializes so we can correctly populate the Provider schema.
+  We can't use the init() function because Terraform initializes before that.
+*/
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_index_rate_alert",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceIndexRateAlert(),
+})
+
 /**
  * Create/Update index rate alert resource
  * As API does not allow the POST method, this method calls PUT to be used for both create and update.
@@ -218,52 +229,52 @@ func resourceIndexRateAlert() *schema.Resource {
 					},
 				},
 			},
-			"webhook_channel":{
-				Type: schema.TypeList,
+			"webhook_channel": {
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
-				  Schema: map[string]*schema.Schema{
-					"url": {
-					  Type: schema.TypeString,
-					  Required: true,
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"method": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"GET", "POST", "PUT", "DELETE"}, false),
+						},
+						"headers": &schema.Schema{
+							Type:     schema.TypeMap,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Computed: true,
+						},
+						"bodytemplate": {
+							Type:     schema.TypeString,
+							Optional: true,
+							// This function compares JSON, ignoring whitespace that can occur in a .tf config.
+							// Without this, `terraform apply` will think values are different from remote to state.
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								var jsonOld, jsonNew interface{}
+								var err error
+								err = json.Unmarshal([]byte(old), &jsonOld)
+								if err != nil {
+									return false
+								}
+								err = json.Unmarshal([]byte(new), &jsonNew)
+								if err != nil {
+									return false
+								}
+								shouldSuppress := reflect.DeepEqual(jsonNew, jsonOld)
+								log.Println("[DEBUG] Does view 'bodytemplate' value in state appear the same as remote?", shouldSuppress)
+								return shouldSuppress
+							},
+						},
 					},
-					"method": {
-					  Type: schema.TypeString,
-					  Required: true,
-					  ValidateFunc: validation.StringInSlice([]string{"GET", "POST","PUT","DELETE"}, false),
-					},
-					"headers": &schema.Schema{
-					  Type: schema.TypeMap,
-					  Optional:true,
-					  Elem: &schema.Schema{
-						Type: schema.TypeString,
-					  },
-					  Computed: true,
-					},
-					"bodytemplate": {
-					  Type:     schema.TypeString,
-					  Optional: true,
-					  // This function compares JSON, ignoring whitespace that can occur in a .tf config.
-					  // Without this, `terraform apply` will think values are different from remote to state.
-					  DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-						var jsonOld, jsonNew interface{}
-						var err error
-						err = json.Unmarshal([]byte(old), &jsonOld)
-						if err != nil {
-						  return false
-						}
-						err = json.Unmarshal([]byte(new), &jsonNew)
-						if err != nil {
-						  return false
-						}
-						shouldSuppress := reflect.DeepEqual(jsonNew, jsonOld)
-						log.Println("[DEBUG] Does view 'bodytemplate' value in state appear the same as remote?", shouldSuppress)
-						return shouldSuppress
-					  },
-					},
-				  },
 				},
-			  },
+			},
 			"enabled": {
 				Type:     schema.TypeBool,
 				Required: true,

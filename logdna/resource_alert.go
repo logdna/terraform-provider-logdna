@@ -11,12 +11,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+/*
+  This resource needs to initialize before Terraform initializes so we can correctly populate the Provider schema.
+  We can't use the init() function because Terraform initializes before that.
+*/
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_alert",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeResource,
+	schema:        resourceAlert(),
+})
+
 func resourceAlertCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	pc := m.(*providerConfig)
-
 	alert := alertRequest{}
-
 	if diags = alert.CreateRequestBody(d); diags.HasError() {
 		return diags
 	}
