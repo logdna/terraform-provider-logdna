@@ -121,6 +121,32 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Nil(err, "No errors")
 	})
 
+	t.Run("Server receives proper method, URL, and headers for enterprise org", func(t *testing.T) {
+		enterprisePC := providerConfig{serviceKey: "abc123", orgType: OrgTypeEnterprise, httpClient: &http.Client{Timeout: 15 * time.Second}}
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal("GET", r.Method, "method is correct")
+			assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
+			key, ok := r.Header["Enterprise-Servicekey"]
+			assert.Equal(true, ok, "enterprise-servicekey header exists")
+			assert.Equal(1, len(key), "enterprise-servicekey header is correct")
+			key = r.Header["Content-Type"]
+			assert.Equal("application/json", key[0], "content-type header is correct")
+		}))
+		defer ts.Close()
+
+		enterprisePC.baseURL = ts.URL
+
+		req := newRequestConfig(
+			&enterprisePC,
+			"GET",
+			fmt.Sprintf("/someapi/%s", resourceID),
+			nil,
+		)
+
+		_, err := req.MakeRequest()
+		assert.Nil(err, "No errors")
+	})
+
 	t.Run("Reads and decodes response from the server", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
