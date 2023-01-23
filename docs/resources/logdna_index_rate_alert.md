@@ -72,8 +72,8 @@ Note that only the alert channels supported by this provider will be imported.
 
 The following arguments are supported by `logdna_alert`:
 
-- `max_lines`: The number of lines required in order to set off the alert, type _int_
-- `max_z_score`: The number of standard deviations above the 30-day average lines in order to set off the alert, type _int_
+- `max_lines`: The number of lines required in order to set off the alert, type _number_
+- `max_z_score`: The number of standard deviations above the 30-day average lines in order to set off the alert, type _number_
 - `threshold_alert`: Set if you want alerts to be triggered if one or both of the max lines and standard deviation have been triggered or individually, type _string_ ["separate" | "both"]
 - `frequency`: Notify recipients once per hour or once per day (starting from the first passing of the threshold) until the index rate declines back below the thresholds, ceasing all alerts., type _string_ ["hourly" | "daily"]
 - `enabled`: (Required) Enable an existing configuration, type _boolean_
