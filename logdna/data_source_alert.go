@@ -18,6 +18,10 @@ var strSchema = &schema.Schema{
 	Type:     schema.TypeString,
 	Computed: true,
 }
+var boolSchema = &schema.Schema{
+	Type:     schema.TypeBool,
+	Computed: true,
+}
 var alertProps = map[string]*schema.Schema{
 	"immediate":       strSchema,
 	"operator":        strSchema,
@@ -142,6 +146,9 @@ func getAlertSchema(chnl string) map[string]*schema.Schema {
 		schma["url"] = strSchema
 	case "pagerduty":
 		schma["key"] = strSchema
+		schma["autoresolve"] = boolSchema
+		schma["autoresolvelimit"] = intSchema
+		schma["autoresolveinterval"] = strSchema
 	case "webhook":
 		schma["bodytemplate"] = strSchema
 		schma["method"] = strSchema

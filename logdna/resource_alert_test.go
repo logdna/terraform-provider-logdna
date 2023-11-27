@@ -125,6 +125,55 @@ func TestAlert_ErrorsPagerDutyChannel(t *testing.T) {
 	})
 }
 
+func TestAlert_PagerDutyAutoResolve(t *testing.T) {
+	chArgs := map[string]map[string]string{"pagerduty_channel": cloneDefaults(chnlDefaults["pagerduty_channel_auto"])}
+
+	iniCfg := fmtTestConfigResource("alert", "new", globalPcArgs, alertDefaults, chArgs, nilLst)
+
+	rsArgs := cloneDefaults(rsDefaults["alert"])
+	rsArgs["name"] = `"test2"`
+	updCfg := fmtTestConfigResource("alert", "new", globalPcArgs, rsArgs, chArgs, nilLst)
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: iniCfg,
+				Check: resource.ComposeTestCheckFunc(
+					testResourceExists("alert", "new"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.#", "0"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.#", "1"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "9"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.immediate", "false"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.operator", "presence"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.terminal", "true"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.triggerinterval", "15m"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.triggerlimit", "15"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.autoresolve", "true"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.autoresolvelimit", "10"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.autoresolveinterval", "15m"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "slack_channel.#", "0"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.#", "0"),
+				),
+			},
+			{
+				Config: updCfg,
+				Check: resource.ComposeTestCheckFunc(
+					testResourceExists("alert", "new"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test2"),
+				),
+			},
+			{
+				ResourceName:      "logdna_alert.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAlert_ErrorsSlackChannel(t *testing.T) {
 	ulInvd := map[string]map[string]string{"slack_channel": cloneDefaults(chnlDefaults["slack_channel"])}
 	ulInvd["slack_channel"]["url"] = `"this is not a valid url"`
@@ -283,8 +332,8 @@ func TestAlert_BulkChannels(t *testing.T) {
 					testResourceExists("alert", "new"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "name", "test"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.#", "2"),
-					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "6"),
-					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.1.%", "6"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "9"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.1.%", "9"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.#", "0"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "slack_channel.#", "0"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "webhook_channel.#", "0"),
@@ -346,8 +395,9 @@ func TestAlert_MultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "email_channel.0.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.#", "1"),
-					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "6"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.%", "9"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.immediate", "false"),
+					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.autoresolve", "false"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.operator", "presence"),
 					resource.TestCheckResourceAttr("logdna_alert.new", "pagerduty_channel.0.terminal", "true"),

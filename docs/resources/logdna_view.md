@@ -141,6 +141,9 @@ _Note:_ Any of `*_channel` parameters are not allowed if a `presetid` parameter 
 - `terminal`: **_string_** _(Optional; Default: `"true"`)_ Whether the Alert will trigger after the `triggerinterval` if the Alert condition is met (e.g. send an Alert after 30s). Valid options are `"true"` and `"false"` for presence Alerts, and `"true"` for absence Alerts.
 - `triggerinterval`: **_string_** _(Optional; Defaults: `"30"` for presence; `"15m"` for absence)_ Interval which the Alert will be looking for presence or absence of log lines. For presence Alerts, valid options are: `30`, `1m`, `5m`, `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`. For absence Alerts, valid options are: `15m`, `30m`, `1h`, `6h`, `12h`, and `24h`.
 - `triggerlimit`: **_integer (Required)_** Number of lines before the Alert is triggered (e.g. setting a value of `10` for an `absence` Alert would alert you if `10` lines were not seen in the `triggerinterval`).
+- `autoresolve`: **_boolean_** Set to true if you want the set a condition to resolve the incident that was raised by this alert.
+- `autoresolveinterval`: **_string_** _(Required if autoresolve is set to true)_ Interval of time to aggregate and check # of matched lines against the auto resolve limit. Valid values are: 30 seconds, 1 minute, 5 minutes, 15 minutes, 30 minutes, 1 hour, 6 hours, 12 hours, 24 hours.
+- `autoresolvelimit`: **_integer_** _(Required if autoresolve is set to true)_ Specify the number of log lines that match the view's filtering and search criteria. When the number of log lines is reached, this incident will be set to resolved in PagerDuty.
 
 ### webhook_channel
 

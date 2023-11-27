@@ -327,6 +327,25 @@ func resourceView() *schema.Resource {
 								return
 							},
 						},
+						"autoresolve": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"autoresolveinterval": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"autoresolvelimit": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(int)
+								if v < 1 || v > 100000 {
+									errs = append(errs, fmt.Errorf("%q must be between 1 and 100,000 inclusive, got: %d", key, v))
+								}
+								return
+							},
+						},
 					},
 				},
 			},
