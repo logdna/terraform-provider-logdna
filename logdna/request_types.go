@@ -31,19 +31,22 @@ type alertRequest struct {
 }
 
 type channelRequest struct {
-	BodyTemplate    map[string]interface{} `json:"bodyTemplate,omitempty"`
-	Emails          []string               `json:"emails,omitempty"`
-	Headers         map[string]string      `json:"headers,omitempty"`
-	Immediate       string                 `json:"immediate,omitempty"`
-	Integration     string                 `json:"integration,omitempty"`
-	Key             string                 `json:"key,omitempty"`
-	Method          string                 `json:"method,omitempty"`
-	Operator        string                 `json:"operator,omitempty"`
-	Terminal        string                 `json:"terminal,omitempty"`
-	TriggerInterval string                 `json:"triggerinterval,omitempty"`
-	TriggerLimit    int                    `json:"triggerlimit,omitempty"`
-	Timezone        string                 `json:"timezone,omitempty"`
-	URL             string                 `json:"url,omitempty"`
+	BodyTemplate        map[string]interface{} `json:"bodyTemplate,omitempty"`
+	Emails              []string               `json:"emails,omitempty"`
+	Headers             map[string]string      `json:"headers,omitempty"`
+	Immediate           string                 `json:"immediate,omitempty"`
+	Integration         string                 `json:"integration,omitempty"`
+	Key                 string                 `json:"key,omitempty"`
+	Method              string                 `json:"method,omitempty"`
+	Operator            string                 `json:"operator,omitempty"`
+	Terminal            string                 `json:"terminal,omitempty"`
+	TriggerInterval     string                 `json:"triggerinterval,omitempty"`
+	TriggerLimit        int                    `json:"triggerlimit,omitempty"`
+	AutoResolve         bool                   `json:"autoresolve,omitempty"`
+	AutoResolveInterval string                 `json:"autoresolveinterval,omitempty"`
+	AutoResolveLimit    int                    `json:"autoresolvelimit,omitempty"`
+	Timezone            string                 `json:"timezone,omitempty"`
+	URL                 string                 `json:"url,omitempty"`
 }
 
 type categoryRequest struct {
@@ -359,13 +362,16 @@ func emailChannelRequest(s map[string]interface{}) channelRequest {
 
 func pagerDutyChannelRequest(s map[string]interface{}) channelRequest {
 	c := channelRequest{
-		Immediate:       s["immediate"].(string),
-		Integration:     PAGERDUTY,
-		Key:             s["key"].(string),
-		Operator:        s["operator"].(string),
-		Terminal:        s["terminal"].(string),
-		TriggerInterval: s["triggerinterval"].(string),
-		TriggerLimit:    s["triggerlimit"].(int),
+		Immediate:           s["immediate"].(string),
+		Integration:         PAGERDUTY,
+		Key:                 s["key"].(string),
+		Operator:            s["operator"].(string),
+		Terminal:            s["terminal"].(string),
+		TriggerInterval:     s["triggerinterval"].(string),
+		TriggerLimit:        s["triggerlimit"].(int),
+		AutoResolve:         s["autoresolve"].(bool),
+		AutoResolveInterval: s["autoresolveinterval"].(string),
+		AutoResolveLimit:    s["autoresolvelimit"].(int),
 	}
 
 	return c

@@ -89,6 +89,17 @@ var chnlDefaults = map[string]map[string]string{
 		"triggerlimit":    `15`,
 		"url":             `"https://yourwebhook/endpoint"`,
 	},
+	"pagerduty_channel_auto": {
+		"immediate":           `"false"`,
+		"operator":            `"presence"`,
+		"key":                 `"Your PagerDuty API key goes here"`,
+		"terminal":            `"true"`,
+		"triggerinterval":     `"15m"`,
+		"triggerlimit":        `15`,
+		"autoresolve":         `"true"`,
+		"autoresolvelimit":    `"10"`,
+		"autoresolveinterval": `"15m"`,
+	},
 }
 
 func cloneDefaults(dfts map[string]string) map[string]string {

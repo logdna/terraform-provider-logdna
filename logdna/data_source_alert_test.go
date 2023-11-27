@@ -23,7 +23,7 @@ func TestDataAlert_BulkChannels(t *testing.T) {
 
 	pdArgs := map[string]map[string]string{
 		"pagerduty_channel":  cloneDefaults(chnlDefaults["pagerduty_channel"]),
-		"pagerduty1_channel": cloneDefaults(chnlDefaults["pagerduty_channel"]),
+		"pagerduty1_channel": cloneDefaults(chnlDefaults["pagerduty_channel_auto"]),
 	}
 	pdsCfg := fmtTestConfigResource("alert", "test", globalPcArgs, alertDefaults, pdArgs, nilLst)
 
@@ -60,8 +60,11 @@ func TestDataAlert_BulkChannels(t *testing.T) {
 					testDataSourceAlertExists("data.logdna_alert.remote"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "name", "test"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.#", "2"),
-					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.%", "6"),
-					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.1.%", "6"),
+					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.%", "9"),
+					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.1.%", "9"),
+					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.1.autoresolve", "true"),
+					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.1.autoresolvelimit", "10"),
+					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.1.autoresolveinterval", "15m"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "email_channel.#", "0"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "slack_channel.#", "0"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "webhook_channel.#", "0"),
@@ -124,7 +127,7 @@ func TestDataSourceAlert_MultipleChannels(t *testing.T) {
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "email_channel.0.triggerinterval", "15m"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "email_channel.0.triggerlimit", "15"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.#", "1"),
-					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.%", "6"),
+					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.%", "9"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.immediate", "false"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.key", "Your PagerDuty API key goes here"),
 					resource.TestCheckResourceAttr("data.logdna_alert.remote", "pagerduty_channel.0.operator", "presence"),

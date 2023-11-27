@@ -49,20 +49,23 @@ type memberResponse struct {
 // NOTE - Properties with `interface` are due to the APIs returning
 // some things as strings (PUT/emails) and other times arrays (GET/emails)
 type channelResponse struct {
-	AlertID         string            `json:"alertid,omitempty"`
-	BodyTemplate    string            `json:"bodyTemplate,omitempty"`
-	Emails          interface{}       `json:"emails,omitempty"`
-	Headers         map[string]string `json:"headers,omitempty"`
-	Immediate       bool              `json:"immediate,omitempty"`
-	Integration     string            `json:"integration,omitempty"`
-	Key             string            `json:"key,omitempty"`
-	Method          string            `json:"method,omitempty"`
-	Operator        string            `json:"operator,omitempty"`
-	Terminal        bool              `json:"terminal,omitempty"`
-	TriggerInterval interface{}       `json:"triggerinterval,omitempty"`
-	TriggerLimit    int               `json:"triggerlimit,omitempty"`
-	Timezone        string            `json:"timezone,omitempty"`
-	URL             string            `json:"url,omitempty"`
+	AlertID             string            `json:"alertid,omitempty"`
+	BodyTemplate        string            `json:"bodyTemplate,omitempty"`
+	Emails              interface{}       `json:"emails,omitempty"`
+	Headers             map[string]string `json:"headers,omitempty"`
+	Immediate           bool              `json:"immediate,omitempty"`
+	Integration         string            `json:"integration,omitempty"`
+	Key                 string            `json:"key,omitempty"`
+	Method              string            `json:"method,omitempty"`
+	Operator            string            `json:"operator,omitempty"`
+	Terminal            bool              `json:"terminal,omitempty"`
+	TriggerInterval     interface{}       `json:"triggerinterval,omitempty"`
+	TriggerLimit        int               `json:"triggerlimit,omitempty"`
+	Timezone            string            `json:"timezone,omitempty"`
+	URL                 string            `json:"url,omitempty"`
+	AutoResolve         bool              `json:"autoresolve,omitempty"`
+	AutoResolveInterval string            `json:"autoresolveinterval,omitempty"`
+	AutoResolveLimit    int               `json:"autoresolvelimit,omitempty"`
 }
 
 type archiveResponse struct {
@@ -213,6 +216,9 @@ func mapChannelPagerDuty(channel *channelResponse) map[string]interface{} {
 	c["terminal"] = strconv.FormatBool(channel.Terminal)
 	c["triggerlimit"] = channel.TriggerLimit
 	c["triggerinterval"] = channel.TriggerInterval
+	c["autoresolve"] = channel.AutoResolve
+	c["autoresolveinterval"] = channel.AutoResolveInterval
+	c["autoresolvelimit"] = channel.AutoResolveLimit
 
 	return c
 }
