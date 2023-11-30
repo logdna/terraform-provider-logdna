@@ -42,7 +42,7 @@ func setJSONMarshal(customMarshaller jsonMarshal) func(*requestConfig) {
 
 func TestRequest_MakeRequest(t *testing.T) {
 	assert := assert.New(t)
-	pc := providerConfig{serviceKey: "abc123", httpClient: &http.Client{Timeout: 15 * time.Second}}
+	pc := providerConfig{serviceKey: "abc123", orgType: OrgTypeRegular, httpClient: &http.Client{Timeout: 15 * time.Second}}
 	resourceID := "test123456"
 
 	t.Run("Server receives proper method, URL, and headers for request with a body", func(t *testing.T) {
@@ -86,6 +86,32 @@ func TestRequest_MakeRequest(t *testing.T) {
 
 		req := newRequestConfig(
 			&pc,
+			"GET",
+			fmt.Sprintf("/someapi/%s", resourceID),
+			nil,
+		)
+
+		_, err := req.MakeRequest()
+		assert.Nil(err, "No errors")
+	})
+
+	t.Run("Server receives proper method, URL, and headers for enterprise org", func(t *testing.T) {
+		enterprisePC := providerConfig{serviceKey: "abc123", orgType: OrgTypeEnterprise, httpClient: &http.Client{Timeout: 15 * time.Second}}
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal("GET", r.Method, "method is correct")
+			assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
+			key, ok := r.Header["Enterprise-Servicekey"]
+			assert.Equal(true, ok, "enterprise-servicekey header exists")
+			assert.Equal(1, len(key), "enterprise-servicekey header is correct")
+			key = r.Header["Content-Type"]
+			assert.Equal("application/json", key[0], "content-type header is correct")
+		}))
+		defer ts.Close()
+
+		enterprisePC.baseURL = ts.URL
+
+		req := newRequestConfig(
+			&enterprisePC,
 			"GET",
 			fmt.Sprintf("/someapi/%s", resourceID),
 			nil,

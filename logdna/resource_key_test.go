@@ -22,6 +22,24 @@ func TestKey_ErrorResourceTypeUndefined(t *testing.T) {
 	})
 }
 
+func TestKey_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	keyArgs := map[string]string{
+		"type": `"service"`,
+		"name": `"my first name"`,
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("key", "new", pcArgs, keyArgs, nilOpt, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_key\" resource"),
+			},
+		},
+	})
+}
+
 func TestKey_ErrorResourceTypeInvalid(t *testing.T) {
 	args := map[string]string{
 		"type": `"incorrect"`,

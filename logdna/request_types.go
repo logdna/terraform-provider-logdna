@@ -92,6 +92,11 @@ type memberPutRequest struct {
 	Groups []string `json:"groups"`
 }
 
+type childOrgPutRequest struct {
+	Retention int    `json:"retention"`
+	Owner     string `json:"owner"`
+}
+
 func (view *viewRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
 	// This function pulls from the schema in preparation to JSON marshal
 	var diags diag.Diagnostics
@@ -211,6 +216,16 @@ func aggregateIndexRateAlertWebhookFromSchema(
 	)
 
 	return &allWebhookEntries
+}
+
+func (childOrg *childOrgPutRequest) CreateRequestBody(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Scalars
+	childOrg.Retention = d.Get("retention").(int)
+	childOrg.Owner = d.Get("owner").(string)
+
+	return diags
 }
 
 func aggregateAllChannelsFromSchema(

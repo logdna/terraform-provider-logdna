@@ -38,6 +38,19 @@ func TestAlert_ErrorResourceName(t *testing.T) {
 	})
 }
 
+func TestAlert_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("alert", "new", pcArgs, alertDefaults, nilOpt, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_alert\" resource"),
+			},
+		},
+	})
+}
+
 func TestAlert_ErrorsChannel(t *testing.T) {
 	imArgs := map[string]map[string]string{"email_channel": cloneDefaults(chnlDefaults["email_channel"])}
 	imArgs["email_channel"]["immediate"] = `"not a bool"`

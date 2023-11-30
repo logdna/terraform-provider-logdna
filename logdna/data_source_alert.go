@@ -30,6 +30,13 @@ var alertProps = map[string]*schema.Schema{
 	"triggerlimit":    intSchema,
 }
 
+var _ = registerTerraform(TerraformInfo{
+	name:          "logdna_alert",
+	orgType:       OrgTypeRegular,
+	terraformType: TerraformTypeDataSource,
+	schema:        dataSourceAlert(),
+})
+
 func dataSourceAlertRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 

@@ -45,6 +45,13 @@ type memberResponse struct {
 	Groups []string `json:"groups,omitempty"`
 }
 
+type childOrgResponse struct {
+	Account        string `json:"account"`
+	Retention      int    `json:"retention"`
+	RetentionTiers []int  `json:"retentionTiers"`
+	Owner          string `json:"owner"`
+}
+
 // channelResponse contains channel data returned from the logdna APIs
 // NOTE - Properties with `interface` are due to the APIs returning
 // some things as strings (PUT/emails) and other times arrays (GET/emails)

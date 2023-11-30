@@ -38,6 +38,35 @@ func TestIndexRateAlert_ErrorProviderUrl(t *testing.T) {
 	})
 }
 
+func TestIndexRateAlert_ErrorOrgType(t *testing.T) {
+	pcArgs := []string{enterpriseServiceKey, apiHostUrl, "enterprise"}
+	iraArgs := map[string]string{
+		"max_lines":       `3`,
+		"max_z_score":     `3`,
+		"threshold_alert": `"separate"`,
+		"frequency":       `"hourly"`,
+		"enabled":         `false`,
+	}
+
+	chArgs := map[string]map[string]string{
+		"channels": {
+			"email":     `["test@logdna.com", "test2@logdna.com"]`,
+			"slack":     `["https://hooks.slack.com/KEY"]`,
+			"pagerduty": `["ndt3k75rsw520d8t55dv35decdyt3mkcb3r"]`,
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      fmtTestConfigResource("index_rate_alert", "new", pcArgs, iraArgs, chArgs, nilLst),
+				ExpectError: regexp.MustCompile("Error: Only regular organizations can instantiate a \"logdna_index_rate_alert\" resource"),
+			},
+		},
+	})
+}
+
 func TestIndexRateAlert_ErrorResourceThresholdAlertInvalid(t *testing.T) {
 	iraArgs := map[string]string{
 		"max_lines":       `3`,
@@ -216,12 +245,12 @@ func TestIndexRateAlert_Basic(t *testing.T) {
 			"pagerduty": `["ndt3k75rsw520d8t55dv35decdyt3mkcb3r"]`,
 		},
 		"webhook_channel": {
-		  "url" : `"https://something.com"`,
-		  "method": `"POST"`,
-		  "headers" : `{
+			"url":    `"https://something.com"`,
+			"method": `"POST"`,
+			"headers": `{
 			field2 = "value2"
 		  }`,
-		  "bodytemplate" :`jsonencode({
+			"bodytemplate": `jsonencode({
 			something = "something"
 		  })`,
 		},
@@ -242,15 +271,15 @@ func TestIndexRateAlert_Basic(t *testing.T) {
 			"pagerduty": `["new3k75rsw520d8t55dv35decdyt3mkcnew"]`,
 		},
 		"webhook_channel": {
-			"url" : `"https://something.com"`,
+			"url":    `"https://something.com"`,
 			"method": `"PUT"`,
-			"headers" : `{
+			"headers": `{
 			  field2 = "value2"
 			}`,
-			"bodytemplate" :`jsonencode({
+			"bodytemplate": `jsonencode({
 			  something = "!something"
 			})`,
-		  },
+		},
 	}
 
 	createdEmails := strings.Split(
