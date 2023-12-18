@@ -70,6 +70,44 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Nil(err, "No errors")
 	})
 
+	t.Run("Server receives proper method, URL, and headers for request with a body, iamtoken", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal("GET", r.Method, "method is correct")
+			assert.Equal(fmt.Sprintf("/someapi/%s", resourceID), r.URL.String(), "URL is correct")
+			_, ok := r.Header["Servicekey"]
+			assert.Equal(false, ok, "servicekey header is not set")
+			key, ok := r.Header["Authorization"]
+			assert.Equal(true, ok, "Authorization header is set")
+			assert.Equal("Bearer testtoken", key[0], "Authorization header is correct")
+			key, ok = r.Header["Cloud-Resource-Name"]
+			assert.Equal(true, ok, "cloud-resource-name header is set")
+			assert.Equal("testibmcrn", key[0], "cloud_resource_name header is correct")
+			key = r.Header["Content-Type"]
+			assert.Equal("application/json", key[0], "content-type header is correct")
+		}))
+		defer ts.Close()
+
+		pc.baseURL = ts.URL
+		tempServiceKey := pc.serviceKey
+		pc.serviceKey = ""
+		pc.iamtoken = "testtoken"
+		pc.cloud_resource_name = "testibmcrn"
+
+		req := newRequestConfig(
+			&pc,
+			"GET",
+			fmt.Sprintf("/someapi/%s", resourceID),
+			testRequest{},
+		)
+
+		_, err := req.MakeRequest()
+		assert.Nil(err, "No errors")
+
+		pc.serviceKey = tempServiceKey
+		pc.iamtoken = ""
+		pc.cloud_resource_name = ""
+	})
+
 	t.Run("Server receives proper method, URL, and headers for request without a body", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal("GET", r.Method, "method is correct")
@@ -118,6 +156,39 @@ func TestRequest_MakeRequest(t *testing.T) {
 			strings.TrimSpace(string(body)),
 			"Returned body is correct",
 		)
+	})
+
+	t.Run("Reads and decodes response from the server, iamtoken", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			err := json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
+			assert.Nil(err, "No errors")
+		}))
+		defer ts.Close()
+
+		pc.baseURL = ts.URL
+		tempServiceKey := pc.serviceKey
+		pc.serviceKey = ""
+		pc.iamtoken = "testtoken"
+		pc.cloud_resource_name = "testibmcrn"
+
+		req := newRequestConfig(
+			&pc,
+			"GET",
+			fmt.Sprintf("/someapi/%s", resourceID),
+			nil,
+		)
+
+		body, err := req.MakeRequest()
+		assert.Nil(err, "No errors")
+		assert.Equal(
+			`{"viewID":"test123456"}`,
+			strings.TrimSpace(string(body)),
+			"Returned body is correct",
+		)
+
+		pc.serviceKey = tempServiceKey
+		pc.iamtoken = ""
+		pc.cloud_resource_name = ""
 	})
 
 	t.Run("Successfully marshals a provided body", func(t *testing.T) {
@@ -257,6 +328,32 @@ func TestRequest_MakeRequest(t *testing.T) {
 		assert.Equal(
 			true,
 			strings.Contains(err.Error(), "error parsing HTTP response: "+ERROR),
+			"Expected error message",
+		)
+	})
+
+	t.Run("Returns error if servicekey and iamtoken are blank", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(400)
+		}))
+		defer ts.Close()
+
+		pc.baseURL = ts.URL
+		pc.serviceKey = ""
+		pc.iamtoken = ""
+
+		req := newRequestConfig(
+			&pc,
+			"POST",
+			fmt.Sprintf("/someapi/%s", resourceID),
+			nil,
+		)
+
+		_, err := req.MakeRequest()
+		assert.Error(err, "Expected error")
+		assert.Equal(
+			true,
+			strings.Contains(err.Error(), "expected either servicekey or iamtoken to be set"),
 			"Expected error message",
 		)
 	})
