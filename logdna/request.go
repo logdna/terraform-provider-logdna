@@ -17,27 +17,31 @@ type httpClientInterface interface {
 
 // Configuration for the HTTP client used to make requests to remote resources
 type requestConfig struct {
-	serviceKey  string
-	httpClient  httpClientInterface
-	apiURL      string
-	method      string
-	body        interface{}
-	httpRequest httpRequest
-	bodyReader  bodyReader
-	jsonMarshal jsonMarshal
+	serviceKey          string
+	iamtoken            string
+	cloud_resource_name string
+	httpClient          httpClientInterface
+	apiURL              string
+	method              string
+	body                interface{}
+	httpRequest         httpRequest
+	bodyReader          bodyReader
+	jsonMarshal         jsonMarshal
 }
 
 // newRequestConfig abstracts the struct creation to allow for mocking
 func newRequestConfig(pc *providerConfig, method string, uri string, body interface{}, mutators ...func(*requestConfig)) *requestConfig {
 	rc := &requestConfig{
-		serviceKey:  pc.serviceKey,
-		httpClient:  pc.httpClient,
-		apiURL:      fmt.Sprintf("%s%s", pc.baseURL, uri), // uri should have a preceding slash (/)
-		method:      method,
-		body:        body,
-		httpRequest: http.NewRequest,
-		bodyReader:  io.ReadAll,
-		jsonMarshal: json.Marshal,
+		serviceKey:          pc.serviceKey,
+		iamtoken:            pc.iamtoken,
+		cloud_resource_name: pc.cloud_resource_name,
+		httpClient:          pc.httpClient,
+		apiURL:              fmt.Sprintf("%s%s", pc.baseURL, uri), // uri should have a preceding slash (/)
+		method:              method,
+		body:                body,
+		httpRequest:         http.NewRequest,
+		bodyReader:          io.ReadAll,
+		jsonMarshal:         json.Marshal,
 	}
 
 	// Used during testing only; Allow mutations passed in by tests
@@ -64,7 +68,19 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	if payloadBuf.Len() > 0 {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("servicekey", c.serviceKey)
+
+	// Set the correct authorization headers depending on what has been passed in
+	// the provider config
+	if c.serviceKey != "" {
+		req.Header.Set("servicekey", c.serviceKey)
+	} else if c.iamtoken != "" && c.cloud_resource_name != "" {
+		req.Header.Set("Authorization", "Bearer "+c.iamtoken)
+		req.Header.Set("cloud-resource-name", c.cloud_resource_name)
+	} else {
+		err := fmt.Errorf("expected either servicekey or iamtoken to be set")
+		return nil, err
+	}
+
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error during HTTP request: %s", err)
