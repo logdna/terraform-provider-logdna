@@ -30,6 +30,11 @@ type alertRequest struct {
 	Channels []channelRequest `json:"channels,omitempty"`
 }
 
+type boardRequest struct {
+	Title  string         `json:"title,omitempty"`
+	Graphs []graphRequest `json:"graphs,omitempty"`
+}
+
 type channelRequest struct {
 	BodyTemplate        map[string]interface{} `json:"bodyTemplate,omitempty"`
 	Emails              []string               `json:"emails,omitempty"`
@@ -52,6 +57,14 @@ type channelRequest struct {
 type categoryRequest struct {
 	Name string `json:"name,omitempty"`
 	Type string `json:"type,omitempty"`
+}
+
+type graphRequest struct {
+	Id        string                 `json:"id,omitempty"`
+	Operation string                 `json:"operation,omitempty"`
+	Name      string                 `json:"name,omitempty"`
+	Filter    string                 `json:"filter"`
+	Prefs     map[string]interface{} `json:"prefs,omitempty"`
 }
 
 type keyRequest struct {
