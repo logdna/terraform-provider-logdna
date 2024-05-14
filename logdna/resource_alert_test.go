@@ -76,7 +76,7 @@ func TestAlert_ErrorsChannel(t *testing.T) {
 			},
 			{
 				Config:      tintvl,
-				ExpectError: regexp.MustCompile(`"\\"channels\[0\].triggerinterval\\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h\]"`),
+				ExpectError: regexp.MustCompile(`"\\"channels\[0\].triggerinterval\\" must be one of \[15m, 30m, 1h, 6h, 12h, 24h, 25h\]"`),
 			},
 			{
 				Config:      tlimit,
