@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 )
+
+var platformTokenPrefixExp, _ = regexp.Compile("^st[a-z]_[0-9a-f]{40}$")
 
 type httpRequest func(string, string, io.Reader) (*http.Request, error)
 type bodyReader func(io.Reader) ([]byte, error)
@@ -72,7 +75,11 @@ func (c *requestConfig) MakeRequest() ([]byte, error) {
 	// Set the correct authorization headers depending on what has been passed in
 	// the provider config
 	if c.serviceKey != "" {
-		req.Header.Set("servicekey", c.serviceKey)
+		if platformTokenPrefixExp.MatchString(c.serviceKey) {
+			req.Header.Set("Authorization", "Token "+c.serviceKey)
+		} else {
+			req.Header.Set("servicekey", c.serviceKey)
+		}
 	} else if c.iamtoken != "" && c.cloud_resource_name != "" {
 		req.Header.Set("Authorization", "Bearer "+c.iamtoken)
 		req.Header.Set("cloud-resource-name", c.cloud_resource_name)

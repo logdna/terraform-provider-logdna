@@ -158,6 +158,33 @@ func TestRequest_MakeRequest(t *testing.T) {
 		)
 	})
 
+	t.Run("Successfully sends request using platform iam token", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			err := json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
+			assert.Nil(err, "No errors")
+		}))
+		defer ts.Close()
+
+		pc.baseURL = ts.URL
+		tempServicKey := pc.serviceKey
+		pc.serviceKey = "sta_c0a6c93abc6033c838be48964454f8d6bc4eb120"
+
+		req := newRequestConfig(
+			&pc,
+			"GET",
+			fmt.Sprintf("/some-other/api/%s", resourceID),
+			nil,
+		)
+		pc.serviceKey = tempServicKey
+		body, err := req.MakeRequest()
+		assert.Nil(err, "No errors")
+		assert.Equal(
+			`{"viewID":"test123456"}`,
+			strings.TrimSpace(string(body)),
+			"Returned body is correct",
+		)
+	})
+
 	t.Run("Reads and decodes response from the server, iamtoken", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := json.NewEncoder(w).Encode(viewResponse{ViewID: "test123456"})
