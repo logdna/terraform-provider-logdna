@@ -1,5 +1,5 @@
 FROM goreleaser/goreleaser:v1.12.3 as goreleaser
-FROM golang:1.18-bullseye as build
+FROM golang:1.19-bullseye as build
 
 COPY --from=goreleaser /usr/bin/goreleaser /usr/local/bin/goreleaser
 
