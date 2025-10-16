@@ -33,6 +33,6 @@ checksum:
 signs:
   - artifacts: checksum
 release:
-  draft: true # Require manual release publishing
+  draft: false # It seems now that making it a draft will prevent the release from ever being picked up from terraform
 changelog:
   disable: true
