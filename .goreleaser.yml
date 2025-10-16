@@ -1,3 +1,7 @@
+# Visit https://goreleaser.com for documentation on how to customize this
+# behavior.
+version: 2 # Requires goreleaser 2.0
+
 builds:
 - env:
     - CGO_ENABLED=0
@@ -21,7 +25,7 @@ builds:
       goarch: '386'
   binary: '{{ .ProjectName }}_{{ .Version }}'
 archives:
-- format: zip
+- formats: [ 'zip' ]
   name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
@@ -31,4 +35,4 @@ signs:
 release:
   draft: true # Require manual release publishing
 changelog:
-  skip: true
+  disable: true

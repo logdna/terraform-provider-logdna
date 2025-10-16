@@ -29,11 +29,11 @@ build-image:
 	docker build . --rm -t $(BUILD_IMAGE_NAME)
 
 build: build-image
-	$(BUILD_ENV) goreleaser build --rm-dist --snapshot --single-target
+	$(BUILD_ENV) goreleaser build --clean --snapshot --single-target
 
 build-local:
 	@goreleaser --version >/dev/null 2>&1 || (echo "ERROR: goreleaser is required."; exit 1)
-	goreleaser build --rm-dist --snapshot --single-target
+	goreleaser build --clean --snapshot --single-target
 
 install-local: BIN_DIR=./dist/$(PROJECT)_$(GOOS)_$(GOARCH)
 install-local: BIN=$(shell basename ./dist/*/*)
@@ -65,11 +65,11 @@ postcov: testcov .env-COVERALLS_TOKEN
 	$(BUILD_ENV) goveralls -coverprofile=${COVERAGE_FILE} -service jenkins
 
 test-release: build-image
-	$(BUILD_ENV) goreleaser release --rm-dist --snapshot
+	$(BUILD_ENV) goreleaser release --clean --snapshot
 
 release: BUILD_FLAGS:=--env GITHUB_TOKEN
 release: build-image .env-GITHUB_TOKEN
-	$(BUILD_ENV) goreleaser release --rm-dist
+	$(BUILD_ENV) goreleaser release --clean
 
 version-%:
 	@$(VERSION_CMD) $*
